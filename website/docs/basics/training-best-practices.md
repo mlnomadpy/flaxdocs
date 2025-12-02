@@ -141,10 +141,6 @@ state = train_state.TrainState.create(
 Use mixed precision to speed up training and reduce memory usage.
 
 ```python
-# Enable mixed precision in JAX
-import os
-os.environ['XLA_FLAGS'] = '--xla_gpu_enable_async_collectives=true'
-
 # Use bfloat16 or float16
 @jax.jit
 def train_step_mixed_precision(state, batch):
