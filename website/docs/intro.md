@@ -31,38 +31,88 @@ This guide will teach you the **concepts and patterns** behind Flax NNX training
 
 ## Documentation Structure
 
-This documentation is organized to progressively build your understanding:
+This documentation is organized into small, focused guides that won't overwhelm you:
 
-### 🚀 Basics
+### 🎯 Fundamentals
 
-Master the core concepts of Flax NNX:
-- **Model Definition**: Understanding modules, parameters, and state
-- **Data Loading**: Efficient pipelines with TFDS and Grain
-- **Training Loops**: Writing effective, JIT-compiled training code
-- **Checkpointing**: Saving and loading model state correctly
-- **Best Practices**: Common patterns and anti-patterns
+Start with the core concepts that apply everywhere:
+- **Your First Model**: Build a simple neural network from scratch
+- **Understanding State**: How NNX manages parameters and variables
 
-[Start Learning the Basics →](/docs/basics/model-definition)
+These fundamentals take ~15 minutes and are essential for everything else.
+
+[Start with Fundamentals →](/docs/fundamentals)
+
+### 🏃 Training Workflows
+
+Learn the practical skills to train models:
+- **Simple Training Loop**: Write your first complete training loop
+- **Data Loading**: Build efficient data pipelines without bottlenecks
+
+Short, focused guides that get you training quickly.
+
+[Learn Training Workflows →](/docs/workflows)
+
+### 🖼️ Computer Vision
+
+Build image models step-by-step:
+- **Simple CNN**: Your first convolutional network for image classification
+- **ResNet**: Deep networks with skip connections
+
+Each guide is self-contained and builds one complete model.
+
+[Explore Computer Vision →](/docs/vision)
+
+### 📝 Natural Language Processing
+
+Build text models from scratch:
+- **Simple Transformer**: Understand attention and build GPT-style models
+
+Clear explanations of how transformers actually work.
+
+[Explore NLP →](/docs/text)
 
 ### 📈 Scale
 
 Take your training to production scale:
-- **Distributed Training**: Understanding data and model parallelism
-- **Performance Optimization**: Memory management and compute efficiency
-- **Large Batch Training**: Scaling strategies and stability techniques
-- **Multi-Host Setup**: Coordinating training across multiple machines
+- **Distributed Training**: Multiple GPUs and TPUs
+- **Performance Optimization**: Make training faster
 
 [Learn about Scaling →](/docs/scale/distributed-training)
 
 ### 🔬 Research
 
 Advanced patterns for cutting-edge research:
-- **Model Export**: Converting models to ONNX, SafeTensors, and HuggingFace format
-- **Streaming Training**: Handling datasets larger than memory
-- **Observability**: Tracking experiments with Weights & Biases
+- **Model Export**: ONNX, SafeTensors, HuggingFace formats
+- **Observability**: Track experiments with W&B
 - **Advanced Architectures**: Building ResNets, Transformers, BERT, and GPT from scratch
 
 [Explore Research Topics →](/docs/research/model-export)
+
+## How to Use This Documentation
+
+### If you're brand new:
+1. Start with [Fundamentals →](/docs/fundamentals) (~15 min)
+2. Learn [Training Workflows →](/docs/workflows) (~20 min)
+3. Choose your domain: [Vision](/docs/vision) or [Text](/docs/text)
+
+### If you know the basics:
+- Jump directly to [Computer Vision](/docs/vision) or [NLP](/docs/text)
+- Each guide is self-contained and buildable in isolation
+
+### If you need specific examples:
+- See the [`/examples`](https://github.com/mlnomadpy/flaxdocs/tree/master/examples) directory
+- 12 complete, runnable scripts covering all topics
+
+## What Makes This Different?
+
+**Small, focused guides**: Each page teaches ONE concept completely. No 5000-word mega-guides.
+
+**Domain-organized**: Vision models in vision/, text models in text/. Find what you need quickly.
+
+**Example-driven**: Every concept has working code you can run immediately.
+
+**No overwhelm**: Start simple, build up gradually. You won't drown in complexity.
 
 ## Reference Code
 

@@ -17,13 +17,56 @@ const sidebars: SidebarsConfig = {
     'intro',
     {
       type: 'category',
-      label: '🚀 Basics',
+      label: '🎯 Fundamentals',
+      collapsed: false,
       items: [
+        'fundamentals/index',
+        'fundamentals/your-first-model',
+        'fundamentals/understanding-state',
+      ],
+    },
+    {
+      type: 'category',
+      label: '🏃 Training Workflows',
+      collapsed: false,
+      items: [
+        'workflows/index',
+        'workflows/simple-training',
+        'workflows/data-loading-simple',
+        'workflows/streaming-data',
+        'workflows/observability',
+        'workflows/model-export',
+      ],
+    },
+    {
+      type: 'category',
+      label: '🖼️ Computer Vision',
+      collapsed: false,
+      items: [
+        'vision/index',
+        'vision/simple-cnn',
+        'vision/resnet-architecture',
+      ],
+    },
+    {
+      type: 'category',
+      label: '📝 Natural Language Processing',
+      collapsed: false,
+      items: [
+        'text/index',
+        'text/simple-transformer',
+      ],
+    },
+    {
+      type: 'category',
+      label: '🚀 Legacy Guides',
+      collapsed: true,
+      items: [
+        'basics/getting-started',
         'basics/model-definition',
         'basics/data-loading',
         'basics/training-loops',
         'basics/checkpointing',
-        'basics/getting-started',
         'basics/training-best-practices',
       ],
     },
@@ -38,9 +81,7 @@ const sidebars: SidebarsConfig = {
       type: 'category',
       label: '🔬 Research',
       items: [
-        'research/model-export',
         'research/streaming-and-architectures',
-        'research/observability',
         'research/advanced-techniques',
       ],
     },
