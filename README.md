@@ -1,29 +1,36 @@
-# Flax Training Documentation
+# Learn Flax & JAX: Neural Network Training Guide
 
-Comprehensive guides for training neural networks with Flax - because the official docs aren't cutting it! 🚀
+A comprehensive learning resource for anyone interested in training neural networks with Flax and JAX. Whether you're just getting started or looking to master advanced techniques, this guide has you covered! 🚀
 
 [![Deploy to GitHub Pages](https://github.com/mlnomadpy/flaxdocs/actions/workflows/deploy.yml/badge.svg)](https://github.com/mlnomadpy/flaxdocs/actions/workflows/deploy.yml)
 
-## 🌟 What's Inside
+## 🎓 Who Is This For?
 
-This documentation covers everything you need to know about training models with Flax:
+- **Beginners** wanting to learn Flax/JAX from scratch
+- **ML Engineers** transitioning from PyTorch or TensorFlow
+- **Researchers** exploring functional programming approaches to deep learning
+- **Students** building practical skills in modern neural network frameworks
+
+## 🌟 What You'll Learn
+
+This guide takes you from zero to hero with Flax and JAX for training neural networks:
 
 ### 🚀 Basics
-- **Getting Started**: Set up your environment and create your first Flax model
-- **Training Best Practices**: Learning rate scheduling, gradient clipping, regularization
-- **Model Checkpointing**: Save and restore your models effectively
+- **Getting Started**: Learn to set up your environment and create your first Flax model
+- **Training Best Practices**: Master learning rate scheduling, gradient clipping, and regularization
+- **Model Checkpointing**: Understand how to save and restore your models effectively
 
 ### 📈 Scale
-- **Distributed Training**: Scale across multiple GPUs/TPUs with data and model parallelism
-- **Performance Optimization**: Mixed precision, gradient accumulation, and more
-- **Multi-Host Training**: Configure and run training across multiple machines
+- **Distributed Training**: Learn to scale training across multiple GPUs/TPUs with data and model parallelism
+- **Performance Optimization**: Discover mixed precision training, gradient accumulation, and optimization tricks
+- **Multi-Host Training**: Master distributed training across multiple machines
 
 ### 🔬 Research
-- **Advanced Techniques**: Contrastive learning, meta-learning, NAS, adversarial training
-- **Custom Training Loops**: Build flexible training loops for research
-- **Experiment Tracking**: Reproducible research practices
+- **Advanced Techniques**: Explore contrastive learning, meta-learning, NAS, and adversarial training
+- **Custom Training Loops**: Build flexible, custom training loops for research
+- **Experiment Tracking**: Learn reproducible research practices and experiment management
 
-## 🚀 Quick Start
+## 🚀 Getting Started with This Guide
 
 ### Prerequisites
 - Node.js 20.0 or higher
@@ -47,24 +54,34 @@ This documentation covers everything you need to know about training models with
    npm start
    ```
    
-   This command starts a local development server and opens up a browser window. Most changes are reflected live without having to restart the server.
+   This opens the guide in your browser. Most changes are reflected live without restarting the server.
 
 4. **Build the website**
    ```bash
    npm run build
    ```
    
-   This command generates static content into the `build` directory and can be served using any static contents hosting service.
+   This generates static content into the `build` directory.
+
+## 📚 Learning Path
+
+New to Flax/JAX? We recommend following this learning path:
+
+1. **Start with Basics**: Read through the Getting Started guide
+2. **Practice Training**: Work through Training Best Practices examples
+3. **Save Your Progress**: Learn Checkpointing techniques
+4. **Scale Up**: Move to Distributed Training when you're ready
+5. **Go Advanced**: Explore Research techniques for cutting-edge methods
 
 ## 📝 Contributing
 
-We welcome contributions! Here's how you can help:
+We welcome contributions! Help us make this learning resource even better:
 
 1. **Fork the repository**
 2. **Create a feature branch**: `git checkout -b feature/amazing-guide`
 3. **Make your changes** in the `website/docs` directory
 4. **Test locally**: Run `npm start` in the `website` directory
-5. **Build to verify**: Run `npm run build` to ensure no broken links
+5. **Build to verify**: Run `npm run build` to ensure everything works
 6. **Commit your changes**: `git commit -m 'Add amazing guide'`
 7. **Push to your fork**: `git push origin feature/amazing-guide`
 8. **Open a Pull Request**
@@ -90,11 +107,11 @@ website/
 
 ### Writing Guidelines
 
-- Use clear, concise language
-- Include code examples with explanations
-- Add links to relevant resources
+- Use clear, beginner-friendly language
+- Include practical code examples with detailed explanations
+- Add links to relevant learning resources
 - Test all code snippets before submitting
-- Follow the existing documentation style
+- Focus on teaching concepts, not just showing code
 
 ## 🔧 Built With
 
@@ -109,26 +126,26 @@ This project is licensed under the MIT License - see the [LICENSE](LICENSE) file
 
 ## 🤝 Acknowledgments
 
-- [Flax Team](https://github.com/google/flax) - For creating an amazing neural network library
-- [JAX Team](https://github.com/google/jax) - For the foundation Flax is built on
-- All contributors who help improve this documentation
+- [Flax Team](https://github.com/google/flax) - For creating an amazing functional neural network library
+- [JAX Team](https://github.com/google/jax) - For the powerful numerical computing framework
+- All contributors and learners who help improve this guide
 
-## 📞 Contact & Support
+## 📞 Questions & Support
 
-- **Issues**: Report bugs or request features in [GitHub Issues](https://github.com/mlnomadpy/flaxdocs/issues)
-- **Discussions**: Join conversations in [GitHub Discussions](https://github.com/mlnomadpy/flaxdocs/discussions)
-- **Official Flax**: Check out [Flax official documentation](https://flax.readthedocs.io/)
+- **Issues**: Report bugs or request new topics in [GitHub Issues](https://github.com/mlnomadpy/flaxdocs/issues)
+- **Discussions**: Ask questions and share your learning in [GitHub Discussions](https://github.com/mlnomadpy/flaxdocs/discussions)
+- **Official Docs**: Supplement your learning with [Flax official documentation](https://flax.readthedocs.io/)
 
-## 🌐 Deployment
+## 🌐 Accessing the Guide
 
-The documentation is automatically deployed to GitHub Pages when changes are pushed to the `main` branch:
+The guide is automatically deployed and available online:
 
-- **Live Site**: https://mlnomadpy.github.io/flaxdocs/
+- **Live Guide**: https://mlnomadpy.github.io/flaxdocs/
 - **CI/CD**: Automated via GitHub Actions (see `.github/workflows/deploy.yml`)
 
 ### Manual Deployment
 
-If you need to deploy manually:
+For contributors who need to deploy manually:
 
 ```bash
 cd website
@@ -139,5 +156,5 @@ npm run build
 
 ---
 
-**Made with ❤️ for the Flax community**
+**Made with ❤️ for learners exploring Flax and JAX**
 
