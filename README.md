@@ -6,19 +6,34 @@ A comprehensive learning resource for anyone interested in training neural netwo
 
 ## 🎓 Who Is This For?
 
-- **Beginners** wanting to learn Flax/JAX from scratch
+- **Beginners** wanting to learn Flax NNX from scratch
 - **ML Engineers** transitioning from PyTorch or TensorFlow
 - **Researchers** exploring functional programming approaches to deep learning
 - **Students** building practical skills in modern neural network frameworks
 
+## 🚀 Quick Start with Runnable Examples
+
+**NEW!** Check out our [**complete runnable examples**](./examples/) for Flax NNX:
+
+- 🎯 **Basics**: Model definition, saving/loading, data loading
+- 🏃 **Training**: End-to-end MNIST CNN, Transformer LM
+- 📦 **Export**: SafeTensors, ONNX formats
+- 🤗 **HuggingFace**: Model upload, streaming datasets
+- 🔬 **Advanced**: ResNet streaming, BERT, GPT training
+- 📊 **Observability**: Weights & Biases integration
+
+Each guide is a complete, self-contained Python file you can run immediately!
+
+👉 **[View All Examples →](./examples/)**
+
 ## 🌟 What You'll Learn
 
-This guide takes you from zero to hero with Flax and JAX for training neural networks:
+This guide takes you from zero to hero with Flax NNX for training neural networks:
 
 ### 🚀 Basics
-- **Getting Started**: Learn to set up your environment and create your first Flax model
+- **Getting Started**: Learn to set up your environment and create your first Flax NNX model
 - **Training Best Practices**: Master learning rate scheduling, gradient clipping, and regularization
-- **Model Checkpointing**: Understand how to save and restore your models effectively
+- **Model Checkpointing**: Understand how to save and restore your models with Orbax
 
 ### 📈 Scale
 - **Distributed Training**: Learn to scale training across multiple GPUs/TPUs with data and model parallelism
@@ -28,7 +43,7 @@ This guide takes you from zero to hero with Flax and JAX for training neural net
 ### 🔬 Research
 - **Advanced Techniques**: Explore contrastive learning, meta-learning, NAS, and adversarial training
 - **Custom Training Loops**: Build flexible, custom training loops for research
-- **Experiment Tracking**: Learn reproducible research practices and experiment management
+- **Experiment Tracking**: Learn reproducible research practices with W&B integration
 
 ## 🚀 Getting Started with This Guide
 

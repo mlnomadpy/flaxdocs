@@ -19,9 +19,12 @@ const sidebars: SidebarsConfig = {
       type: 'category',
       label: '🚀 Basics',
       items: [
+        'basics/model-definition',
+        'basics/data-loading',
+        'basics/training-loops',
+        'basics/checkpointing',
         'basics/getting-started',
         'basics/training-best-practices',
-        'basics/checkpointing',
       ],
     },
     {
@@ -35,6 +38,9 @@ const sidebars: SidebarsConfig = {
       type: 'category',
       label: '🔬 Research',
       items: [
+        'research/model-export',
+        'research/streaming-and-architectures',
+        'research/observability',
         'research/advanced-techniques',
       ],
     },

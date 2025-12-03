@@ -4,15 +4,73 @@
  */
 
 .heroBanner {
-  padding: 4rem 0;
+  padding: 6rem 2rem;
   text-align: center;
   position: relative;
   overflow: hidden;
+  background: linear-gradient(135deg, 
+    var(--ifm-background-color) 0%, 
+    var(--ifm-background-surface-color) 100%);
+}
+
+[data-theme='dark'] .heroBanner {
+  background: linear-gradient(135deg,
+    #0a0e14 0%,
+    #131920 100%);
+}
+
+.heroBanner::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  opacity: 0.03;
+  background-image: 
+    repeating-linear-gradient(0deg, transparent, transparent 2px, currentColor 2px, currentColor 3px),
+    repeating-linear-gradient(90deg, transparent, transparent 2px, currentColor 2px, currentColor 3px);
+  background-size: 60px 60px;
+  pointer-events: none;
+}
+
+.heroBanner h1 {
+  font-size: 3.5rem;
+  font-weight: 700;
+  letter-spacing: -0.03em;
+  margin-bottom: 1.5rem;
+  background: linear-gradient(135deg, var(--ifm-color-primary), var(--ifm-color-primary-light));
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
+
+[data-theme='dark'] .heroBanner h1 {
+  background: linear-gradient(135deg, #7dd3fc, #a0defd);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
+
+.heroBanner p {
+  font-size: 1.25rem;
+  opacity: 0.85;
+  max-width: 600px;
+  margin: 0 auto 2.5rem;
+  line-height: 1.6;
 }
 
 @media screen and (max-width: 996px) {
   .heroBanner {
-    padding: 2rem;
+    padding: 4rem 1.5rem;
+  }
+  
+  .heroBanner h1 {
+    font-size: 2.5rem;
+  }
+  
+  .heroBanner p {
+    font-size: 1.1rem;
   }
 }
 
@@ -20,4 +78,42 @@
   display: flex;
   align-items: center;
   justify-content: center;
+  gap: 1rem;
+  flex-wrap: wrap;
+}
+
+.buttons a {
+  padding: 0.875rem 2rem;
+  font-weight: 600;
+  border-radius: 0.5rem;
+  transition: all 0.2s ease;
+  text-decoration: none;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+}
+
+.buttons a:first-child {
+  background: var(--ifm-color-primary);
+  color: white;
+}
+
+.buttons a:first-child:hover {
+  background: var(--ifm-color-primary-dark);
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+}
+
+[data-theme='dark'] .buttons a:first-child {
+  background: var(--ifm-color-primary);
+  color: #0a0e14;
+}
+
+.buttons a:not(:first-child) {
+  background: var(--ifm-background-surface-color);
+  border: 1px solid var(--ifm-table-border-color);
+  color: var(--ifm-font-color-base);
+}
+
+.buttons a:not(:first-child):hover {
+  border-color: var(--ifm-color-primary);
+  transform: translateY(-2px);
 }
