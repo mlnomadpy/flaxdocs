@@ -1,71 +1,102 @@
 import type {ReactNode} from 'react';
 import clsx from 'clsx';
 import Heading from '@theme/Heading';
+import Link from '@docusaurus/Link';
 import styles from './styles.module.css';
 
 type FeatureItem = {
   title: string;
-  Svg: React.ComponentType<React.ComponentProps<'svg'>>;
+  icon: string;
   description: ReactNode;
+  link: string;
+  linkText: string;
 };
 
 const FeatureList: FeatureItem[] = [
   {
-    title: '🚀 Get Started Quickly',
-    Svg: require('@site/static/img/undraw_docusaurus_mountain.svg').default,
+    title: 'Build Models',
+    icon: '⚡',
     description: (
       <>
-        Learn the basics of training neural networks with Flax. From installation
-        to your first model, we&apos;ll guide you through every step.
+        Define CNNs, Transformers, and custom architectures with Flax NNX.
+        Learn state management, initialization patterns, and checkpoint strategies.
       </>
     ),
+    link: '/docs/basics/model-definition',
+    linkText: 'Model Definition →',
   },
   {
-    title: '📈 Scale to Production',
-    Svg: require('@site/static/img/undraw_docusaurus_tree.svg').default,
+    title: 'Load Data',
+    icon: '📊',
     description: (
       <>
-        Master distributed training across multiple GPUs and TPUs. Learn data
-        parallelism, model parallelism, and optimization techniques.
+        Stream datasets with Grain, integrate TFDS, or build custom dataloaders.
+        Master batching, prefetching, and multi-host data parallelism.
       </>
     ),
+    link: '/docs/basics/data-loading',
+    linkText: 'Data Loading →',
   },
   {
-    title: '🔬 Advanced Research',
-    Svg: require('@site/static/img/undraw_docusaurus_react.svg').default,
+    title: 'Train at Scale',
+    icon: '🚀',
     description: (
       <>
-        Explore cutting-edge techniques including contrastive learning, meta-learning,
-        and custom training loops for your research projects.
+        Train on 100+ GPUs/TPUs with JAX sharding APIs. Implement FSDP,
+        tensor parallelism, and pipeline parallelism for large models.
       </>
     ),
+    link: '/docs/scale/distributed-training',
+    linkText: 'Distributed Training →',
   },
 ];
 
-function Feature({title, Svg, description}: FeatureItem) {
+const QuickLinks = [
+  { label: 'Checkpointing', link: '/docs/basics/checkpointing' },
+  { label: 'Training Loops', link: '/docs/basics/training-loops' },
+  { label: 'Model Export', link: '/docs/research/model-export' },
+  { label: 'Observability', link: '/docs/research/observability' },
+];
+
+function Feature({title, icon, description, link, linkText}: FeatureItem) {
   return (
     <div className={clsx('col col--4')}>
-      <div className="text--center">
-        <Svg className={styles.featureSvg} role="img" />
-      </div>
-      <div className="text--center padding-horiz--md">
-        <Heading as="h3">{title}</Heading>
-        <p>{description}</p>
-      </div>
+      <Link to={link} className={styles.featureCard}>
+        <div className={styles.featureIcon}>{icon}</div>
+        <Heading as="h3" className={styles.featureTitle}>{title}</Heading>
+        <p className={styles.featureDescription}>{description}</p>
+        <span className={styles.featureLink}>{linkText}</span>
+      </Link>
     </div>
   );
 }
 
 export default function HomepageFeatures(): ReactNode {
   return (
-    <section className={styles.features}>
-      <div className="container">
-        <div className="row">
-          {FeatureList.map((props, idx) => (
-            <Feature key={idx} {...props} />
-          ))}
+    <>
+      <section className={styles.featuresSection}>
+        <div className="container">
+          <div className="row">
+            {FeatureList.map((props, idx) => (
+              <Feature key={idx} {...props} />
+            ))}
+          </div>
         </div>
-      </div>
-    </section>
+      </section>
+      
+      <section className={styles.quickLinksSection}>
+        <div className="container">
+          <Heading as="h2" className={styles.sectionTitle}>Quick Access</Heading>
+          <div className={styles.quickLinksGrid}>
+            {QuickLinks.map((item, idx) => (
+              <Link key={idx} to={item.link} className={styles.quickLinkCard}>
+                {item.label}
+                <span className={styles.arrow}>→</span>
+              </Link>
+            ))}
+          </div>
+        </div>
+      </section>
+    </>
   );
 }

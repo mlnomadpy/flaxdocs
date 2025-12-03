@@ -1,38 +1,195 @@
-.features {
+/**
+ * Homepage Features Component Styles
+ * Consistent with global design system
+ */
+
+.featuresSection {
+  padding: 6rem 2rem 4rem;
+  background: var(--ifm-background-color);
+}
+
+.featureCard {
+  display: block;
+  padding: 2.5rem 2rem;
+  height: 100%;
+  background: var(--ifm-background-surface-color);
+  border: 1px solid var(--ifm-table-border-color);
+  border-radius: 0.75rem;
+  text-decoration: none;
+  color: inherit;
+  transition: all var(--transition-base);
+  position: relative;
+  overflow: hidden;
+  box-shadow: var(--shadow-sm);
+}
+
+.featureCard::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 4px;
+  background: linear-gradient(90deg, var(--ifm-color-primary), var(--ifm-color-primary-light));
+  transform: scaleX(0);
+  transform-origin: left;
+  transition: transform var(--transition-base);
+}
+
+.featureCard:hover {
+  transform: translateY(-6px);
+  box-shadow: var(--shadow-lg);
+  border-color: var(--ifm-color-primary);
+}
+
+.featureCard:hover::before {
+  transform: scaleX(1);
+}
+
+.featureIcon {
+  font-size: 3.5rem;
+  margin-bottom: 1.5rem;
+  line-height: 1;
+  display: block;
+}
+
+.featureTitle {
+  font-size: 1.5rem;
+  font-weight: 700;
+  margin-bottom: 1rem;
+  letter-spacing: -0.025em;
+  color: var(--ifm-heading-color);
+}
+
+.featureDescription {
+  font-size: 0.95rem;
+  line-height: 1.7;
+  color: var(--ifm-color-content-secondary);
+  margin-bottom: 1.5rem;
+}
+
+.featureLink {
+  font-size: 0.9rem;
+  font-weight: 600;
+  color: var(--ifm-color-primary);
+  transition: transform var(--transition-fast);
+  display: inline-block;
+}
+
+.featureCard:hover .featureLink {
+  transform: translateX(6px);
+}
+
+/* Quick Links Section */
+.quickLinksSection {
+  padding: 4rem 2rem 6rem;
+  background: var(--ifm-background-surface-color);
+}
+
+.sectionTitle {
+  text-align: center;
+  font-size: 2.25rem;
+  font-weight: 700;
+  margin-bottom: 3.5rem;
+  letter-spacing: -0.025em;
+  color: var(--ifm-heading-color);
+}
+
+.quickLinksGrid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+  gap: 1.25rem;
+  max-width: 1100px;
+  margin: 0 auto;
+}
+
+.quickLinkCard {
   display: flex;
   align-items: center;
-  padding: 4rem 0;
-  width: 100%;
-}
-
-.featureSvg {
-  height: 200px;
-  width: 200px;
-  opacity: 0.9;
-  transition: transform 0.3s ease, opacity 0.3s ease;
-}
-
-.featureSvg:hover {
-  transform: scale(1.05);
-  opacity: 1;
-}
-
-.featureItem {
-  padding: 2rem;
-  text-align: center;
-}
-
-.featureItem h3 {
-  font-size: 1.5rem;
+  justify-content: space-between;
+  padding: 1.5rem 1.75rem;
+  background: var(--ifm-background-color);
+  border: 1px solid var(--ifm-table-border-color);
+  border-radius: 0.75rem;
+  text-decoration: none;
+  color: var(--ifm-font-color-base);
   font-weight: 600;
-  margin-bottom: 1rem;
-  letter-spacing: -0.01em;
+  transition: all var(--transition-base);
+  box-shadow: var(--shadow-sm);
+  font-size: 0.95rem;
 }
 
-.featureItem p {
-  font-size: 1rem;
-  line-height: 1.7;
-  opacity: 0.85;
-  max-width: 400px;
-  margin: 0 auto;
+.quickLinkCard:hover {
+  color: var(--ifm-color-primary);
+  border-color: var(--ifm-color-primary);
+  transform: translateX(6px);
+  box-shadow: var(--shadow-md);
+}
+
+.arrow {
+  opacity: 0.4;
+  transition: all var(--transition-fast);
+  font-size: 1.25rem;
+  font-weight: 700;
+}
+
+.quickLinkCard:hover .arrow {
+  opacity: 1;
+  transform: translateX(4px);
+}
+
+/* Responsive Design */
+@media screen and (max-width: 996px) {
+  .featuresSection {
+    padding: 4rem 1.5rem 3rem;
+  }
+  
+  .featureCard {
+    padding: 2rem 1.5rem;
+    margin-bottom: 1.5rem;
+  }
+  
+  .featureIcon {
+    font-size: 3rem;
+  }
+  
+  .quickLinksSection {
+    padding: 3rem 1.5rem 4rem;
+  }
+  
+  .sectionTitle {
+    font-size: 2rem;
+    margin-bottom: 2.5rem;
+  }
+  
+  .quickLinksGrid {
+    grid-template-columns: 1fr;
+    gap: 1rem;
+  }
+  
+  .quickLinkCard {
+    padding: 1.25rem 1.5rem;
+  }
+}
+
+@media screen and (max-width: 640px) {
+  .featuresSection {
+    padding: 3rem 1rem 2rem;
+  }
+  
+  .featureCard {
+    padding: 1.75rem 1.25rem;
+  }
+  
+  .featureIcon {
+    font-size: 2.5rem;
+  }
+  
+  .featureTitle {
+    font-size: 1.35rem;
+  }
+  
+  .quickLinksSection {
+    padding: 2.5rem 1rem 3rem;
+  }
 }
