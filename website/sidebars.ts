@@ -17,57 +17,56 @@ const sidebars: SidebarsConfig = {
     'intro',
     {
       type: 'category',
-      label: '🎯 Fundamentals',
+      label: '🚀 Basics',
       collapsed: false,
       items: [
-        'fundamentals/index',
-        'fundamentals/your-first-model',
-        'fundamentals/understanding-state',
-      ],
-    },
-    {
-      type: 'category',
-      label: '🏃 Training Workflows',
-      collapsed: false,
-      items: [
-        'workflows/index',
-        'workflows/simple-training',
-        'workflows/data-loading-simple',
-        'workflows/streaming-data',
-        'workflows/observability',
-        'workflows/model-export',
-      ],
-    },
-    {
-      type: 'category',
-      label: '🖼️ Computer Vision',
-      collapsed: false,
-      items: [
-        'vision/index',
-        'vision/simple-cnn',
-        'vision/resnet-architecture',
-      ],
-    },
-    {
-      type: 'category',
-      label: '📝 Natural Language Processing',
-      collapsed: false,
-      items: [
-        'text/index',
-        'text/simple-transformer',
-      ],
-    },
-    {
-      type: 'category',
-      label: '🚀 Legacy Guides',
-      collapsed: true,
-      items: [
-        'basics/getting-started',
-        'basics/model-definition',
-        'basics/data-loading',
-        'basics/training-loops',
-        'basics/checkpointing',
-        'basics/training-best-practices',
+        {
+          type: 'category',
+          label: '🎯 Fundamentals',
+          items: [
+            'basics/fundamentals/index',
+            'basics/fundamentals/your-first-model',
+            'basics/fundamentals/understanding-state',
+          ],
+        },
+        {
+          type: 'category',
+          label: '🏃 Training Workflows',
+          items: [
+            'basics/workflows/index',
+            'basics/workflows/simple-training',
+            'basics/workflows/data-loading-simple',
+            'basics/workflows/streaming-data',
+            'basics/workflows/observability',
+            'basics/workflows/model-export',
+          ],
+        },
+        {
+          type: 'category',
+          label: '🖼️ Computer Vision',
+          items: [
+            'basics/vision/index',
+            'basics/vision/simple-cnn',
+            'basics/vision/resnet-architecture',
+          ],
+        },
+        {
+          type: 'category',
+          label: '📝 Natural Language Processing',
+          items: [
+            'basics/text/index',
+            'basics/text/simple-transformer',
+          ],
+        },
+        {
+          type: 'category',
+          label: '📚 Additional Resources',
+          collapsed: true,
+          items: [
+            'basics/checkpointing',
+            'basics/training-best-practices',
+          ],
+        },
       ],
     },
     {

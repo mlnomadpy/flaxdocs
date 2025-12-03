@@ -612,9 +612,9 @@ def flexible_predict(x):
 ## Next Steps
 
 You can now export models for deployment! Learn:
-- [Stream large datasets during training](streaming-and-architectures)
-- [Track experiments with W&B](observability)
-- [Build advanced architectures](streaming-and-architectures)
+- [Stream large datasets during training](./streaming-data.md)
+- [Track experiments with W&B](./observability.md)
+- [Build advanced architectures](../../research/streaming-and-architectures.md)
 
 ## Reference Code
 

@@ -96,10 +96,7 @@ This section focuses on GPT-style models, which are the most versatile.
 
 ## What's Next?
 
-After mastering transformers:
-- [BERT Models](./bert-model.md) - Bidirectional understanding
-- [Tokenization](./tokenization.md) - Prepare text data
-- [Fine-tuning](./fine-tuning.md) - Adapt pretrained models
+After mastering transformers, explore advanced NLP architectures and techniques in the research section.
 
 ## Complete Examples
 

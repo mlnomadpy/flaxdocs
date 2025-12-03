@@ -22,7 +22,7 @@ const FeatureList: FeatureItem[] = [
         Learn state management, initialization patterns, and checkpoint strategies.
       </>
     ),
-    link: '/docs/basics/model-definition',
+    link: '/docs/basics/fundamentals/your-first-model',
     linkText: 'Model Definition →',
   },
   {
@@ -34,7 +34,7 @@ const FeatureList: FeatureItem[] = [
         Master batching, prefetching, and multi-host data parallelism.
       </>
     ),
-    link: '/docs/basics/data-loading',
+    link: '/docs/basics/workflows/data-loading-simple',
     linkText: 'Data Loading →',
   },
   {
@@ -53,7 +53,7 @@ const FeatureList: FeatureItem[] = [
 
 const QuickLinks = [
   { label: 'Checkpointing', link: '/docs/basics/checkpointing' },
-  { label: 'Training Loops', link: '/docs/basics/training-loops' },
+  { label: 'Training Loops', link: '/docs/basics/workflows/simple-training' },
   { label: 'Model Export', link: '/docs/research/model-export' },
   { label: 'Observability', link: '/docs/research/observability' },
 ];

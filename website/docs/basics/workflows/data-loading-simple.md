@@ -311,9 +311,8 @@ def create_pipeline(split='train', batch_size=32):
 
 ## Next Steps
 
-- [Advanced Data Pipelines](./advanced-data-loading.md) - Custom datasets, streaming
-- [Data Augmentation Guide](../vision/data-augmentation.md) - More augmentation techniques
-- [Text Tokenization](../text/tokenization.md) - Prepare text data
+- [Streaming Large Datasets](./streaming-data.md) - Handle data larger than memory
+- [Simple Training Loop](./simple-training.md) - Put data loading to use
 
 ## Complete Examples
 

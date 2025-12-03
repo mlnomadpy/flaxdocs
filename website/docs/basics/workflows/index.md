@@ -117,9 +117,9 @@ Just 20 lines of actual code!
 ## What's Next?
 
 After mastering basic training:
-- [Optimization Strategies](./optimization.md) - Learning rate schedules, advanced optimizers
-- [Checkpointing](../fundamentals/saving-loading.md) - Save and load trained models
-- [Distributed Training](../scale/distributed-training.md) - Scale to multiple GPUs
+- [Checkpointing](../../basics/checkpointing.md) - Save and load trained models
+- [Distributed Training](../../scale/distributed-training.md) - Scale to multiple GPUs
+- [Experiment Tracking](./observability.md) - Monitor your training
 
 ## Complete Examples
 

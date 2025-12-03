@@ -687,17 +687,6 @@ textarea:focus-visible {
     break-inside: avoid;
   }
 }
-  --ifm-global-spacing: 1.5rem;
-  --ifm-leading: 1.75rem;
-  
-  /* Link colors - Subtle but visible */
-  --ifm-link-color: #2563eb;
-  --ifm-link-hover-color: #1d4ed8;
-  
-  /* Content width - Optimized for reading */
-  --ifm-container-width-xl: 1280px;
-  --docusaurus-announcement-bar-height: auto;
-}
 
 /* Dark Mode - Deep, focused reading experience */
 [data-theme='dark'] {

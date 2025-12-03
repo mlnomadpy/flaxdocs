@@ -216,6 +216,5 @@ state = nnx.state(model)
 
 ## Next Steps
 
-- [Saving and Loading Models](./saving-loading.md) - Checkpoint your trained models
 - [Simple Training Loop](../workflows/simple-training.md) - Put it all together
-- [Optimization Best Practices](../workflows/optimization.md) - Fine-tune your training
+- [Checkpointing](../../basics/checkpointing.md) - Save and load models

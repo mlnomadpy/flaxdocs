@@ -327,9 +327,9 @@ for epoch in range(10):
 
 ## Next Steps
 
-- [Optimization Strategies](./optimization.md) - Advanced optimizers and schedules
 - [Data Loading](./data-loading-simple.md) - Efficient data pipelines
-- [Checkpointing](../fundamentals/saving-loading.md) - Save your trained models
+- [Checkpointing](../../basics/checkpointing.md) - Save your trained models
+- [Experiment Tracking](./observability.md) - Monitor training progress
 
 ## Complete Example
 

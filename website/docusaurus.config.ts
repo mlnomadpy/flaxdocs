@@ -113,8 +113,12 @@ const config: Config = {
               to: '/docs',
             },
             {
-              label: 'Basics',
-              to: '/docs/basics/getting-started',
+              label: 'Fundamentals',
+              to: '/docs/basics/fundamentals',
+            },
+            {
+              label: 'Training Workflows',
+              to: '/docs/basics/workflows',
             },
             {
               label: 'Scale',
@@ -122,7 +126,7 @@ const config: Config = {
             },
             {
               label: 'Research',
-              to: '/docs/research/advanced-techniques',
+              to: '/docs/research/streaming-and-architectures',
             },
           ],
         },

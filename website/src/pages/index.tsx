@@ -23,7 +23,7 @@ function HomepageHeader() {
               From basic CNNs to distributed Transformers. Complete recipes for research and production.
             </p>
             <div className={styles.heroButtons}>
-              <Link className={styles.primaryButton} to="/docs/basics/model-definition">
+              <Link className={styles.primaryButton} to="/docs/basics/fundamentals/your-first-model">
                 Start Training
               </Link>
               <Link className={styles.secondaryButton} to="/docs/scale/distributed-training">
@@ -69,7 +69,7 @@ function LearningPath() {
       title: 'Basics',
       desc: 'Models, data, training loops',
       items: ['Model Definition', 'Data Loading', 'Training Loops', 'Checkpointing'],
-      link: '/docs/basics/model-definition',
+      link: '/docs/basics/fundamentals/your-first-model',
       color: '#2c3e50'
     },
     {
@@ -126,21 +126,21 @@ function QuickStart() {
             <Heading as="h2">Get Started in Minutes</Heading>
             <p>Complete working examples you can run immediately</p>
             <div className={styles.exampleList}>
-              <Link to="/docs/basics/model-definition" className={styles.exampleItem}>
+              <Link to="/docs/basics/fundamentals/your-first-model" className={styles.exampleItem}>
                 <span className={styles.exampleIcon}>📦</span>
                 <div>
                   <div className={styles.exampleTitle}>Define Models</div>
                   <div className={styles.exampleDesc}>CNNs, RNNs, Transformers</div>
                 </div>
               </Link>
-              <Link to="/docs/basics/training-loops" className={styles.exampleItem}>
+              <Link to="/docs/basics/workflows/simple-training" className={styles.exampleItem}>
                 <span className={styles.exampleIcon}>⚡</span>
                 <div>
                   <div className={styles.exampleTitle}>Training Loops</div>
                   <div className={styles.exampleDesc}>MNIST, ImageNet, LLMs</div>
                 </div>
               </Link>
-              <Link to="/docs/basics/data-loading" className={styles.exampleItem}>
+              <Link to="/docs/basics/workflows/data-loading-simple" className={styles.exampleItem}>
                 <span className={styles.exampleIcon}>📊</span>
                 <div>
                   <div className={styles.exampleTitle}>Data Pipelines</div>

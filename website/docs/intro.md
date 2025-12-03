@@ -41,7 +41,7 @@ Start with the core concepts that apply everywhere:
 
 These fundamentals take ~15 minutes and are essential for everything else.
 
-[Start with Fundamentals →](/docs/fundamentals)
+[Start with Fundamentals →](/docs/basics/fundamentals)
 
 ### 🏃 Training Workflows
 
@@ -51,7 +51,7 @@ Learn the practical skills to train models:
 
 Short, focused guides that get you training quickly.
 
-[Learn Training Workflows →](/docs/workflows)
+[Learn Training Workflows →](/docs/basics/workflows)
 
 ### 🖼️ Computer Vision
 
@@ -61,7 +61,7 @@ Build image models step-by-step:
 
 Each guide is self-contained and builds one complete model.
 
-[Explore Computer Vision →](/docs/vision)
+[Explore Computer Vision →](/docs/basics/vision)
 
 ### 📝 Natural Language Processing
 
@@ -70,7 +70,7 @@ Build text models from scratch:
 
 Clear explanations of how transformers actually work.
 
-[Explore NLP →](/docs/text)
+[Explore NLP →](/docs/basics/text)
 
 ### 📈 Scale
 
@@ -87,17 +87,17 @@ Advanced patterns for cutting-edge research:
 - **Observability**: Track experiments with W&B
 - **Advanced Architectures**: Building ResNets, Transformers, BERT, and GPT from scratch
 
-[Explore Research Topics →](/docs/research/model-export)
+[Explore Research Topics →](/docs/research/streaming-and-architectures)
 
 ## How to Use This Documentation
 
 ### If you're brand new:
-1. Start with [Fundamentals →](/docs/fundamentals) (~15 min)
-2. Learn [Training Workflows →](/docs/workflows) (~20 min)
-3. Choose your domain: [Vision](/docs/vision) or [Text](/docs/text)
+1. Start with [Fundamentals →](/docs/basics/fundamentals) (~15 min)
+2. Learn [Training Workflows →](/docs/basics/workflows) (~20 min)
+3. Choose your domain: [Vision](/docs/basics/vision) or [Text](/docs/basics/text)
 
 ### If you know the basics:
-- Jump directly to [Computer Vision](/docs/vision) or [NLP](/docs/text)
+- Jump directly to [Computer Vision](/docs/basics/vision) or [NLP](/docs/basics/text)
 - Each guide is self-contained and buildable in isolation
 
 ### If you need specific examples:

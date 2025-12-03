@@ -77,10 +77,7 @@ This section focuses on classification, which is the foundation for all other ta
 
 ## What's Next?
 
-After mastering vision models:
-- [Transfer Learning Guide](./transfer-learning.md) - Use pretrained models
-- [Data Augmentation](./data-augmentation.md) - Improve generalization
-- [Advanced Architectures](../research/streaming-and-architectures.md) - EfficientNets, Vision Transformers
+After mastering vision models, explore streaming data and advanced architectures in the research section.
 
 ## Complete Examples
 

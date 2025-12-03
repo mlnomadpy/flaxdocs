@@ -445,9 +445,7 @@ positions = jnp.minimum(jnp.arange(seq_len), model.max_seq_len - 1)
 
 ## Next Steps
 
-- [BERT for Understanding](./bert-model.md) - Bidirectional transformers
-- [Tokenization](./tokenization.md) - Convert text to tokens
-- [Fine-tuning](./fine-tuning.md) - Adapt pretrained models
+Now that you understand transformers, you can explore more advanced NLP topics or apply these concepts to real projects.
 
 ## Complete Example
 

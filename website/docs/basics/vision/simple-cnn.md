@@ -255,8 +255,8 @@ images = (images / 255.0) * 2 - 1  # Scale to [-1, 1]
 ## Next Steps
 
 - [ResNet Architecture](./resnet-architecture.md) - Build deeper networks with skip connections
-- [Transfer Learning](./transfer-learning.md) - Use pretrained models
-- [Advanced Data Loading](../workflows/vision-data-pipeline.md) - Efficient image pipelines
+- [Data Loading](../workflows/data-loading-simple.md) - Efficient data pipelines
+- [Streaming Data](../workflows/streaming-data.md) - Handle large datasets
 
 ## Complete Example
 
