@@ -462,16 +462,15 @@ with profiler.trace("/tmp/jax-trace"):
 1. **Start simple:** [Data Parallelism Guide](./data-parallelism.md)
 2. **Go modern:** [SPMD Sharding Guide](./spmd-sharding.md)
 3. **Scale up:** [FSDP Guide](./fsdp-fully-sharded.md) or [Pipeline Guide](./pipeline-parallelism.md)
-4. **Optimize:** [Best Practices](./best-practices.md) (coming soon)
 
 ## Example Code
 
 Check out our complete, runnable examples:
 
-- [`examples/16_data_parallel_pmap.py`](../../examples/16_data_parallel_pmap.py) - Data parallelism with pmap
-- [`examples/17_sharding_spmd.py`](../../examples/17_sharding_spmd.py) - SPMD automatic sharding
-- [`examples/18_pipeline_parallelism.py`](../../examples/18_pipeline_parallelism.py) - Pipeline parallelism
-- [`examples/19_fsdp_sharding.py`](../../examples/19_fsdp_sharding.py) - FSDP fully sharded training
+- `examples/16_data_parallel_pmap.py` - Data parallelism with pmap
+- `examples/17_sharding_spmd.py` - SPMD automatic sharding
+- `examples/18_pipeline_parallelism.py` - Pipeline parallelism
+- `examples/19_fsdp_sharding.py` - FSDP fully sharded training
 
 Each example is self-contained and includes detailed comments explaining what's happening under the hood.
 

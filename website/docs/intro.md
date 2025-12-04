@@ -78,7 +78,7 @@ Take your training to production scale:
 - **Distributed Training**: Multiple GPUs and TPUs
 - **Performance Optimization**: Make training faster
 
-[Learn about Scaling →](/docs/scale/distributed-training)
+[Learn about Scaling →](/docs/scale/)
 
 ### 🔬 Research
 

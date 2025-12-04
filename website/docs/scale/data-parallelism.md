@@ -481,7 +481,7 @@ state = train_step(state, batch)  # Works!
 
 ## Example: Complete Training Script
 
-See [`examples/16_data_parallel_pmap.py`](../../examples/16_data_parallel_pmap.py) for a complete, runnable example demonstrating:
+See `examples/16_data_parallel_pmap.py` in the repository for a complete, runnable example demonstrating:
 
 - ✅ Model initialization and replication
 - ✅ Data sharding for pmap
@@ -494,4 +494,3 @@ See [`examples/16_data_parallel_pmap.py`](../../examples/16_data_parallel_pmap.p
 - **Larger Models?** → Try [FSDP for memory-efficient training](./fsdp-fully-sharded.md)
 - **Complex Sharding?** → Learn about [SPMD with automatic sharding](./spmd-sharding.md)
 - **Sequential Models?** → Explore [Pipeline Parallelism](./pipeline-parallelism.md)
-- **Best Practices** → Read [Distributed Training Best Practices](./best-practices.md)

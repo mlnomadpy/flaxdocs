@@ -475,7 +475,7 @@ def train_with_checkpointing(
 
 You now understand state management and checkpointing! Learn:
 - [Export models for deployment](./workflows/model-export.md)
-- [Scale training to multiple GPUs](../scale/distributed-training.md)
+- [Scale training to multiple GPUs](../scale/)
 - [Track experiments with W&B](./workflows/observability.md)
 
 ## Reference Code

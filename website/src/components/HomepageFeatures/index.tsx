@@ -46,7 +46,7 @@ const FeatureList: FeatureItem[] = [
         tensor parallelism, and pipeline parallelism for large models.
       </>
     ),
-    link: '/docs/scale/distributed-training',
+    link: '/docs/scale/',
     linkText: 'Distributed Training →',
   },
 ];

@@ -642,7 +642,7 @@ wandb.log({
 ## Next Steps
 
 You now know how to track experiments professionally! Learn more:
-- [Scale training to distributed systems](../../scale/distributed-training.md)
+- [Scale training to distributed systems](../../scale/)
 - [Build production pipelines](./model-export.md)
 
 ## Reference Code

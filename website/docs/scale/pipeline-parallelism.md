@@ -31,7 +31,7 @@ Device 3: [Stage 4: Final Layers + Head]
 ❌ **Don't use pipeline parallelism when:**
 - Model fits on one device → Use data parallelism
 - Non-sequential architecture (complex DAGs)
-- Very few devices (inefficient with <4 devices)
+- Very few devices (inefficient with fewer than 4 devices)
 
 ## How It Works
 
@@ -469,7 +469,7 @@ output = merge(out1, out2)
 
 ## Example: Complete Script
 
-See [`examples/18_pipeline_parallelism.py`](../../examples/18_pipeline_parallelism.py) for a complete implementation with:
+See `examples/18_pipeline_parallelism.py` in the repository for a complete implementation with:
 
 - ✅ Model stage definition
 - ✅ Device placement
@@ -491,4 +491,3 @@ See [`examples/18_pipeline_parallelism.py`](../../examples/18_pipeline_paralleli
 - **Need more memory savings?** → Try [FSDP](./fsdp-fully-sharded.md)
 - **Simple parallelism?** → Start with [Data Parallelism](./data-parallelism.md)
 - **Flexible sharding?** → Learn [SPMD](./spmd-sharding.md)
-- **Best practices?** → Read [Distributed Training Tips](./best-practices.md)

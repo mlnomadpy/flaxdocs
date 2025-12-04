@@ -26,7 +26,7 @@ function HomepageHeader() {
               <Link className={styles.primaryButton} to="/docs/basics/fundamentals/your-first-model">
                 Start Training
               </Link>
-              <Link className={styles.secondaryButton} to="/docs/scale/distributed-training">
+              <Link className={styles.secondaryButton} to="/docs/scale/">
                 Scale to Clusters
               </Link>
             </div>
@@ -77,7 +77,7 @@ function LearningPath() {
       title: 'Scale',
       desc: 'Multi-GPU/TPU training',
       items: ['Data Parallelism', 'Model Parallelism', 'FSDP', 'Pipeline Parallel'],
-      link: '/docs/scale/distributed-training',
+      link: '/docs/scale/',
       color: '#2563eb'
     },
     {

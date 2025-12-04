@@ -118,7 +118,7 @@ Just 20 lines of actual code!
 
 After mastering basic training:
 - [Checkpointing](../../basics/checkpointing.md) - Save and load trained models
-- [Distributed Training](../../scale/distributed-training.md) - Scale to multiple GPUs
+- [Distributed Training](/docs/scale/) - Scale to multiple GPUs
 - [Experiment Tracking](./observability.md) - Monitor your training
 
 ## Complete Examples

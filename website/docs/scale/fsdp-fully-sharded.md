@@ -552,7 +552,7 @@ with profiler.trace("/tmp/jax-trace"):
 
 ## Example: Complete Script
 
-See [`examples/19_fsdp_sharding.py`](../../examples/19_fsdp_sharding.py) for a complete implementation with:
+See `examples/19_fsdp_sharding.py` in the repository for a complete implementation with:
 
 - ✅ FSDP mesh creation
 - ✅ Parameter sharding strategies
@@ -606,4 +606,3 @@ See [`examples/19_fsdp_sharding.py`](../../examples/19_fsdp_sharding.py) for a c
 - **Simpler approach?** → Start with [Data Parallelism](./data-parallelism.md)
 - **Need even more memory?** → Combine with [Pipeline Parallelism](./pipeline-parallelism.md)
 - **Flexible sharding?** → Learn [SPMD](./spmd-sharding.md)
-- **Best practices?** → Read [Optimization Tips](./best-practices.md)

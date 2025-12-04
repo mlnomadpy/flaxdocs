@@ -642,7 +642,7 @@ def generate_text(
 
 You now understand streaming and advanced architectures! Continue learning:
 - [Track experiments with Weights & Biases](../basics/workflows/observability.md)
-- [Scale to distributed training](../scale/distributed-training.md)
+- [Scale to distributed training](../scale/)
 
 ## Reference Code
 

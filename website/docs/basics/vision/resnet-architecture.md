@@ -310,7 +310,7 @@ class BottleneckBlock(nnx.Module):
 
 ## Next Steps
 
-- [Training at Scale](../../scale/distributed-training.md) - Train on multiple GPUs
+- [Training at Scale](../../scale/) - Train on multiple GPUs
 - [Streaming Data](../workflows/streaming-data.md) - Handle large datasets
 
 ## Complete Example

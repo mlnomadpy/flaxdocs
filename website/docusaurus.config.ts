@@ -125,7 +125,7 @@ const config: Config = {
             },
             {
               label: 'Scale',
-              to: '/docs/scale/distributed-training',
+              to: '/docs/scale/',
             },
             {
               label: 'Research',

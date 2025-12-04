@@ -558,7 +558,7 @@ with jax.profiler.trace("/tmp/jax-trace"):
 
 ## Example: Complete Script
 
-See [`examples/17_sharding_spmd.py`](../../examples/17_sharding_spmd.py) for a complete example with:
+See `examples/17_sharding_spmd.py` in the repository for a complete example with:
 
 - ✅ Device mesh creation
 - ✅ Parameter sharding strategies
@@ -570,5 +570,4 @@ See [`examples/17_sharding_spmd.py`](../../examples/17_sharding_spmd.py) for a c
 
 - **Save Memory?** → Try [FSDP for large models](./fsdp-fully-sharded.md)
 - **Sequential Models?** → Learn [Pipeline Parallelism](./pipeline-parallelism.md)
-- **Optimize Performance?** → Read [Best Practices](./best-practices.md)
 - **Simple Approach?** → Start with [Data Parallelism](./data-parallelism.md)
