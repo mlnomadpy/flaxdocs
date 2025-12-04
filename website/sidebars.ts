@@ -82,6 +82,9 @@ const sidebars: SidebarsConfig = {
       items: [
         'research/streaming-and-architectures',
         'research/advanced-techniques',
+        'research/contrastive-learning',
+        'research/knowledge-distillation',
+        'research/meta-learning',
       ],
     },
   ],
