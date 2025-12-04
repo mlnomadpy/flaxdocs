@@ -73,7 +73,11 @@ const sidebars: SidebarsConfig = {
       type: 'category',
       label: '📈 Scale',
       items: [
-        'scale/distributed-training',
+        'scale/index',
+        'scale/data-parallelism',
+        'scale/spmd-sharding',
+        'scale/pipeline-parallelism',
+        'scale/fsdp-fully-sharded',
       ],
     },
     {
