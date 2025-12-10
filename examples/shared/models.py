@@ -54,10 +54,16 @@ class MLP(nnx.Module):
         
         Args:
             x: Input tensor of shape (batch, in_features)
-            train: Whether in training mode (unused for MLP without dropout/batchnorm)
+            train: Whether in training mode (for consistency with other models;
+                  unused in vanilla MLP without dropout/batchnorm)
             
         Returns:
             Output tensor of shape (batch, out_features)
+            
+        Note:
+            The `train` parameter is included for API consistency with CNN and
+            Transformer models that use dropout/batchnorm. In this vanilla MLP
+            implementation without such layers, it has no effect.
         """
         # Forward through hidden layers with activation
         for layer in self.layers:
@@ -73,7 +79,12 @@ class MLP(nnx.Module):
 
 
 class CNN(nnx.Module):
-    """Simple CNN for image classification (MNIST/CIFAR style)."""
+    """Simple CNN for image classification (MNIST/CIFAR style).
+    
+    Note: This CNN is designed for 28x28 images (MNIST-like). For other
+    input sizes, consider creating a custom CNN or use the more flexible
+    ResNet architecture.
+    """
     
     def __init__(self, num_classes: int, rngs: nnx.Rngs, input_channels: int = 1):
         """
@@ -81,6 +92,11 @@ class CNN(nnx.Module):
             num_classes: Number of output classes
             rngs: Random number generators
             input_channels: Number of input channels (default: 1 for MNIST)
+            
+        Note:
+            This architecture expects 28x28 input images. After two conv+pool
+            layers (with SAME padding), the spatial dimensions become 7x7,
+            resulting in a flattened size of 64 * 7 * 7 = 3136.
         """
         # Convolutional layers
         self.conv1 = nnx.Conv(input_channels, 32, kernel_size=(3, 3), rngs=rngs)

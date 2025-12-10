@@ -241,14 +241,24 @@ def create_exponential_decay_schedule(
 def clip_gradients(grads: Any, max_norm: float) -> Any:
     """Clip gradients by global norm.
     
+    Note: This is a simplified wrapper. For production use, consider using
+    optax transformations directly in your optimizer chain.
+    
     Args:
         grads: Gradient pytree
         max_norm: Maximum gradient norm
         
     Returns:
         Clipped gradients
+        
+    Example:
+        >>> grads = {'w': jnp.array([1.0, 2.0, 3.0])}
+        >>> clipped = clip_gradients(grads, max_norm=1.0)
     """
-    return optax.clip_by_global_norm(max_norm)(grads, None)[0]
+    # Use optax's clip_by_global_norm which returns (updates, state)
+    # We extract just the updates since this is a stateless operation
+    updates, _ = optax.clip_by_global_norm(max_norm).update(grads, None)
+    return updates
 
 
 # ============================================================================
