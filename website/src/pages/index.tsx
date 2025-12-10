@@ -172,6 +172,110 @@ function QuickStart() {
   );
 }
 
+function Features() {
+  const features = [
+    {
+      title: 'JAX-Native',
+      icon: '⚡',
+      description: 'Built on JAX for automatic differentiation, JIT compilation, and XLA optimization.',
+    },
+    {
+      title: 'Production Ready',
+      icon: '🏭',
+      description: 'Battle-tested patterns used at Google and leading ML research labs.',
+    },
+    {
+      title: 'Scale Effortlessly',
+      icon: '📈',
+      description: 'Single GPU to TPU pods with minimal code changes. Data and model parallelism built-in.',
+    },
+    {
+      title: 'Explicit & Clear',
+      icon: '🎯',
+      description: 'No hidden state. Full control over RNGs, parameters, and training loops.',
+    },
+    {
+      title: 'Research Focused',
+      icon: '🔬',
+      description: 'Flexible architecture for experimenting with new ideas and cutting-edge techniques.',
+    },
+    {
+      title: 'Active Community',
+      icon: '👥',
+      description: 'Join thousands of developers and researchers building with Flax and JAX.',
+    },
+  ];
+
+  return (
+    <section className={styles.features}>
+      <div className="container">
+        <div className={styles.sectionHeader}>
+          <Heading as="h2">Why Choose Flax NNX?</Heading>
+          <p>Modern neural network training with functional programming principles</p>
+        </div>
+        <div className={styles.featureGrid}>
+          {features.map((feature, idx) => (
+            <div key={idx} className={styles.featureCard}>
+              <div className={styles.featureIcon}>{feature.icon}</div>
+              <Heading as="h3" className={styles.featureTitle}>{feature.title}</Heading>
+              <p className={styles.featureDesc}>{feature.description}</p>
+            </div>
+          ))}
+        </div>
+      </div>
+    </section>
+  );
+}
+
+function Stats() {
+  const stats = [
+    { number: '20+', label: 'Ready-to-Run Examples' },
+    { number: '50+', label: 'Documentation Pages' },
+    { number: '5', label: 'Learning Paths' },
+    { number: '100%', label: 'Open Source' },
+  ];
+
+  return (
+    <section className={styles.stats}>
+      <div className="container">
+        <div className={styles.statsGrid}>
+          {stats.map((stat, idx) => (
+            <div key={idx} className={styles.statCard}>
+              <div className={styles.statNumber}>{stat.number}</div>
+              <div className={styles.statLabel}>{stat.label}</div>
+            </div>
+          ))}
+        </div>
+      </div>
+    </section>
+  );
+}
+
+function CallToAction() {
+  return (
+    <section className={styles.cta}>
+      <div className="container">
+        <div className={styles.ctaContent}>
+          <Heading as="h2" className={styles.ctaTitle}>
+            Ready to Start Training?
+          </Heading>
+          <p className={styles.ctaSubtitle}>
+            Join the community of developers and researchers using Flax for neural network training
+          </p>
+          <div className={styles.ctaButtons}>
+            <Link className={styles.primaryButton} to="/docs/basics/fundamentals/your-first-model">
+              Get Started Now
+            </Link>
+            <Link className={styles.secondaryButton} to="https://github.com/mlnomadpy/flaxdocs/tree/main/examples">
+              Browse Examples
+            </Link>
+          </div>
+        </div>
+      </div>
+    </section>
+  );
+}
+
 export default function Home(): ReactNode {
   const {siteConfig} = useDocusaurusContext();
   return (
@@ -179,8 +283,11 @@ export default function Home(): ReactNode {
       title={`${siteConfig.title}`}
       description="Production-grade JAX training recipes from basics to distributed scale">
       <HomepageHeader />
+      <Features />
       <LearningPath />
       <QuickStart />
+      <Stats />
+      <CallToAction />
     </Layout>
   );
 }
