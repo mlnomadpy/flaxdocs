@@ -316,5 +316,9 @@ def create_pipeline(split='train', batch_size=32):
 
 ## Complete Examples
 
-- [`examples/03_data_loading_tfds.py`](https://github.com/mlnomadpy/flaxdocs/tree/master/examples/03_data_loading_tfds.py) - TFDS examples
-- [`examples/04_data_loading_grain.py`](https://github.com/mlnomadpy/flaxdocs/tree/master/examples/04_data_loading_grain.py) - Grain examples
+**Organized modular examples:**
+- [`examples/basics/data_loading_tfds.py`](https://github.com/mlnomadpy/flaxdocs/tree/master/examples/basics/data_loading_tfds.py) - TensorFlow Datasets examples (MNIST, CIFAR-10, ImageNet)
+- [`examples/basics/data_loading_grain.py`](https://github.com/mlnomadpy/flaxdocs/tree/master/examples/basics/data_loading_grain.py) - Pure Python Grain data loading
+
+**Additional examples:**
+- [`examples/training/vision_mnist.py`](https://github.com/mlnomadpy/flaxdocs/tree/master/examples/training/vision_mnist.py) - Complete training with TFDS data loading

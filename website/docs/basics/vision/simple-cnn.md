@@ -258,6 +258,8 @@ images = (images / 255.0) * 2 - 1  # Scale to [-1, 1]
 - [Data Loading](../workflows/data-loading-simple.md) - Efficient data pipelines
 - [Streaming Data](../workflows/streaming-data.md) - Handle large datasets
 
-## Complete Example
+## Complete Examples
 
-See the full runnable code in [`examples/05_vision_training_mnist.py`](https://github.com/mlnomadpy/flaxdocs/tree/master/examples/05_vision_training_mnist.py).
+**Modular training with shared components:**
+- [`examples/training/vision_mnist.py`](https://github.com/mlnomadpy/flaxdocs/tree/master/examples/training/vision_mnist.py) - Complete MNIST training using `shared.models.CNN` and `shared.training_utils`
+- [`examples/shared/models.py`](https://github.com/mlnomadpy/flaxdocs/tree/master/examples/shared/models.py) - Reusable CNN architecture with batch normalization and dropout

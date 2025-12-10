@@ -722,6 +722,11 @@ SUMMARY:
 - Explore self-distillation
 - Combine with pruning and quantization
 
+## Complete Example
+
+**Knowledge distillation implementation:**
+- [`examples/advanced/knowledge_distillation.py`](https://github.com/mlnomadpy/flaxdocs/tree/master/examples/advanced/knowledge_distillation.py) - Complete teacher-student distillation on MNIST with temperature tuning
+
 ## References
 
 - **Original Paper**: [Distilling the Knowledge in a Neural Network](https://arxiv.org/abs/1503.02531) (Hinton et al., NIPS 2014)

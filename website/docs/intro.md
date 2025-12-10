@@ -102,7 +102,15 @@ Advanced patterns for cutting-edge research:
 
 ### If you need specific examples:
 - See the [`/examples`](https://github.com/mlnomadpy/flaxdocs/tree/master/examples) directory
-- 12 complete, runnable scripts covering all topics
+- **20 complete, organized examples** covering all topics:
+  - **Basics** (5 examples): Model definition, checkpointing, data loading
+  - **Training** (2 examples): Vision and language model training
+  - **Export** (1 example): Model deployment formats
+  - **Integrations** (3 examples): HuggingFace, W&B, streaming data
+  - **Advanced** (5 examples): BERT, GPT, SimCLR, MAML, distillation
+  - **Distributed** (4 examples): Multi-device training strategies
+- All examples use **shared, tested components** for consistency
+- View the complete index: `python examples/index.py`
 
 ## What Makes This Different?
 
@@ -118,9 +126,16 @@ Advanced patterns for cutting-edge research:
 
 All documentation includes conceptual explanations with code snippets. For complete runnable examples, see the [`/examples`](https://github.com/mlnomadpy/flaxdocs/tree/master/examples) directory in the repository:
 
-- 12 self-contained Python scripts covering all topics
+- **20 organized examples** in modular structure:
+  - `basics/` - Model definition, checkpointing, data loading
+  - `training/` - End-to-end vision and language model training
+  - `export/` - Model deployment (SafeTensors, ONNX)
+  - `integrations/` - HuggingFace Hub, W&B, streaming datasets
+  - `advanced/` - BERT, GPT, SimCLR, MAML, knowledge distillation
+  - `distributed/` - pmap, SPMD, pipeline parallelism, FSDP
+- **Shared component library** (`shared/models.py`, `shared/training_utils.py`) with tested, reusable code
 - Each file is extensively commented for learning
-- Use as reference when implementing your own training pipelines
+- Run `python examples/index.py` to see all available examples with descriptions
 
 ## Getting Help
 

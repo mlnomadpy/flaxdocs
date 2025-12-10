@@ -480,6 +480,6 @@ You now understand state management and checkpointing! Learn:
 
 ## Reference Code
 
-Complete examples:
-- [`02_save_load_model.py`](https://github.com/mlnomadpy/flaxdocs/tree/master/examples/02_save_load_model.py) - All checkpointing patterns
-- [`05_vision_training_mnist.py`](https://github.com/mlnomadpy/flaxdocs/tree/master/examples/05_vision_training_mnist.py) - Training with checkpoints
+**Complete modular examples:**
+- [`examples/basics/save_load_model.py`](https://github.com/mlnomadpy/flaxdocs/tree/master/examples/basics/save_load_model.py) - All checkpointing patterns (basic, manager, best model tracking)
+- [`examples/training/vision_mnist.py`](https://github.com/mlnomadpy/flaxdocs/tree/master/examples/training/vision_mnist.py) - Training with checkpoints using shared components

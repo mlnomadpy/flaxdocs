@@ -311,6 +311,7 @@ In these cases, download once and train from disk.
 
 ## Complete Examples
 
-- [`examples/09_resnet_streaming_training.py`](https://github.com/mlnomadpy/flaxdocs/tree/master/examples/09_resnet_streaming_training.py) - ResNet with streaming images
-- [`examples/11_bert_fineweb_mteb.py`](https://github.com/mlnomadpy/flaxdocs/tree/master/examples/11_bert_fineweb_mteb.py) - BERT with streaming text
-- [`examples/12_gpt_fineweb_training.py`](https://github.com/mlnomadpy/flaxdocs/tree/master/examples/12_gpt_fineweb_training.py) - GPT with streaming text
+**Organized modular examples:**
+- [`examples/integrations/resnet_streaming.py`](https://github.com/mlnomadpy/flaxdocs/tree/master/examples/integrations/resnet_streaming.py) - ResNet with streaming images from HuggingFace
+- [`examples/advanced/bert_fineweb.py`](https://github.com/mlnomadpy/flaxdocs/tree/master/examples/advanced/bert_fineweb.py) - BERT training with streaming text from FineWeb
+- [`examples/advanced/gpt_training.py`](https://github.com/mlnomadpy/flaxdocs/tree/master/examples/advanced/gpt_training.py) - GPT training with streaming text from FineWeb

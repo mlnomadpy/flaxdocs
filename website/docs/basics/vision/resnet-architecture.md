@@ -313,6 +313,8 @@ class BottleneckBlock(nnx.Module):
 - [Training at Scale](../../scale/) - Train on multiple GPUs
 - [Streaming Data](../workflows/streaming-data.md) - Handle large datasets
 
-## Complete Example
+## Complete Examples
 
-See the full runnable code in [`examples/09_resnet_streaming_training.py`](https://github.com/mlnomadpy/flaxdocs/tree/master/examples/09_resnet_streaming_training.py).
+**Modular example with shared components:**
+- [`examples/integrations/resnet_streaming.py`](https://github.com/mlnomadpy/flaxdocs/tree/master/examples/integrations/resnet_streaming.py) - ResNet training with streaming datasets from HuggingFace
+- [`examples/shared/models.py`](https://github.com/mlnomadpy/flaxdocs/tree/master/examples/shared/models.py) - Reusable ResNetBlock implementation with skip connections

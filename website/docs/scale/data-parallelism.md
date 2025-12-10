@@ -479,15 +479,10 @@ batch = shard_batch(batch, num_devices)  # Shape: (8, 16, 32, 32, 3)
 state = train_step(state, batch)  # Works!
 ```
 
-## Example: Complete Training Script
+## Complete Example
 
-See `examples/16_data_parallel_pmap.py` in the repository for a complete, runnable example demonstrating:
-
-- ✅ Model initialization and replication
-- ✅ Data sharding for pmap
-- ✅ Gradient synchronization with pmean
-- ✅ Training loop with metrics
-- ✅ Evaluation on multiple devices
+**Data parallelism with pmap:**
+- [`examples/distributed/data_parallel_pmap.py`](https://github.com/mlnomadpy/flaxdocs/tree/master/examples/distributed/data_parallel_pmap.py) - Complete training script with model replication, data sharding, gradient synchronization, and multi-device evaluation
 
 ## Next Steps
 

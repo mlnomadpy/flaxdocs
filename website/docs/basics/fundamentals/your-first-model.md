@@ -158,6 +158,11 @@ You now understand the basics of building models in Flax NNX! Next, learn:
 - [Computer Vision Models](../vision/simple-cnn.md) - Build CNNs for image classification
 - [Text Models](../text/simple-transformer.md) - Build transformers for language
 
-## Complete Example
+## Complete Examples
 
-See the full runnable code in [`examples/01_basic_model_definition.py`](https://github.com/mlnomadpy/flaxdocs/tree/master/examples/01_basic_model_definition.py).
+**Modular examples with shared components:**
+- [`examples/basics/model_definition.py`](https://github.com/mlnomadpy/flaxdocs/tree/master/examples/basics/model_definition.py) - Uses shared MLP and CNN components
+- [`examples/shared/models.py`](https://github.com/mlnomadpy/flaxdocs/tree/master/examples/shared/models.py) - Reusable model architectures (MLP, CNN, Transformer, ResNet)
+
+**Original self-contained version:**
+- [`examples/basics/01_basic_model_definition.py`](https://github.com/mlnomadpy/flaxdocs/tree/master/examples/basics/01_basic_model_definition.py) - Complete standalone example

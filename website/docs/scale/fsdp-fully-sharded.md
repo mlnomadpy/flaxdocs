@@ -601,6 +601,11 @@ See `examples/19_fsdp_sharding.py` in the repository for a complete implementati
 # - Result: Can train 8× larger model ✓
 ```
 
+## Complete Example
+
+**FSDP (Fully Sharded Data Parallel) implementation:**
+- [`examples/distributed/fsdp_sharding.py`](https://github.com/mlnomadpy/flaxdocs/tree/master/examples/distributed/fsdp_sharding.py) - Complete FSDP training with parameter sharding, all-gather/reduce-scatter, and memory optimization for large models
+
 ## Next Steps
 
 - **Simpler approach?** → Start with [Data Parallelism](./data-parallelism.md)
