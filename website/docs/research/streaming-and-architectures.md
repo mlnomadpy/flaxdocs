@@ -646,7 +646,7 @@ You now understand streaming and advanced architectures! Continue learning:
 
 ## Reference Code
 
-Complete implementations:
-- [`09_resnet_streaming_training.py`](https://github.com/mlnomadpy/flaxdocs/tree/master/examples/09_resnet_streaming_training.py) - ResNet with streaming
-- [`11_bert_fineweb_mteb.py`](https://github.com/mlnomadpy/flaxdocs/tree/master/examples/11_bert_fineweb_mteb.py) - BERT pretraining
-- [`12_gpt_fineweb_training.py`](https://github.com/mlnomadpy/flaxdocs/tree/master/examples/12_gpt_fineweb_training.py) - GPT training from scratch
+**Complete modular implementations:**
+- [`examples/integrations/resnet_streaming.py`](https://github.com/mlnomadpy/flaxdocs/tree/master/examples/integrations/resnet_streaming.py) - ResNet training with streaming datasets from HuggingFace
+- [`examples/advanced/bert_fineweb.py`](https://github.com/mlnomadpy/flaxdocs/tree/master/examples/advanced/bert_fineweb.py) - BERT pretraining on FineWeb with masked language modeling
+- [`examples/advanced/gpt_training.py`](https://github.com/mlnomadpy/flaxdocs/tree/master/examples/advanced/gpt_training.py) - GPT training from scratch on FineWeb with text generation

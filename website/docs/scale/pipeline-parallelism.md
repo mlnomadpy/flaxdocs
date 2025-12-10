@@ -477,6 +477,11 @@ See `examples/18_pipeline_parallelism.py` in the repository for a complete imple
 - ✅ Pipeline schedule
 - ✅ Gradient accumulation
 
+## Complete Example
+
+**Pipeline parallelism implementation:**
+- [`examples/distributed/pipeline_parallel.py`](https://github.com/mlnomadpy/flaxdocs/tree/master/examples/distributed/pipeline_parallel.py) - Complete pipeline parallelism with stage splitting, microbatching, and bubble minimization
+
 ## Comparison with Alternatives
 
 | Strategy | Memory/Device | Communication | Efficiency | Complexity |

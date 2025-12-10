@@ -556,15 +556,10 @@ with jax.profiler.trace("/tmp/jax-trace"):
 | **Mixed strategies** | ❌ | ✅ |
 | **Modern JAX** | Legacy | ✅ Recommended |
 
-## Example: Complete Script
+## Complete Example
 
-See `examples/17_sharding_spmd.py` in the repository for a complete example with:
-
-- ✅ Device mesh creation
-- ✅ Parameter sharding strategies
-- ✅ Automatic sharding propagation
-- ✅ Training loop with sharding
-- ✅ Memory analysis
+**SPMD sharding implementation:**
+- [`examples/distributed/sharding_spmd.py`](https://github.com/mlnomadpy/flaxdocs/tree/master/examples/distributed/sharding_spmd.py) - Complete example with device mesh creation, parameter sharding strategies, automatic propagation, and memory analysis
 
 ## Next Steps
 

@@ -447,6 +447,12 @@ positions = jnp.minimum(jnp.arange(seq_len), model.max_seq_len - 1)
 
 Now that you understand transformers, you can explore more advanced NLP topics or apply these concepts to real projects.
 
-## Complete Example
+## Complete Examples
 
-See the full runnable code in [`examples/06_language_model_training.py`](https://github.com/mlnomadpy/flaxdocs/tree/master/examples/06_language_model_training.py) and [`examples/12_gpt_fineweb_training.py`](https://github.com/mlnomadpy/flaxdocs/tree/master/examples/12_gpt_fineweb_training.py).
+**Modular examples with shared components:**
+- [`examples/training/language_model.py`](https://github.com/mlnomadpy/flaxdocs/tree/master/examples/training/language_model.py) - Character-level transformer language model with causal attention
+- [`examples/shared/models.py`](https://github.com/mlnomadpy/flaxdocs/tree/master/examples/shared/models.py) - Reusable MultiHeadAttention and TransformerBlock components
+
+**Advanced transformer examples:**
+- [`examples/advanced/gpt_training.py`](https://github.com/mlnomadpy/flaxdocs/tree/master/examples/advanced/gpt_training.py) - GPT from scratch on FineWeb with text generation
+- [`examples/advanced/bert_fineweb.py`](https://github.com/mlnomadpy/flaxdocs/tree/master/examples/advanced/bert_fineweb.py) - BERT training with masked language modeling

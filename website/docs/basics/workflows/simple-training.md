@@ -331,6 +331,11 @@ for epoch in range(10):
 - [Checkpointing](../../basics/checkpointing.md) - Save your trained models
 - [Experiment Tracking](./observability.md) - Monitor training progress
 
-## Complete Example
+## Complete Examples
 
-See the full runnable code in [`examples/05_vision_training_mnist.py`](https://github.com/mlnomadpy/flaxdocs/tree/master/examples/05_vision_training_mnist.py).
+**Modular training with shared components:**
+- [`examples/training/vision_mnist.py`](https://github.com/mlnomadpy/flaxdocs/tree/master/examples/training/vision_mnist.py) - Complete MNIST training using `shared.models.CNN` and `shared.training_utils`
+- [`examples/shared/training_utils.py`](https://github.com/mlnomadpy/flaxdocs/tree/master/examples/shared/training_utils.py) - Reusable JIT-compiled train/eval steps, loss functions, metrics
+
+**Original standalone version:**
+- [`examples/basics/05_vision_training_mnist.py`](https://github.com/mlnomadpy/flaxdocs/tree/master/examples/05_vision_training_mnist.py) - Complete self-contained example

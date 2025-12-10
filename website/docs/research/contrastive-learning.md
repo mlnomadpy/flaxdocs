@@ -467,6 +467,11 @@ Test Accuracy: 0.9123
 - Apply to your own datasets
 - Explore variants like MoCo or BYOL
 
+## Complete Example
+
+**SimCLR contrastive learning implementation:**
+- [`examples/advanced/simclr_contrastive.py`](https://github.com/mlnomadpy/flaxdocs/tree/master/examples/advanced/simclr_contrastive.py) - Complete SimCLR training with augmentation pipeline and NT-Xent loss
+
 ## References
 
 - **SimCLR Paper**: [A Simple Framework for Contrastive Learning of Visual Representations](https://arxiv.org/abs/2002.05709) (Chen et al., ICML 2020)

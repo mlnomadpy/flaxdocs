@@ -647,5 +647,5 @@ You now know how to track experiments professionally! Learn more:
 
 ## Reference Code
 
-Complete example:
-- [`10_wandb_observability.py`](https://github.com/mlnomadpy/flaxdocs/tree/master/examples/10_wandb_observability.py) - Full W&B integration
+**Complete modular example:**
+- [`examples/integrations/wandb.py`](https://github.com/mlnomadpy/flaxdocs/tree/master/examples/integrations/wandb.py) - Full W&B integration with comprehensive logging, sweeps, and visualizations

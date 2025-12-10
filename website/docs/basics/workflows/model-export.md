@@ -618,6 +618,6 @@ You can now export models for deployment! Learn:
 
 ## Reference Code
 
-Complete examples:
-- [`07_export_models.py`](https://github.com/mlnomadpy/flaxdocs/tree/master/examples/07_export_models.py) - SafeTensors and ONNX export
-- [`08_huggingface_integration.py`](https://github.com/mlnomadpy/flaxdocs/tree/master/examples/08_huggingface_integration.py) - HuggingFace Hub integration
+**Complete modular examples:**
+- [`examples/export/model_formats.py`](https://github.com/mlnomadpy/flaxdocs/tree/master/examples/export/model_formats.py) - SafeTensors and ONNX export patterns
+- [`examples/integrations/huggingface.py`](https://github.com/mlnomadpy/flaxdocs/tree/master/examples/integrations/huggingface.py) - HuggingFace Hub model upload and sharing

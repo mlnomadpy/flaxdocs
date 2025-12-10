@@ -598,6 +598,11 @@ The dramatic improvement after just one step demonstrates MAML's power!
 - Experiment with different architectures
 - Explore task-conditional models
 
+## Complete Example
+
+**Modular MAML implementation:**
+- [`examples/advanced/maml_metalearning.py`](https://github.com/mlnomadpy/flaxdocs/tree/master/examples/advanced/maml_metalearning.py) - Complete MAML implementation for few-shot learning with sine wave regression
+
 ## References
 
 - **MAML Paper**: [Model-Agnostic Meta-Learning for Fast Adaptation of Deep Networks](https://arxiv.org/abs/1703.03400) (Finn et al., ICML 2017)
