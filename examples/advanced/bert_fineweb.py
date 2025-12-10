@@ -3,7 +3,7 @@ Flax NNX: Train BERT on FineWeb and Evaluate on MTEB
 =====================================================
 Train BERT model from scratch on FineWeb dataset (streaming from HF).
 Then evaluate on MTEB (Massive Text Embedding Benchmark).
-Run: pip install datasets transformers sentence-transformers && python 11_bert_fineweb_mteb.py
+Run: pip install datasets transformers sentence-transformers && python advanced/bert_fineweb.py
 """
 
 import jax

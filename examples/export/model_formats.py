@@ -2,7 +2,7 @@
 Flax NNX: Export Model to SafeTensors and ONNX
 ===============================================
 This guide shows how to export Flax NNX models to different formats.
-Run: pip install safetensors onnx && python 07_export_models.py
+Run: pip install safetensors onnx && python export/model_formats.py
 """
 
 import jax

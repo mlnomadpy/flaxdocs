@@ -3,7 +3,7 @@ Flax NNX: Train GPT from Scratch on FineWeb
 ============================================
 Complete GPT training pipeline with streaming data from HuggingFace FineWeb.
 Includes full model architecture, training loop, and text generation.
-Run: pip install datasets transformers tiktoken && python 12_gpt_fineweb_training.py
+Run: pip install datasets transformers tiktoken && python advanced/gpt_training.py
 """
 
 import jax

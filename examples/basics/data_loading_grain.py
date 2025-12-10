@@ -2,7 +2,7 @@
 Flax NNX: Data Loading with Grain
 ==================================
 This guide shows how to use Grain for efficient data loading.
-Run: pip install grain-nightly && python 04_data_loading_grain.py
+Run: pip install grain-nightly && python basics/data_loading_grain.py
 """
 
 import jax

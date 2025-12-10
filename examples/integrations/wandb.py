@@ -2,7 +2,7 @@
 Flax NNX: Observability with Weights & Biases (W&B)
 ====================================================
 Track experiments, log metrics, and visualize training with W&B.
-Run: pip install wandb && python 10_wandb_observability.py
+Run: pip install wandb && python integrations/wandb.py
 """
 
 import jax

@@ -2,7 +2,7 @@
 Flax NNX: ResNet Training with Streaming Data from HuggingFace
 ===============================================================
 Train ResNet on ImageNet-like data streamed from HuggingFace.
-Run: pip install datasets pillow && python 09_resnet_streaming_training.py
+Run: pip install datasets pillow && python integrations/resnet_streaming.py
 """
 
 import jax

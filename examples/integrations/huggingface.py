@@ -2,7 +2,7 @@
 Flax NNX: HuggingFace Hub Integration
 ======================================
 Upload models to HuggingFace Hub and stream data for training.
-Run: pip install huggingface_hub datasets && python 08_huggingface_integration.py
+Run: pip install huggingface_hub datasets && python integrations/huggingface.py
 """
 
 import jax
