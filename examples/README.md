@@ -6,11 +6,11 @@ Comprehensive, runnable Python examples for training deep learning models with F
 
 ## ✅ Migration Complete!
 
-All 19 original examples have been successfully organized into a modular structure:
+All 19 examples have been successfully organized into a modular structure:
 - **20 examples** organized into 6 categories
 - **Shared component library** with tested models and utilities
 - **27 passing tests** (23 unit + 4 integration)
-- **Original examples preserved** for backward compatibility
+- **Clean, organized directory structure** with no duplicates
 
 ## 🎯 What's New in This Refactored Version
 
@@ -90,11 +90,10 @@ examples/
 │   └── fsdp_sharding.py
 │
 ├── index.py                         # 📋 Complete example index
-├── 01-19_*.py                       # 📦 Original examples (preserved)
 └── requirements.txt                 # Updated with pytest
 ```
 
-**Total: 20 organized examples + 19 originals preserved**
+**Total: 20 organized examples**
 
 ## 🚀 Quick Start
 
