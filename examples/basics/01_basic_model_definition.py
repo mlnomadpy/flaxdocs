@@ -2,7 +2,7 @@
 Flax NNX: Basic Model Definition
 =================================
 This guide shows how to define models using Flax NNX.
-Run: python 01_basic_model_definition.py
+Run: python basics/01_basic_model_definition.py
 """
 
 import jax
@@ -10,6 +10,13 @@ import jax.numpy as jnp
 from flax import nnx
 import numpy as np
 
+
+
+import sys
+from pathlib import Path
+
+# Add parent directory to path for shared imports
+sys.path.insert(0, str(Path(__file__).parent.parent))
 
 # ============================================================================
 # 1. SIMPLE LINEAR MODEL
