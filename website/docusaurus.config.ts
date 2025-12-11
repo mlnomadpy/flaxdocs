@@ -55,6 +55,10 @@ const config: Config = {
           rehypePlugins: [rehypeKatex],
           editUrl:
             'https://github.com/mlnomadpy/flaxdocs/tree/main/website/',
+          showLastUpdateAuthor: true,
+          showLastUpdateTime: true,
+          breadcrumbs: true,
+          docItemComponent: '@theme/DocItem',
         },
         blog: {
           showReadingTime: true,
@@ -81,27 +85,74 @@ const config: Config = {
   themeConfig: {
     // Replace with your project's social card
     image: 'img/docusaurus-social-card.jpg',
+    // Announcement bar for important updates
+    announcementBar: {
+      id: 'new_examples',
+      content:
+        '⭐️ Check out our <a target="_blank" href="https://github.com/mlnomadpy/flaxdocs/tree/main/examples">20+ runnable examples</a> for Flax NNX training!',
+      backgroundColor: '#2563eb',
+      textColor: '#ffffff',
+      isCloseable: true,
+    },
     colorMode: {
       respectPrefersColorScheme: true,
+      defaultMode: 'light',
+      disableSwitch: false,
+    },
+    // Table of contents settings
+    tableOfContents: {
+      minHeadingLevel: 2,
+      maxHeadingLevel: 4,
     },
     navbar: {
       title: 'Flax Training Docs',
       logo: {
         alt: 'Flax Logo',
         src: 'img/logo.svg',
+        width: 32,
+        height: 32,
       },
+      hideOnScroll: false,
       items: [
         {
           type: 'docSidebar',
           sidebarId: 'tutorialSidebar',
           position: 'left',
-          label: 'Docs',
+          label: '📚 Documentation',
         },
-        {to: '/blog', label: 'Blog', position: 'left'},
+        {
+          type: 'dropdown',
+          label: '🚀 Quick Links',
+          position: 'left',
+          items: [
+            {
+              label: 'Getting Started',
+              to: '/docs/basics/fundamentals/your-first-model',
+            },
+            {
+              label: 'Examples Repository',
+              href: 'https://github.com/mlnomadpy/flaxdocs/tree/main/examples',
+            },
+            {
+              label: 'Training Best Practices',
+              to: '/docs/basics/training-best-practices',
+            },
+            {
+              label: 'Distributed Training',
+              to: '/docs/scale/',
+            },
+          ],
+        },
+        {to: '/blog', label: '📝 Blog', position: 'left'},
+        {
+          type: 'search',
+          position: 'right',
+        },
         {
           href: 'https://github.com/mlnomadpy/flaxdocs',
-          label: 'GitHub',
           position: 'right',
+          className: 'header-github-link',
+          'aria-label': 'GitHub repository',
         },
       ],
     },
@@ -109,7 +160,7 @@ const config: Config = {
       style: 'dark',
       links: [
         {
-          title: 'Docs',
+          title: 'Documentation',
           items: [
             {
               label: 'Getting Started',
@@ -124,11 +175,11 @@ const config: Config = {
               to: '/docs/basics/workflows',
             },
             {
-              label: 'Scale',
+              label: 'Scale to Production',
               to: '/docs/scale/',
             },
             {
-              label: 'Research',
+              label: 'Research Techniques',
               to: '/docs/research/streaming-and-architectures',
             },
           ],
@@ -137,35 +188,84 @@ const config: Config = {
           title: 'Community',
           items: [
             {
-              label: 'GitHub',
+              label: 'GitHub Discussions',
+              href: 'https://github.com/mlnomadpy/flaxdocs/discussions',
+            },
+            {
+              label: 'Flax GitHub',
               href: 'https://github.com/google/flax',
             },
             {
               label: 'Flax Official Docs',
               href: 'https://flax.readthedocs.io/',
             },
+            {
+              label: 'JAX Documentation',
+              href: 'https://jax.readthedocs.io/',
+            },
           ],
         },
         {
-          title: 'More',
+          title: 'Resources',
           items: [
             {
               label: 'Blog',
               to: '/blog',
             },
             {
-              label: 'GitHub Repository',
-              href: 'https://github.com/mlnomadpy/flaxdocs',
+              label: 'Examples Repository',
+              href: 'https://github.com/mlnomadpy/flaxdocs/tree/main/examples',
+            },
+            {
+              label: 'GitHub Issues',
+              href: 'https://github.com/mlnomadpy/flaxdocs/issues',
+            },
+          ],
+        },
+        {
+          title: 'Legal',
+          items: [
+            {
+              label: 'MIT License',
+              href: 'https://github.com/mlnomadpy/flaxdocs/blob/main/LICENSE',
+            },
+            {
+              label: 'Contribute',
+              href: 'https://github.com/mlnomadpy/flaxdocs/blob/main/README.md#-contributing',
             },
           ],
         },
       ],
-      copyright: `Copyright © ${new Date().getFullYear()} Flax Training Docs. Built with Docusaurus.`,
+      logo: {
+        alt: 'Flax Training Docs Logo',
+        src: 'img/logo.svg',
+        width: 160,
+        height: 51,
+      },
+      copyright: `Copyright © ${new Date().getFullYear()} Flax Training Docs. Built with ❤️ using Docusaurus.`,
+    },
+    docs: {
+      sidebar: {
+        hideable: true,
+        autoCollapseCategories: true,
+      },
     },
     prism: {
       theme: prismThemes.github,
       darkTheme: prismThemes.dracula,
-      additionalLanguages: ['python', 'bash', 'json'],
+      additionalLanguages: ['python', 'bash', 'json', 'yaml', 'toml', 'diff'],
+      defaultLanguage: 'python',
+      magicComments: [
+        {
+          className: 'theme-code-block-highlighted-line',
+          line: 'highlight-next-line',
+          block: {start: 'highlight-start', end: 'highlight-end'},
+        },
+        {
+          className: 'code-block-error-line',
+          line: 'error-next-line',
+        },
+      ],
     },
   } satisfies Preset.ThemeConfig,
     stylesheets: [
