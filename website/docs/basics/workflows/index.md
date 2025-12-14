@@ -1,5 +1,8 @@
 ---
 sidebar_position: 0
+title: Training Workflows - Build Production-Ready Training Loops
+description: Master essential training workflows with Flax NNX. Learn to build training loops, load data efficiently, and optimize model training for production.
+keywords: [Flax training loop, data loading, model training, training workflow, neural network training, optimization]
 ---
 
 # Training Workflows

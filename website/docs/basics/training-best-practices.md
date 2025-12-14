@@ -1,5 +1,8 @@
 ---
 sidebar_position: 2
+title: Training Best Practices with Flax
+description: Learn proven strategies for training neural networks with Flax including learning rate scheduling, gradient clipping, and regularization techniques.
+keywords: [Flax training, learning rate scheduling, gradient clipping, regularization, neural network optimization, training tips]
 ---
 
 # Training Best Practices

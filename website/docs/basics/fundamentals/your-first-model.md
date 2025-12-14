@@ -1,5 +1,8 @@
 ---
 sidebar_position: 1
+title: Your First Flax NNX Model - Build a Neural Network
+description: Learn to build your first neural network with Flax NNX. Step-by-step guide to creating modules, understanding state management, and getting started with JAX.
+keywords: [Flax NNX, first model, neural network tutorial, JAX tutorial, Flax modules, getting started]
 ---
 
 # Your First Model
