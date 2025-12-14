@@ -134,7 +134,7 @@ const config: Config = {
       {name: 'og:type', content: 'website'},
       {name: 'og:title', content: 'Flax Training Docs - Neural Network Training with JAX'},
       {name: 'og:description', content: 'Comprehensive guide to training neural networks with Flax NNX and JAX. Learn distributed training, model optimization, and production-ready ML workflows.'},
-      {property: 'og:locale', content: 'en_US'},
+      {name: 'og:locale', content: 'en_US'},
     ],
     // Announcement bar for important updates
     announcementBar: {
