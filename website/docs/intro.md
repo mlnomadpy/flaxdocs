@@ -1,6 +1,10 @@
 ---
 sidebar_position: 1
 slug: /
+title: Learn Flax NNX Training - Neural Networks with JAX
+description: Comprehensive guide to training neural networks with Flax NNX and JAX. Learn distributed training, model optimization, and production-ready ML workflows from basics to advanced.
+keywords: [Flax, JAX, NNX, neural networks, machine learning, deep learning, training, distributed training, TPU, GPU, tutorial, guide]
+image: /img/docusaurus-social-card.jpg
 ---
 
 # Welcome to Learn Flax NNX Training

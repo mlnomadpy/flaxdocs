@@ -37,6 +37,40 @@ const config: Config = {
     },
   },
 
+  headTags: [
+    // Structured data for better search engine understanding
+    {
+      tagName: 'script',
+      attributes: {
+        type: 'application/ld+json',
+      },
+      innerHTML: JSON.stringify({
+        '@context': 'https://schema.org/',
+        '@type': 'WebSite',
+        name: 'Flax Training Docs',
+        description: 'Comprehensive guide to training neural networks with Flax NNX and JAX',
+        url: 'https://mlnomadpy.github.io/flaxdocs/',
+      }),
+    },
+    {
+      tagName: 'script',
+      attributes: {
+        type: 'application/ld+json',
+      },
+      innerHTML: JSON.stringify({
+        '@context': 'https://schema.org/',
+        '@type': 'Organization',
+        name: 'Flax Training Docs',
+        url: 'https://mlnomadpy.github.io/flaxdocs/',
+        logo: 'https://mlnomadpy.github.io/flaxdocs/img/logo.svg',
+        description: 'Educational resource for learning Flax NNX and JAX neural network training',
+        sameAs: [
+          'https://github.com/mlnomadpy/flaxdocs',
+        ],
+      }),
+    },
+  ],
+
   // Even if you don't use internationalization, you can use this field to set
   // useful metadata like html lang. For example, if your site is Chinese, you
   // may want to replace "en" with "zh-Hans".
@@ -85,6 +119,18 @@ const config: Config = {
   themeConfig: {
     // Replace with your project's social card
     image: 'img/docusaurus-social-card.jpg',
+    // Global metadata for SEO
+    metadata: [
+      {name: 'keywords', content: 'Flax, JAX, neural networks, machine learning, deep learning, NNX, training, distributed training, TPU, GPU, PyTorch alternative, TensorFlow alternative'},
+      {name: 'description', content: 'Comprehensive guide to training neural networks with Flax NNX and JAX. Learn distributed training, model optimization, and production-ready ML workflows.'},
+      {name: 'twitter:card', content: 'summary_large_image'},
+      {name: 'twitter:title', content: 'Flax Training Docs - Master Neural Network Training with JAX'},
+      {name: 'twitter:description', content: 'Learn Flax NNX and JAX for neural network training. From basics to distributed training at scale.'},
+      {name: 'og:type', content: 'website'},
+      {name: 'og:title', content: 'Flax Training Docs - Neural Network Training with JAX'},
+      {name: 'og:description', content: 'Comprehensive guide to training neural networks with Flax NNX and JAX. Learn distributed training, model optimization, and production-ready ML workflows.'},
+      {name: 'og:locale', content: 'en_US'},
+    ],
     // Announcement bar for important updates
     announcementBar: {
       id: 'new_examples',

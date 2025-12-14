@@ -3,6 +3,8 @@ slug: welcome
 title: Welcome
 authors: [slorber, yangshun]
 tags: [facebook, hello, docusaurus]
+description: Introduction to the Docusaurus blogging features and how to use them effectively for documentation sites.
+keywords: [Docusaurus, blogging, documentation, technical writing]
 ---
 
 [Docusaurus blogging features](https://docusaurus.io/docs/blog) are powered by the [blog plugin](https://docusaurus.io/docs/api/plugins/@docusaurus/plugin-content-blog).

@@ -1,5 +1,8 @@
 ---
 sidebar_position: 2
+title: Data Loading for Neural Networks - Simple Approaches
+description: Learn to load and prepare data for neural network training with Flax. Master data loading strategies from simple to efficient streaming approaches.
+keywords: [data loading, training data, batch loading, data pipeline, neural network data, dataset preparation, data preprocessing]
 ---
 
 # Loading Data Simply

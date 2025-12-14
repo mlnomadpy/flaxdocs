@@ -1,5 +1,8 @@
 ---
 sidebar_position: 1
+title: Image Classification with CNNs - Convolutional Neural Networks
+description: Build convolutional neural networks (CNNs) for computer vision with Flax NNX. Learn convolutions, pooling, and architectures for image classification.
+keywords: [CNN, convolutional neural network, image classification, computer vision, Flax CNN, image recognition, deep learning]
 ---
 
 # Image Classification with CNNs

@@ -1,5 +1,8 @@
 ---
 sidebar_position: 1
+title: Text Generation with Transformers - Build GPT-style Models
+description: Learn to build transformer models for text generation with Flax NNX. Master self-attention, positional encoding, and GPT-style architectures for NLP.
+keywords: [transformer, GPT, text generation, NLP, self-attention, language model, Flax transformer, natural language processing]
 ---
 
 # Text Generation with Transformers

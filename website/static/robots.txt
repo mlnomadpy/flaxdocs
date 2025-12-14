@@ -1,0 +1,6 @@
+# Allow all search engines to index all content
+User-agent: *
+Allow: /
+
+# Sitemap location
+Sitemap: https://mlnomadpy.github.io/flaxdocs/sitemap.xml

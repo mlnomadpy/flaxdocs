@@ -1,5 +1,8 @@
 ---
 sidebar_position: 4
+title: State Management and Checkpointing - Save and Load Models
+description: Learn Flax NNX state management and checkpointing with Orbax. Master saving and loading model checkpoints for training and deployment.
+keywords: [Flax checkpointing, model saving, Orbax, state management, model persistence, checkpoint loading, training resume]
 ---
 
 # State Management and Checkpointing

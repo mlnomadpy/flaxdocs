@@ -1,5 +1,8 @@
 ---
 sidebar_position: 0
+title: Distributed Training with Flax - Scale Across GPUs and TPUs
+description: Learn distributed training with Flax NNX and JAX. Master data parallelism, model parallelism, and sharding strategies for training at scale across multiple devices.
+keywords: [Flax distributed training, JAX parallelism, multi-GPU training, TPU training, data parallelism, model parallelism, sharding]
 ---
 
 # Distributed Training Overview
