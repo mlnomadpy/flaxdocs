@@ -50,11 +50,6 @@ const config: Config = {
         name: 'Flax Training Docs',
         description: 'Comprehensive guide to training neural networks with Flax NNX and JAX',
         url: 'https://mlnomadpy.github.io/flaxdocs/',
-        potentialAction: {
-          '@type': 'SearchAction',
-          target: 'https://mlnomadpy.github.io/flaxdocs/?q={search_term_string}',
-          'query-input': 'required name=search_term_string',
-        },
       }),
     },
     {
