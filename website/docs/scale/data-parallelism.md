@@ -1,5 +1,8 @@
 ---
 sidebar_position: 1
+title: Data Parallelism with JAX pmap - Multi-GPU Training
+description: Scale your Flax NNX training across multiple GPUs and TPUs using JAX pmap. Learn data parallelism strategies for distributed neural network training.
+keywords: [data parallelism, pmap, multi-GPU training, distributed training, JAX parallelism, Flax distributed, GPU scaling]
 ---
 
 # Data Parallelism with pmap

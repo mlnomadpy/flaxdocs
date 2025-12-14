@@ -1,5 +1,8 @@
 ---
 sidebar_position: 1
+title: Your First Training Loop with Flax NNX
+description: Learn to write a complete neural network training loop from scratch with Flax NNX. Step-by-step guide covering gradient computation, parameter updates, and validation.
+keywords: [Flax training loop, neural network training, gradient descent, parameter updates, training from scratch, Flax NNX tutorial]
 ---
 
 # Your First Training Loop
