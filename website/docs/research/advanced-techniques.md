@@ -16,4 +16,4 @@ This section covers advanced topics and implementations for research:
 - **[Adversarial Training](adversarial-training.md)**: Robust training against adversarial examples using methods like FGSM.
 - **[Curriculum Learning](curriculum-learning.md)**: Strategies to gradually increase task difficulty during training.
 - **[Experiment Reproducibility](experiment-reproducibility.md)**: Best practices and utilities for ensuring reproducible research experiments.
-- **[Streaming and Architectures](streaming-and-architectures.md)**: Train on datasets larger than memory and build advanced architectures like ResNet, BERT, and GPT.
+
