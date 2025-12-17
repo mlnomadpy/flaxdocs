@@ -226,7 +226,7 @@ const config: Config = {
             },
             {
               label: 'Research Techniques',
-              to: '/docs/research/streaming-and-architectures',
+              to: '/docs/research/advanced-techniques',
             },
           ],
         },

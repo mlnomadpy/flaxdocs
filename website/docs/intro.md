@@ -91,7 +91,7 @@ Advanced patterns for cutting-edge research:
 - **Observability**: Track experiments with W&B
 - **Advanced Architectures**: Building ResNets, Transformers, BERT, and GPT from scratch
 
-[Explore Research Topics →](/docs/research/streaming-and-architectures)
+[Explore Research Topics →](/docs/research/advanced-techniques)
 
 ## How to Use This Documentation
 

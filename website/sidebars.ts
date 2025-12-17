@@ -84,7 +84,6 @@ const sidebars: SidebarsConfig = {
       type: 'category',
       label: '🔬 Research',
       items: [
-        'research/streaming-and-architectures',
         'research/advanced-techniques',
         'research/contrastive-learning',
         'research/knowledge-distillation',
