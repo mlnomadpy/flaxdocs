@@ -14,6 +14,13 @@ $$ \text{Attn}(Q, K, V) = \text{softmax}\left(\frac{QK^T}{\sqrt{d}}\right)V $$
 ### 1. Projections
 
 We split the hidden size (768) into 12 heads of size 64.
+Ideally, we learn unique linear transformations for each head:
+
+$$
+Q_i = X W^Q_i, \quad K_i = X W^K_i, \quad V_i = X W^V_i
+$$
+
+Where $W \in \mathbb{R}^{d_{model} \times d_{k}}$. In code, we project everything at once and `reshape` to split.
 
 ```python
 from flax import linen as nnx
@@ -49,6 +56,11 @@ Transposing $(B, L, \text{Heads}, \text{Dim}) \to (B, \text{Heads}, L, \text{Dim
 ### 3. Scores & Softmax
 
 We calculate similarity ($Q \cdot K^T$) and scale by $\sqrt{d}$ to prevent vanishing gradients in softmax.
+We then apply the standard softmax function to get probabilities that sum to 1:
+
+$$
+\text{softmax}(x_i) = \frac{e^{x_i}}{\sum_j e^{x_j}}
+$$
 
 ```python
         # Scaled Dot Product
@@ -125,6 +137,11 @@ iterator = iter(train_loader)
 ### 6. The Masked Loss
 
 Standard Cross Entropy averages *all* tokens. We must filter for only the masked ones (where `label != -100`).
+Mathematically, for the set of masked indices $\mathcal{M}$:
+
+$$
+\mathcal{L}_{MLM} = - \frac{1}{|\mathcal{M}|} \sum_{i \in \mathcal{M}} \log P(x_i | x_{\setminus \mathcal{M}})
+$$
 
 ```python
 import optax
@@ -192,3 +209,15 @@ for step in range(100):
     except StopIteration:
         break
 ```
+
+## Limitations & Evolution
+
+BERT was a watershed moment, but scaling revealed its cracks:
+
+1.  **The Quadratic Bottleneck**: Self-Attention is $O(N^2)$. Doubling sequence length ($512 \to 1024$) quadruples memory usage.
+    *   *Evolution*: **FlashAttention** optimizes GPU IO to make this practically faster, while linear attention variants try to break the $O(N^2)$ theoretical limit.
+2.  **Training Inefficiency**: BERT learns from only 15% of tokens per batch (the masked ones). The other 85% is just "context".
+    *   *Evolution*: **ELECTRA** trains on *all* tokens by replacing `[MASK]` with a generator network (Discriminator setup), learning much faster.
+3.  **Generation Capability**: BERT is an "Encoder". It cannot easily generate text like a chatbot.
+    *   *Evolution*: **T5 (Encoder-Decoder)** and **GPT (Decoder-only)** became the standard for generative tasks.
+

@@ -225,3 +225,15 @@ for step in range(100):
     if step % 10 == 0:
         print(f"Step {step} | Loss: {loss:.4f}")
 ```
+
+## Limitations & Evolution
+
+While ResNet remains a strong baseline, it faces modern challenges:
+
+1.  **Limited Receptive Field**: Convolution kernels ($3 \times 3$) only see local pixels. To understand the relationship between top-left and bottom-right pixels, the signal must pass through many layers.
+    *   *Evolution*: **Vision Transformers (ViT)** use Self-Attention to give every pixel global awareness immediately.
+2.  **Compute Inefficiency**: Dense convolutions process all pixels equally, even "background" sky.
+    *   *Evolution*: **Sparse Networks** and **EfficientNet** optimize the width/depth/resolution balance.
+3.  **The Saturation of Depth**: Beyond 1000 layers, even residual connections suffer from signal propagation issues.
+    *   *Evolution*: **Normalization-Free Networks (NFNet)** and **Deep Equilibrium Models** explore alternatives to standard depth scaling.
+

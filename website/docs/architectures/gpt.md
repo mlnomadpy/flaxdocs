@@ -169,3 +169,15 @@ def generate(state, prompt, temp=0.7):
     
     return tokenizer.decode(input_ids[0])
 ```
+
+## Limitations & Evolution
+
+GPT models dominate today (ChatGPT, Claude), but they are not perfect:
+
+1.  **Hallucinations**: The model predicts the *most likely* next word, not the *true* one. It can confidently state facts that are statistically probable but factually wrong.
+    *   *Evolution*: **RLHF (Reinforcement Learning from Human Feedback)** aligns the model's objective with human truthfulness and safety, not just probability.
+2.  **Memory Bandwidth (KV Cache)**: During generation, we must store previous Keys/Values to avoid re-computing them. For long contexts (100k+ tokens), this cache becomes massive.
+    *   *Evolution*: **Grouped Query Attention (GQA)** and **Multi-Query Attention (MQA)** share heads to drastically reduce memory footprint.
+3.  **Context Limited**: Standard attention limits context windows.
+    *   *Evolution*: **Ring Attention** and **RoPE (Rotary Positional Embeddings)** allow training on millions of tokens by distributing the sequence itself across GPUs.
+
