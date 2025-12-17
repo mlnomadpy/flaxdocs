@@ -36,7 +36,7 @@ const sidebars: SidebarsConfig = {
             'basics/workflows/index',
             'basics/workflows/simple-training',
             'basics/workflows/data-loading-simple',
-            'basics/workflows/streaming-data',
+            'basics/data-streaming',
             'basics/workflows/observability',
             'basics/workflows/model-export',
           ],
@@ -71,6 +71,15 @@ const sidebars: SidebarsConfig = {
     },
     {
       type: 'category',
+      label: '🏗️ Architectures',
+      items: [
+        'architectures/resnet',
+        'architectures/bert',
+        'architectures/gpt',
+      ],
+    },
+    {
+      type: 'category',
       label: '📈 Scale',
       items: [
         'scale/index',
@@ -85,6 +94,11 @@ const sidebars: SidebarsConfig = {
       label: '🔬 Research',
       items: [
         'research/advanced-techniques',
+        'research/custom-training-loops',
+        'research/neural-architecture-search',
+        'research/adversarial-training',
+        'research/curriculum-learning',
+        'research/experiment-reproducibility',
         'research/contrastive-learning',
         'research/knowledge-distillation',
         'research/meta-learning',
