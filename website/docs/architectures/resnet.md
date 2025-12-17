@@ -21,209 +21,204 @@ $$
 1.  **Forward Pass**: Information flows directly from input to output.
 2.  **Backward Pass**: Gradients flow through the "identity highway" ($+x$) without being diminished.
 
-## 1. The Residual Block
+## 1. Network Components
 
-The building block of ResNet consists of two convolutions. Let's build it step-by-step.
-
-```mermaid
-graph TD
-    Input[Input x] --> Conv1[3x3 Conv]
-    Conv1 --> BN1[BatchNorm]
-    BN1 --> Relu1[ReLU]
-    Relu1 --> Conv2[3x3 Conv]
-    Conv2 --> BN2[BatchNorm]
-    
-    Input -->|Skip Connection| Add((+))
-    BN2 --> Add
-    Add --> Relu2[ReLU]
-    Relu2 --> Output[Output]
-```
-
-### Defining the Layers (Cell 1)
-We need two main convolution layers. If the block is "downsampling" (reducing image size), the first convolution uses `stride=2`.
+We define two types of blocks:
+1.  **BasicBlock**: Standard 2-layer convolution block (Used in ResNet18/34).
+2.  **Bottleneck**: 3-layer block with $1 \times 1$ compress/expand projections (Used in ResNet50/101).
 
 ```python
 from flax import linen as nnx
 import jax.numpy as jnp
+from typing import Optional
 
-class ResidualBlock(nnx.Module):
-    def __init__(self, features: int, stride: int = 1, *, rngs: nnx.Rngs):
-        # Layer 1: Potentially downsamples (stride=2)
-        self.conv1 = nnx.Conv(features, features, kernel_size=(3, 3), 
-                             strides=(stride, stride), padding='SAME', use_bias=False, rngs=rngs)
-        self.bn1 = nnx.BatchNorm(features, rngs=rngs)
-        
-        # Layer 2: Always stride=1
-        self.conv2 = nnx.Conv(features, features, kernel_size=(3, 3), 
-                             padding='SAME', use_bias=False, rngs=rngs)
-        self.bn2 = nnx.BatchNorm(features, rngs=rngs)
-        
-        # Projection for Skip Connection if shapes don't match
-        if stride != 1:
-            self.shortcut = nnx.Sequential(
-                nnx.Conv(features, features, kernel_size=(1, 1), 
-                        strides=(stride, stride), use_bias=False, rngs=rngs),
-                nnx.BatchNorm(features, rngs=rngs)
-            )
-        else:
-            self.shortcut = lambda x, train: x
+class BasicBlock(nnx.Module):
+    expansion = 1
 
-    def __call__(self, x, *, train: bool = True):
-        # Path 1: Learned Features
+    def __init__(self, in_channels: int, out_channels: int, stride: int = 1,
+                 downsample: Optional[nnx.Module] = None, rngs: nnx.Rngs = None):
+        self.conv1 = nnx.Conv(in_channels, out_channels, kernel_size=(3, 3),
+                              strides=stride, padding=1, use_bias=False, rngs=rngs)
+        self.bn1 = nnx.BatchNorm(out_channels, rngs=rngs)
+        self.conv2 = nnx.Conv(out_channels, out_channels, kernel_size=(3, 3),
+                              strides=1, padding=1, use_bias=False, rngs=rngs)
+        self.bn2 = nnx.BatchNorm(out_channels, rngs=rngs)
+        self.downsample = downsample
+
+    def __call__(self, x, training: bool = True):
+        identity = x
         out = self.conv1(x)
-        out = self.bn1(out, use_running_average=not train)
+        out = self.bn1(out, use_running_average=not training)
         out = nnx.relu(out)
-        
         out = self.conv2(out)
-        out = self.bn2(out, use_running_average=not train)
-        
-        # Path 2: Skip Connection
-        if isinstance(self.shortcut, nnx.Sequential):
-             residual = x
-             for layer in self.shortcut.layers:
-                 if isinstance(layer, nnx.BatchNorm):
-                     residual = layer(residual, use_running_average=not train)
-                 else:
-                     residual = layer(residual)
-        else:
-             residual = self.shortcut(x, train=train)
+        out = self.bn2(out, use_running_average=not training)
 
-        # Addition
-        return nnx.relu(out + residual)
+        if self.downsample is not None:
+            identity = self.downsample(x, training=training)
+
+        out += identity
+        out = nnx.relu(out)
+        return out
 ```
 
-## 2. The Full Architecture (Cell 2)
+### The Bottleneck Block
 
-Resnets are built of 4 stages. Each stage typically doubles the number of filters and halves the spatial resolution.
+For deeper networks, we use a $1 \times 1$ convolution to reduce dimensions before the expensive $3 \times 3$, then expand it back.
+
+```python
+class Bottleneck(nnx.Module):
+    expansion = 4
+
+    def __init__(self, in_channels: int, out_channels: int, stride: int = 1,
+                 downsample: Optional[nnx.Module] = None, rngs: nnx.Rngs = None):
+        self.conv1 = nnx.Conv(in_channels, out_channels, kernel_size=(1, 1),
+                              use_bias=False, rngs=rngs)
+        self.bn1 = nnx.BatchNorm(out_channels, rngs=rngs)
+        self.conv2 = nnx.Conv(out_channels, out_channels, kernel_size=(3, 3),
+                              strides=stride, padding=1, use_bias=False, rngs=rngs)
+        self.bn2 = nnx.BatchNorm(out_channels, rngs=rngs)
+        self.conv3 = nnx.Conv(out_channels, out_channels * self.expansion,
+                              kernel_size=(1, 1), use_bias=False, rngs=rngs)
+        self.bn3 = nnx.BatchNorm(out_channels * self.expansion, rngs=rngs)
+        self.downsample = downsample
+
+    def __call__(self, x, training: bool = True):
+        identity = x
+        out = self.conv1(x)
+        out = self.bn1(out, use_running_average=not training)
+        out = nnx.relu(out)
+        out = self.conv2(out)
+        out = self.bn2(out, use_running_average=not training)
+        out = nnx.relu(out)
+        out = self.conv3(out)
+        out = self.bn3(out, use_running_average=not training)
+
+        if self.downsample is not None:
+            identity = self.downsample(x, training=training)
+
+        out += identity
+        out = nnx.relu(out)
+        return out
+```
+
+## 2. Dynamic Architecture
+
+We construct the network dynamically using `_make_layer`. This allows us to easily switch between ResNet18, 50, etc.
 
 ```python
 class ResNet(nnx.Module):
-    def __init__(self, num_classes: int = 1000, layers=[2, 2, 2, 2], *, rngs: nnx.Rngs):
-        # Stem: 224 -> 56
-        self.conv1 = nnx.Conv(3, 64, (7, 7), strides=(2, 2), padding='SAME', use_bias=False, rngs=rngs)
+    def __init__(self, block_cls, layers: list[int], num_classes: int = 1000,
+                 dtype=jnp.float32, rngs: nnx.Rngs = None):
+        self.in_channels = 64
+        self.dtype = dtype
+
+        self.conv1 = nnx.Conv(3, 64, kernel_size=(7, 7), strides=2, padding=3,
+                              use_bias=False, rngs=rngs)
         self.bn1 = nnx.BatchNorm(64, rngs=rngs)
-        
-        # Stages
-        self.layer1 = self._make_layer(64, 64, layers[0], stride=1, rngs=rngs)
-        self.layer2 = self._make_layer(64, 128, layers[1], stride=2, rngs=rngs)
-        self.layer3 = self._make_layer(128, 256, layers[2], stride=2, rngs=rngs)
-        self.layer4 = self._make_layer(256, 512, layers[3], stride=2, rngs=rngs)
-        
-        # Head
-        self.fc = nnx.Linear(512, num_classes, rngs=rngs)
-    
-    def _make_layer(self, in_f, out_f, blocks, stride, rngs):
-        layers = [ResidualBlock(out_f, stride=stride, rngs=rngs)]
+
+        # Dynamic Layer Creation
+        self.layer1 = self._make_layer(block_cls, 64, layers[0], rngs=rngs)
+        self.layer2 = self._make_layer(block_cls, 128, layers[1], stride=2, rngs=rngs)
+        self.layer3 = self._make_layer(block_cls, 256, layers[2], stride=2, rngs=rngs)
+        self.layer4 = self._make_layer(block_cls, 512, layers[3], stride=2, rngs=rngs)
+
+        self.feature_dim = 512 * block_cls.expansion
+        self.head = nnx.Linear(self.feature_dim, num_classes, rngs=rngs)
+
+    def _make_layer(self, block_cls, out_channels, blocks, stride=1, rngs=None):
+        downsample = None
+        # Create downsample layer if stride != 1 or dimensions change
+        if stride != 1 or self.in_channels != out_channels * block_cls.expansion:
+            downsample = DownsampleBlock(self.in_channels, out_channels * block_cls.expansion, stride, rngs)
+
+        layers = []
+        layers.append(block_cls(self.in_channels, out_channels, stride, downsample, rngs=rngs))
+        self.in_channels = out_channels * block_cls.expansion
         for _ in range(1, blocks):
-            layers.append(ResidualBlock(out_f, stride=1, rngs=rngs))
-        return layers
+            layers.append(block_cls(self.in_channels, out_channels, rngs=rngs))
+        
+        return nnx.List(layers)
 
-    def __call__(self, x, *, train: bool = True):
+    def __call__(self, x, training: bool = True):
+        x = x.astype(self.dtype)
         x = self.conv1(x)
-        x = self.bn1(x, use_running_average=not train)
+        x = self.bn1(x, use_running_average=not training)
         x = nnx.relu(x)
-        x = nnx.max_pool(x, (3, 3), strides=(2, 2), padding='SAME')
-        
-        for stage in [self.layer1, self.layer2, self.layer3, self.layer4]:
-            for block in stage:
-                x = block(x, train=train)
-        
+        x = nnx.max_pool(x, window_shape=(3, 3), strides=(2, 2), padding=((1, 1), (1, 1)))
+
+        for layer in [self.layer1, self.layer2, self.layer3, self.layer4]:
+            for block in layer:
+                x = block(x, training=training)
+
         x = jnp.mean(x, axis=(1, 2))
-        return self.fc(x)
+        return self.head(x)
+        
+class DownsampleBlock(nnx.Module):
+    def __init__(self, in_channels, out_channels, stride, rngs):
+        self.conv = nnx.Conv(in_channels, out_channels, kernel_size=(1, 1),
+                             strides=stride, use_bias=False, rngs=rngs)
+        self.bn = nnx.BatchNorm(out_channels, rngs=rngs)
+
+    def __call__(self, x, training=True):
+        x = self.conv(x)
+        x = self.bn(x, use_running_average=not training)
+        return x
 ```
 
-## 3. Training with Streaming & BatchNorm
 
-Training ResNets has a subtlety: **Batch Normalization stats**. The model tracks the "running mean" and "running variance" of the data.
 
-### Defining the Loss Function (Cell 3)
+## 4. Production Training with Sharding
 
-We use `optax` for optimization and define a custom training step that updates Batch Stats.
+For scale, we use JAX's `NamedSharding` to distribute data across devices.
+
+### Data Sharding
+We partition the batch dimension (`'data'`) across the available mesh of devices.
 
 ```python
-import optax
-import jax
-from flax.training import train_state
-
-# Custom state to hold batch_stats
-class TrainState(train_state.TrainState):
-    batch_stats: dict
-
-@jax.jit
-def train_step(state, batch):
-    def loss_fn(params):
-        # Pass batch_stats to the model
-        logits, updates = state.apply_fn(
-            {'params': params, 'batch_stats': state.batch_stats},
-            batch['image'],
-            train=True,
-            mutable=['batch_stats']
-        )
-        loss = optax.softmax_cross_entropy_with_integer_labels(
-            logits=logits, labels=batch['label']
-        ).mean()
-        return loss, updates
-
-    # Get Gradients
-    grad_fn = jax.value_and_grad(loss_fn, has_aux=True)
-    (loss, updates), grads = grad_fn(state.params)
-    
-    # Update Weights & Stats
-    state = state.apply_gradients(grads=grads)
-    state = state.replace(batch_stats=updates['batch_stats'])
-    
-    return state, loss
+    devices = jax.devices()
+    mesh = Mesh(np.array(devices), ('data',))
+    # Shard the '0th' dimension (batch) across 'data' axis
+    data_sharding = NamedSharding(mesh, P('data', None, None, None)) 
+    label_sharding = NamedSharding(mesh, P('data'))
+    replicated_sharding = NamedSharding(mesh, P()) # Replicate weights
 ```
 
-### Running the Training (Cell 4)
-
-We use `streaming=True` to load ImageNet without downloading the 150GB file.
+### The Training Step (JIT)
+We use `nnx.jit` to compile the step. Arguments are standard JAX arrays.
 
 ```python
-from datasets import load_dataset
-import numpy as np
-
-# 1. Setup Data Stream
-print("Setting up stream...")
-dataset = load_dataset("imagenet-1k", split="train", streaming=True)
-dataset = dataset.shuffle(buffer_size=10000)
-
-def transform(ex):
-    # Resize to standard 224x224
-    imgs = [np.array(img.resize((224, 224))) / 255.0 for img in ex['image']]
-    return {'image': imgs, 'label': ex['label']}
-
-dataset = dataset.map(transform, batched=True, batch_size=64)
-iterator = iter(dataset)
-
-# 2. Initialize Model
-print("Initializing model...")
-model = ResNet(rngs=nnx.Rngs(0))
-dummy_x = jnp.ones((1, 224, 224, 3))
-variables = model.init(nnx.Rngs(0), dummy_x)
-
-# 3. Create State
-state = TrainState.create(
-    apply_fn=model.apply,
-    params=variables['params'],
-    tx=optax.adamw(1e-3),
-    batch_stats=variables['batch_stats']
-)
-
-# 4. Train Loop
-print("Starting Training...")
-for step in range(100):
-    # Fetch next batch
-    data = next(iterator)
-    batch = {
-        'image': jnp.stack(data['image']),
-        'label': jnp.array(data['label'])
-    }
+@nnx.jit
+def train_step(model, optimizer, batch_images, batch_labels):
     
-    state, loss = train_step(state, batch)
-    
-    if step % 10 == 0:
-        print(f"Step {step} | Loss: {loss:.4f}")
+    def loss_fn(model):
+        outputs = model(batch_images, training=True)
+        loss = optax.softmax_cross_entropy_with_integer_labels(outputs, batch_labels).mean()
+        
+        acc = jnp.mean(jnp.argmax(outputs, axis=1) == batch_labels)
+        return loss, acc
+
+    grad_fn = nnx.value_and_grad(loss_fn, has_aux=True)
+    (loss, acc), grads = grad_fn(model)
+    optimizer.update(model, grads)
+    return loss, acc
+```
+
+## 5. Deployment & Logging
+
+We integrate `wandb` for experiment tracking and `orbax` for robust checkpointing.
+
+```python
+    # Checkpointing Setup
+    ckpt_dir = os.path.abspath(args.save_dir)
+    options = ocp.CheckpointManagerOptions(max_to_keep=args.checkpoint_keep, create=True)
+    mngr = ocp.CheckpointManager(ckpt_dir, ocp.StandardCheckpointer(), options)
+
+    # In Loop
+    if val_acc > best_acc:
+        best_acc = val_acc
+        # Save state
+        raw_state = nnx.state((model, optimizer))
+        mngr.save(step=epoch, args=ocp.args.StandardSave(raw_state))
 ```
 
 ## Limitations & Evolution
@@ -236,4 +231,3 @@ While ResNet remains a strong baseline, it faces modern challenges:
     *   *Evolution*: **Sparse Networks** and **EfficientNet** optimize the width/depth/resolution balance.
 3.  **The Saturation of Depth**: Beyond 1000 layers, even residual connections suffer from signal propagation issues.
     *   *Evolution*: **Normalization-Free Networks (NFNet)** and **Deep Equilibrium Models** explore alternatives to standard depth scaling.
-
