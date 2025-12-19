@@ -1,5 +1,5 @@
-import {themes as prismThemes} from 'prism-react-renderer';
-import type {Config} from '@docusaurus/types';
+import { themes as prismThemes } from 'prism-react-renderer';
+import type { Config } from '@docusaurus/types';
 import type * as Preset from '@docusaurus/preset-classic';
 import remarkMath from 'remark-math';
 import rehypeKatex from 'rehype-katex';
@@ -32,10 +32,13 @@ const config: Config = {
   onBrokenLinks: 'throw',
 
   markdown: {
+    mermaid: true,
     hooks: {
       onBrokenMarkdownLinks: 'throw',
     },
   },
+
+  themes: ['@docusaurus/theme-mermaid'],
 
   headTags: [
     // Structured data for better search engine understanding
@@ -121,15 +124,15 @@ const config: Config = {
     image: 'img/docusaurus-social-card.jpg',
     // Global metadata for SEO
     metadata: [
-      {name: 'keywords', content: 'Flax, JAX, neural networks, machine learning, deep learning, NNX, training, distributed training, TPU, GPU, PyTorch alternative, TensorFlow alternative'},
-      {name: 'description', content: 'Comprehensive guide to training neural networks with Flax NNX and JAX. Learn distributed training, model optimization, and production-ready ML workflows.'},
-      {name: 'twitter:card', content: 'summary_large_image'},
-      {name: 'twitter:title', content: 'Flax Training Docs - Master Neural Network Training with JAX'},
-      {name: 'twitter:description', content: 'Learn Flax NNX and JAX for neural network training. From basics to distributed training at scale.'},
-      {name: 'og:type', content: 'website'},
-      {name: 'og:title', content: 'Flax Training Docs - Neural Network Training with JAX'},
-      {name: 'og:description', content: 'Comprehensive guide to training neural networks with Flax NNX and JAX. Learn distributed training, model optimization, and production-ready ML workflows.'},
-      {name: 'og:locale', content: 'en_US'},
+      { name: 'keywords', content: 'Flax, JAX, neural networks, machine learning, deep learning, NNX, training, distributed training, TPU, GPU, PyTorch alternative, TensorFlow alternative' },
+      { name: 'description', content: 'Comprehensive guide to training neural networks with Flax NNX and JAX. Learn distributed training, model optimization, and production-ready ML workflows.' },
+      { name: 'twitter:card', content: 'summary_large_image' },
+      { name: 'twitter:title', content: 'Flax Training Docs - Master Neural Network Training with JAX' },
+      { name: 'twitter:description', content: 'Learn Flax NNX and JAX for neural network training. From basics to distributed training at scale.' },
+      { name: 'og:type', content: 'website' },
+      { name: 'og:title', content: 'Flax Training Docs - Neural Network Training with JAX' },
+      { name: 'og:description', content: 'Comprehensive guide to training neural networks with Flax NNX and JAX. Learn distributed training, model optimization, and production-ready ML workflows.' },
+      { name: 'og:locale', content: 'en_US' },
     ],
     // Announcement bar for important updates
     announcementBar: {
@@ -189,7 +192,7 @@ const config: Config = {
             },
           ],
         },
-        {to: '/blog', label: '📝 Blog', position: 'left'},
+        { to: '/blog', label: '📝 Blog', position: 'left' },
         {
           type: 'search',
           position: 'right',
@@ -305,7 +308,7 @@ const config: Config = {
         {
           className: 'theme-code-block-highlighted-line',
           line: 'highlight-next-line',
-          block: {start: 'highlight-start', end: 'highlight-end'},
+          block: { start: 'highlight-start', end: 'highlight-end' },
         },
         {
           className: 'code-block-error-line',
@@ -314,7 +317,7 @@ const config: Config = {
       ],
     },
   } satisfies Preset.ThemeConfig,
-    stylesheets: [
+  stylesheets: [
     {
       href: 'https://cdn.jsdelivr.net/npm/katex@0.13.24/dist/katex.min.css',
       type: 'text/css',
