@@ -22,7 +22,7 @@ const FeatureList: FeatureItem[] = [
         Learn state management, initialization patterns, and checkpoint strategies.
       </>
     ),
-    link: '/docs/basics/fundamentals/your-first-model',
+    link: '/basics/fundamentals/your-first-model',
     linkText: 'Model Definition →',
   },
   {
@@ -34,7 +34,7 @@ const FeatureList: FeatureItem[] = [
         Master batching, prefetching, and multi-host data parallelism.
       </>
     ),
-    link: '/docs/basics/workflows/data-loading-simple',
+    link: '/basics/workflows/data-loading-simple',
     linkText: 'Data Loading →',
   },
   {
@@ -46,16 +46,16 @@ const FeatureList: FeatureItem[] = [
         tensor parallelism, and pipeline parallelism for large models.
       </>
     ),
-    link: '/docs/scale/',
+    link: '/scale/',
     linkText: 'Distributed Training →',
   },
 ];
 
 const QuickLinks = [
-  { label: 'Checkpointing', link: '/docs/basics/checkpointing' },
-  { label: 'Training Loops', link: '/docs/basics/workflows/simple-training' },
-  { label: 'Model Export', link: '/docs/research/model-export' },
-  { label: 'Observability', link: '/docs/research/observability' },
+  { label: 'Checkpointing', link: '/basics/checkpointing' },
+  { label: 'Training Loops', link: '/basics/workflows/simple-training' },
+  { label: 'Model Export', link: '/research/model-export' },
+  { label: 'Observability', link: '/research/observability' },
 ];
 
 function Feature({title, icon, description, link, linkText}: FeatureItem) {
