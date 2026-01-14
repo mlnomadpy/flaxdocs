@@ -45,7 +45,7 @@ Start with the core concepts that apply everywhere:
 
 These fundamentals take ~15 minutes and are essential for everything else.
 
-[Start with Fundamentals →](/docs/basics/fundamentals)
+[Start with Fundamentals →](/basics/fundamentals)
 
 ### 🏃 Training Workflows
 
@@ -55,7 +55,7 @@ Learn the practical skills to train models:
 
 Short, focused guides that get you training quickly.
 
-[Learn Training Workflows →](/docs/basics/workflows)
+[Learn Training Workflows →](/basics/workflows)
 
 ### 🖼️ Computer Vision
 
@@ -65,7 +65,7 @@ Build image models step-by-step:
 
 Each guide is self-contained and builds one complete model.
 
-[Explore Computer Vision →](/docs/basics/vision)
+[Explore Computer Vision →](/basics/vision)
 
 ### 📝 Natural Language Processing
 
@@ -74,7 +74,7 @@ Build text models from scratch:
 
 Clear explanations of how transformers actually work.
 
-[Explore NLP →](/docs/basics/text)
+[Explore NLP →](/basics/text)
 
 ### 📈 Scale
 
@@ -82,7 +82,7 @@ Take your training to production scale:
 - **Distributed Training**: Multiple GPUs and TPUs
 - **Performance Optimization**: Make training faster
 
-[Learn about Scaling →](/docs/scale/)
+[Learn about Scaling →](/scale/)
 
 ### 🔬 Research
 
@@ -91,17 +91,17 @@ Advanced patterns for cutting-edge research:
 - **Observability**: Track experiments with W&B
 - **Advanced Architectures**: Building ResNets, Transformers, BERT, and GPT from scratch
 
-[Explore Research Topics →](/docs/research/advanced-techniques)
+[Explore Research Topics →](/research/advanced-techniques)
 
 ## How to Use This Documentation
 
 ### If you're brand new:
-1. Start with [Fundamentals →](/docs/basics/fundamentals) (~15 min)
-2. Learn [Training Workflows →](/docs/basics/workflows) (~20 min)
-3. Choose your domain: [Vision](/docs/basics/vision) or [Text](/docs/basics/text)
+1. Start with [Fundamentals →](/basics/fundamentals) (~15 min)
+2. Learn [Training Workflows →](/basics/workflows) (~20 min)
+3. Choose your domain: [Vision](/basics/vision) or [Text](/basics/text)
 
 ### If you know the basics:
-- Jump directly to [Computer Vision](/docs/basics/vision) or [NLP](/docs/basics/text)
+- Jump directly to [Computer Vision](/basics/vision) or [NLP](/basics/text)
 - Each guide is self-contained and buildable in isolation
 
 ### If you need specific examples:

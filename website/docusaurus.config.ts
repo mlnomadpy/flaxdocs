@@ -87,6 +87,7 @@ const config: Config = {
       'classic',
       {
         docs: {
+          routeBasePath: '/',
           sidebarPath: './sidebars.ts',
           remarkPlugins: [remarkMath],
           rehypePlugins: [rehypeKatex],
@@ -176,7 +177,7 @@ const config: Config = {
           items: [
             {
               label: 'Getting Started',
-              to: '/docs/basics/fundamentals/your-first-model',
+              to: '/basics/fundamentals/your-first-model',
             },
             {
               label: 'Examples Repository',
@@ -184,11 +185,11 @@ const config: Config = {
             },
             {
               label: 'Training Best Practices',
-              to: '/docs/basics/training-best-practices',
+              to: '/basics/training-best-practices',
             },
             {
               label: 'Distributed Training',
-              to: '/docs/scale/',
+              to: '/scale/',
             },
           ],
         },
@@ -213,23 +214,23 @@ const config: Config = {
           items: [
             {
               label: 'Getting Started',
-              to: '/docs',
+              to: '/',
             },
             {
               label: 'Fundamentals',
-              to: '/docs/basics/fundamentals',
+              to: '/basics/fundamentals',
             },
             {
               label: 'Training Workflows',
-              to: '/docs/basics/workflows',
+              to: '/basics/workflows',
             },
             {
               label: 'Scale to Production',
-              to: '/docs/scale/',
+              to: '/scale/',
             },
             {
               label: 'Research Techniques',
-              to: '/docs/research/advanced-techniques',
+              to: '/research/advanced-techniques',
             },
           ],
         },
