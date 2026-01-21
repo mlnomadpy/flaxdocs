@@ -9,6 +9,7 @@ This example demonstrates:
 - Target network with soft updates
 - Epsilon-greedy exploration
 - Training loop for reinforcement learning
+- Integration with gymnasium for RL environments
 
 Run: python advanced/dqn_reinforcement_learning.py
 
@@ -29,6 +30,7 @@ from typing import Dict, List, Tuple, NamedTuple
 import time
 from collections import deque
 import random
+import gymnasium as gym
 
 import sys
 from pathlib import Path
@@ -572,48 +574,35 @@ class DQNAgent:
 
 
 # ============================================================================
-# 5. SIMPLE ENVIRONMENT SIMULATION (CartPole-like)
+# 5. GYMNASIUM ENVIRONMENT WRAPPER
 # ============================================================================
 
-class SimpleCartPoleEnv:
+class CartPoleEnv:
     """
-    Simplified CartPole environment for demonstration.
+    Wrapper around gymnasium's CartPole-v1 environment.
     
     State: [cart_position, cart_velocity, pole_angle, pole_angular_velocity]
     Actions: 0 (push left), 1 (push right)
     
-    Note: For real training, use gymnasium (gym) environments.
-    This is a simplified version for self-contained examples.
+    This wrapper provides a consistent interface for the DQN agent.
     """
     
     def __init__(self, seed: int = None):
-        """Initialize environment."""
-        self.gravity = 9.8
-        self.cart_mass = 1.0
-        self.pole_mass = 0.1
-        self.total_mass = self.cart_mass + self.pole_mass
-        self.pole_length = 0.5
-        self.pole_mass_length = self.pole_mass * self.pole_length
-        self.force_mag = 10.0
-        self.tau = 0.02  # Time step
+        """
+        Initialize environment.
         
-        # Thresholds for episode termination
-        self.x_threshold = 2.4
-        self.theta_threshold = 12 * np.pi / 180  # 12 degrees
-        
-        self.state = None
-        self.steps = 0
-        self.max_steps = 500
-        
+        Args:
+            seed: Random seed for reproducibility
+        """
+        self.env = gym.make('CartPole-v1')
+        self._seed = seed
         if seed is not None:
-            np.random.seed(seed)
+            self.env.reset(seed=seed)
     
     def reset(self) -> np.ndarray:
         """Reset environment to initial state."""
-        # Small random initial state
-        self.state = np.random.uniform(-0.05, 0.05, size=4).astype(np.float32)
-        self.steps = 0
-        return self.state.copy()
+        state, _ = self.env.reset(seed=self._seed)
+        return state.astype(np.float32)
     
     def step(self, action: int) -> Tuple[np.ndarray, float, bool, dict]:
         """
@@ -625,46 +614,13 @@ class SimpleCartPoleEnv:
         Returns:
             next_state, reward, done, info
         """
-        x, x_dot, theta, theta_dot = self.state
-        
-        # Apply force
-        force = self.force_mag if action == 1 else -self.force_mag
-        
-        # Physics simulation
-        cos_theta = np.cos(theta)
-        sin_theta = np.sin(theta)
-        
-        temp = (force + self.pole_mass_length * theta_dot ** 2 * sin_theta) / self.total_mass
-        theta_acc = (self.gravity * sin_theta - cos_theta * temp) / (
-            self.pole_length * (4.0/3.0 - self.pole_mass * cos_theta ** 2 / self.total_mass)
-        )
-        x_acc = temp - self.pole_mass_length * theta_acc * cos_theta / self.total_mass
-        
-        # Update state (Euler integration)
-        x = x + self.tau * x_dot
-        x_dot = x_dot + self.tau * x_acc
-        theta = theta + self.tau * theta_dot
-        theta_dot = theta_dot + self.tau * theta_acc
-        
-        self.state = np.array([x, x_dot, theta, theta_dot], dtype=np.float32)
-        self.steps += 1
-        
-        # Check termination
-        done = bool(
-            x < -self.x_threshold or
-            x > self.x_threshold or
-            theta < -self.theta_threshold or
-            theta > self.theta_threshold or
-            self.steps >= self.max_steps
-        )
-        
-        # Reward structure:
-        # +1 for every step where the pole stays upright (survival reward)
-        # When done due to max_steps (successful episode), still give +1
-        # When done due to failure (pole fell or cart out of bounds), give 0
-        reward = 1.0 if not done or self.steps >= self.max_steps else 0.0
-        
-        return self.state.copy(), reward, done, {}
+        state, reward, terminated, truncated, info = self.env.step(action)
+        done = terminated or truncated
+        return state.astype(np.float32), float(reward), done, info
+    
+    def close(self):
+        """Clean up the environment."""
+        self.env.close()
     
     @property
     def state_dim(self) -> int:
@@ -712,7 +668,7 @@ def train_dqn(
         Trained agent and episode rewards
     """
     # Create environment and agent
-    env = SimpleCartPoleEnv(seed=seed)
+    env = CartPoleEnv(seed=seed)
     
     agent = DQNAgent(
         state_dim=env.state_dim,
@@ -791,6 +747,7 @@ def train_dqn(
     print(f"Final average (last 20): {np.mean(episode_rewards[-20:]):.1f}")
     print(f"{'='*70}\n")
     
+    env.close()
     return agent, episode_rewards
 
 
@@ -806,7 +763,7 @@ def evaluate_agent(agent: DQNAgent, num_episodes: int = 10, seed: int = 0) -> fl
     Returns:
         Average reward across episodes
     """
-    env = SimpleCartPoleEnv(seed=seed)
+    env = CartPoleEnv(seed=seed)
     rewards = []
     
     for episode in range(num_episodes):
@@ -823,6 +780,7 @@ def evaluate_agent(agent: DQNAgent, num_episodes: int = 10, seed: int = 0) -> fl
         
         rewards.append(episode_reward)
     
+    env.close()
     return np.mean(rewards)
 
 

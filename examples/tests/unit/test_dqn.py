@@ -240,32 +240,34 @@ class TestEpsilonGreedy:
 
 
 @pytest.mark.unit
-class TestSimpleCartPoleEnv:
-    """Tests for simple CartPole environment."""
+class TestCartPoleEnv:
+    """Tests for gymnasium CartPole environment wrapper."""
     
     def test_env_creation(self):
         """Test environment can be created."""
-        from advanced.dqn_reinforcement_learning import SimpleCartPoleEnv
+        from advanced.dqn_reinforcement_learning import CartPoleEnv
         
-        env = SimpleCartPoleEnv(seed=42)
+        env = CartPoleEnv(seed=42)
         assert env.state_dim == 4
         assert env.action_dim == 2
+        env.close()
     
     def test_env_reset(self):
         """Test environment reset."""
-        from advanced.dqn_reinforcement_learning import SimpleCartPoleEnv
+        from advanced.dqn_reinforcement_learning import CartPoleEnv
         
-        env = SimpleCartPoleEnv(seed=42)
+        env = CartPoleEnv(seed=42)
         state = env.reset()
         
         assert state.shape == (4,)
         assert np.all(np.isfinite(state))
+        env.close()
     
     def test_env_step(self):
         """Test environment step."""
-        from advanced.dqn_reinforcement_learning import SimpleCartPoleEnv
+        from advanced.dqn_reinforcement_learning import CartPoleEnv
         
-        env = SimpleCartPoleEnv(seed=42)
+        env = CartPoleEnv(seed=42)
         state = env.reset()
         
         next_state, reward, done, info = env.step(0)
@@ -274,12 +276,13 @@ class TestSimpleCartPoleEnv:
         assert isinstance(reward, float)
         assert isinstance(done, bool)
         assert isinstance(info, dict)
+        env.close()
     
     def test_env_step_actions(self):
         """Test both actions work."""
-        from advanced.dqn_reinforcement_learning import SimpleCartPoleEnv
+        from advanced.dqn_reinforcement_learning import CartPoleEnv
         
-        env = SimpleCartPoleEnv(seed=42)
+        env = CartPoleEnv(seed=42)
         
         # Test action 0 (left)
         env.reset()
@@ -291,6 +294,7 @@ class TestSimpleCartPoleEnv:
         
         # States should be different
         assert not np.allclose(state1, state2)
+        env.close()
 
 
 @pytest.mark.unit
