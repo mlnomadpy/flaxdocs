@@ -658,7 +658,10 @@ class SimpleCartPoleEnv:
             self.steps >= self.max_steps
         )
         
-        # Reward: +1 for each step the pole stays upright
+        # Reward structure:
+        # +1 for every step where the pole stays upright (survival reward)
+        # When done due to max_steps (successful episode), still give +1
+        # When done due to failure (pole fell or cart out of bounds), give 0
         reward = 1.0 if not done or self.steps >= self.max_steps else 0.0
         
         return self.state.copy(), reward, done, {}

@@ -7,7 +7,7 @@ sidebar_position: 10
 Learn how to implement Deep Q-Networks (DQN) for reinforcement learning using Flax NNX. This guide covers the foundational concepts of RL and provides a complete implementation for training agents to solve control tasks.
 
 :::info Example Code
-See the full implementation: [`examples/advanced/dqn_reinforcement_learning.py`](https://github.com/mlnomadpy/flaxdocs/blob/master/examples/advanced/dqn_reinforcement_learning.py)
+See the full implementation: [`examples/advanced/dqn_reinforcement_learning.py`](https://github.com/mlnomadpy/flaxdocs/blob/main/examples/advanced/dqn_reinforcement_learning.py)
 :::
 
 ## What is Reinforcement Learning?
@@ -722,7 +722,7 @@ DQN is for discrete actions. For continuous:
 ## Complete Example
 
 **Full DQN implementation with all components:**
-- [`examples/advanced/dqn_reinforcement_learning.py`](https://github.com/mlnomadpy/flaxdocs/blob/master/examples/advanced/dqn_reinforcement_learning.py)
+- [`examples/advanced/dqn_reinforcement_learning.py`](https://github.com/mlnomadpy/flaxdocs/blob/main/examples/advanced/dqn_reinforcement_learning.py)
 
 ## References
 
