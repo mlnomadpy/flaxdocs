@@ -16,4 +16,5 @@ This section covers advanced topics and implementations for research:
 - **[Adversarial Training](adversarial-training.md)**: Robust training against adversarial examples using methods like FGSM.
 - **[Curriculum Learning](curriculum-learning.md)**: Strategies to gradually increase task difficulty during training.
 - **[Experiment Reproducibility](experiment-reproducibility.md)**: Best practices and utilities for ensuring reproducible research experiments.
+- **[Reinforcement Learning](reinforcement-learning.md)**: Implement Deep Q-Networks (DQN) for training RL agents with experience replay and target networks.
 

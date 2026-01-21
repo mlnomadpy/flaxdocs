@@ -102,6 +102,7 @@ const sidebars: SidebarsConfig = {
         'research/contrastive-learning',
         'research/knowledge-distillation',
         'research/meta-learning',
+        'research/reinforcement-learning',
       ],
     },
   ],
