@@ -449,6 +449,8 @@ class DQNAgent:
 ## Training Loop
 
 ```python
+import gymnasium as gym
+
 def train_dqn(
     num_episodes: int = 300,
     max_steps_per_episode: int = 500,
@@ -461,14 +463,16 @@ def train_dqn(
     use_dueling: bool = False,
     seed: int = 42
 ):
-    """Train DQN agent."""
+    """Train DQN agent on CartPole environment using gymnasium."""
     
-    # Create environment and agent
-    env = CartPoleEnv(seed=seed)
+    # Create gymnasium environment
+    env = gym.make('CartPole-v1')
+    state_dim = env.observation_space.shape[0]
+    action_dim = env.action_space.n
     
     agent = DQNAgent(
-        state_dim=env.state_dim,
-        action_dim=env.action_dim,
+        state_dim=state_dim,
+        action_dim=action_dim,
         hidden_dim=hidden_dim,
         learning_rate=learning_rate,
         gamma=gamma,
@@ -482,13 +486,14 @@ def train_dqn(
     episode_rewards = []
     
     for episode in range(1, num_episodes + 1):
-        state = env.reset()
+        state, _ = env.reset(seed=seed if episode == 1 else None)
         episode_reward = 0
         
         for step in range(max_steps_per_episode):
             # Select and take action
             action = agent.select_action(state)
-            next_state, reward, done, _ = env.step(action)
+            next_state, reward, terminated, truncated, _ = env.step(action)
+            done = terminated or truncated
             
             # Store transition
             agent.store_transition(state, action, reward, next_state, done)
@@ -504,6 +509,7 @@ def train_dqn(
         
         episode_rewards.append(episode_reward)
     
+    env.close()
     return agent, episode_rewards
 ```
 
