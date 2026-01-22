@@ -513,6 +513,145 @@ def train_dqn(
     return agent, episode_rewards
 ```
 
+## JAX-Native Training with gymnax
+
+For maximum performance, you can use [gymnax](https://github.com/RobertTLange/gymnax) - a library that provides JAX-native implementations of classic RL environments. This enables full JIT compilation of your training loop, parallel environment execution with `vmap`, and seamless integration with JAX transformations.
+
+### Installing gymnax
+
+```bash
+pip install gymnax
+```
+
+### Basic gymnax API
+
+```python
+import gymnax
+import jax
+import jax.numpy as jnp
+
+# Create environment
+key = jax.random.key(0)
+key, key_reset, key_step = jax.random.split(key, 3)
+
+env, env_params = gymnax.make("CartPole-v1")
+
+# Reset and step (fully JAX-compatible)
+obs, state = env.reset(key_reset, env_params)
+action = env.action_space(env_params).sample(key_step)
+obs, state, reward, done, info = env.step(key_step, state, action, env_params)
+```
+
+### Episode Rollouts with jax.lax.scan
+
+gymnax enables fully JIT-compiled episode rollouts using `jax.lax.scan`:
+
+```python
+from flax import linen as nn
+
+class MLP(nn.Module):
+    """Simple policy network."""
+    num_hidden_units: int
+    num_output_units: int
+
+    @nn.compact
+    def __call__(self, x, key):
+        x = nn.Dense(self.num_hidden_units)(x)
+        x = nn.relu(x)
+        x = nn.Dense(self.num_output_units)(x)
+        return x
+
+def gymnax_rollout(key, policy_fn, policy_params, steps_in_episode, env_name="CartPole-v1"):
+    """JIT-compiled episode rollout with gymnax."""
+    env, env_params = gymnax.make(env_name)
+    
+    key, key_reset, key_episode = jax.random.split(key, 3)
+    obs, state = env.reset(key_reset, env_params)
+    
+    def policy_step(state_input, _):
+        obs, state, policy_params, key = state_input
+        key, key_step, key_net = jax.random.split(key, 3)
+        
+        action = policy_fn(policy_params, obs, key_net)
+        if action.shape[-1] > 1:
+            action = jnp.argmax(action, axis=-1)
+        
+        next_obs, next_state, reward, done, _ = env.step(
+            key_step, state, action, env_params
+        )
+        
+        carry = [next_obs, next_state, policy_params, key]
+        return carry, [obs, action, reward, next_obs, done]
+    
+    _, scan_out = jax.lax.scan(
+        policy_step,
+        [obs, state, policy_params, key_episode],
+        None,
+        steps_in_episode
+    )
+    
+    obs, action, reward, next_obs, done = scan_out
+    return obs, action, reward, next_obs, done
+
+# JIT-compile the rollout
+jit_rollout = jax.jit(gymnax_rollout, static_argnums=(3, 4))
+```
+
+### Parallel Rollouts with vmap
+
+One of the most powerful features of gymnax is the ability to run multiple environments in parallel using `vmap`:
+
+```python
+# Parallel rollout across 8 environments
+vmap_rollout = jax.vmap(
+    gymnax_rollout,
+    in_axes=(0, None, None, None, None)
+)
+
+num_envs = 8
+keys = jax.random.split(key, num_envs)
+obs, actions, rewards, next_obs, dones = vmap_rollout(
+    keys, policy_fn, policy_params, 200, "CartPole-v1"
+)
+print(obs.shape)  # (8, 200, 4)
+```
+
+### Training with gymnax
+
+The example code includes a `train_dqn_gymnax` function for JAX-native training:
+
+```python
+from advanced.dqn_reinforcement_learning import train_dqn_gymnax
+
+# Train DQN with gymnax (JAX-native environment)
+agent, rewards, metrics = train_dqn_gymnax(
+    num_episodes=200,
+    architecture='standard',
+    seed=42
+)
+
+# Metrics include environment info
+print(f"Environment: {metrics['environment']}")  # 'gymnax'
+print(f"Episodes/second: {metrics['episode_per_second']:.1f}")
+```
+
+### Available gymnax Environments
+
+gymnax provides many classic RL environments:
+
+```python
+gymnax.registered_envs
+# ['CartPole-v1', 'Pendulum-v1', 'Acrobot-v1', 'MountainCar-v0',
+#  'MountainCarContinuous-v0', 'Asterix-MinAtar', 'Breakout-MinAtar',
+#  'Freeway-MinAtar', 'SpaceInvaders-MinAtar', 'Catch-bsuite', ...]
+```
+
+:::tip When to use gymnax
+- **Use gymnax** when you need fast training with JAX transformations (JIT, vmap)
+- **Use gymnasium** when you need video recording or visualization
+- The example code supports both environments seamlessly
+:::
+
 ## Hyperparameters
 
 ### Learning Rate
@@ -738,3 +877,4 @@ DQN is for discrete actions. For continuous:
 - **Dueling DQN**: [Dueling Network Architectures](https://arxiv.org/abs/1511.06581) (Wang et al., 2016)
 - **Prioritized Replay**: [Prioritized Experience Replay](https://arxiv.org/abs/1511.05952) (Schaul et al., 2016)
 - **Rainbow**: [Rainbow: Combining Improvements in Deep RL](https://arxiv.org/abs/1710.02298) (Hessel et al., 2018)
+- **gymnax**: [Classic Gym Environments in JAX](https://github.com/RobertTLange/gymnax) (Lange, 2022)

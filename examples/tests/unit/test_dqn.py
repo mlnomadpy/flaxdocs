@@ -298,6 +298,189 @@ class TestCartPoleEnv:
 
 
 @pytest.mark.unit
+class TestGymnaxCartPoleEnv:
+    """Tests for gymnax CartPole environment wrapper."""
+    
+    def test_gymnax_env_creation(self):
+        """Test gymnax environment can be created."""
+        try:
+            from advanced.dqn_reinforcement_learning import GymnaxCartPoleEnv, HAS_GYMNAX
+        except ImportError:
+            pytest.skip("gymnax not installed")
+        
+        if not HAS_GYMNAX:
+            pytest.skip("gymnax not installed")
+        
+        env = GymnaxCartPoleEnv(seed=42)
+        assert env.state_dim == 4
+        assert env.action_dim == 2
+        env.close()
+    
+    def test_gymnax_env_reset(self):
+        """Test gymnax environment reset."""
+        try:
+            from advanced.dqn_reinforcement_learning import GymnaxCartPoleEnv, HAS_GYMNAX
+        except ImportError:
+            pytest.skip("gymnax not installed")
+        
+        if not HAS_GYMNAX:
+            pytest.skip("gymnax not installed")
+        
+        env = GymnaxCartPoleEnv(seed=42)
+        state, obs = env.reset_numpy()
+        
+        assert obs.shape == (4,)
+        assert np.all(np.isfinite(obs))
+        env.close()
+    
+    def test_gymnax_env_step(self):
+        """Test gymnax environment step."""
+        try:
+            from advanced.dqn_reinforcement_learning import GymnaxCartPoleEnv, HAS_GYMNAX
+        except ImportError:
+            pytest.skip("gymnax not installed")
+        
+        if not HAS_GYMNAX:
+            pytest.skip("gymnax not installed")
+        
+        env = GymnaxCartPoleEnv(seed=42)
+        state, obs = env.reset_numpy()
+        
+        next_obs, next_state, reward, done, info = env.step_numpy(state, 0)
+        
+        assert next_obs.shape == (4,)
+        assert isinstance(reward, float)
+        assert isinstance(done, bool)
+        env.close()
+    
+    def test_gymnax_env_jax_step(self):
+        """Test gymnax environment JAX-native step."""
+        try:
+            from advanced.dqn_reinforcement_learning import GymnaxCartPoleEnv, HAS_GYMNAX
+        except ImportError:
+            pytest.skip("gymnax not installed")
+        
+        if not HAS_GYMNAX:
+            pytest.skip("gymnax not installed")
+        
+        env = GymnaxCartPoleEnv(seed=42)
+        state, obs = env.reset()
+        
+        next_obs, next_state, reward, done, info = env.step(state, jnp.array(0))
+        
+        assert next_obs.shape == (4,)
+        assert jnp.isfinite(reward)
+        env.close()
+
+
+@pytest.mark.unit
+class TestGymnaxRollout:
+    """Tests for gymnax rollout functions."""
+    
+    def test_gymnax_rollout(self):
+        """Test JAX-native rollout function."""
+        try:
+            from advanced.dqn_reinforcement_learning import gymnax_rollout, HAS_GYMNAX
+        except ImportError:
+            pytest.skip("gymnax not installed")
+        
+        if not HAS_GYMNAX:
+            pytest.skip("gymnax not installed")
+        
+        # Simple random policy
+        def random_policy(params, obs, key):
+            return jax.random.randint(key, (), 0, 2)
+        
+        key = jax.random.key(42)
+        obs, actions, rewards, next_obs, dones = gymnax_rollout(
+            key, random_policy, None, 100, "CartPole-v1"
+        )
+        
+        assert obs.shape == (100, 4)
+        assert actions.shape == (100,)
+        assert rewards.shape == (100,)
+        assert next_obs.shape == (100, 4)
+        assert dones.shape == (100,)
+    
+    def test_gymnax_vmap_rollout(self):
+        """Test parallel rollouts with vmap."""
+        try:
+            from advanced.dqn_reinforcement_learning import gymnax_vmap_rollout, HAS_GYMNAX
+        except ImportError:
+            pytest.skip("gymnax not installed")
+        
+        if not HAS_GYMNAX:
+            pytest.skip("gymnax not installed")
+        
+        # Simple random policy
+        def random_policy(params, obs, key):
+            return jax.random.randint(key, (), 0, 2)
+        
+        num_envs = 4
+        keys = jax.random.split(jax.random.key(42), num_envs)
+        
+        obs, actions, rewards, next_obs, dones = gymnax_vmap_rollout(
+            keys, random_policy, None, 50, "CartPole-v1"
+        )
+        
+        assert obs.shape == (num_envs, 50, 4)
+        assert rewards.shape == (num_envs, 50)
+
+
+@pytest.mark.unit
+class TestTrainDqnGymnax:
+    """Tests for gymnax-based DQN training."""
+    
+    def test_train_dqn_gymnax_minimal(self):
+        """Test gymnax training runs successfully."""
+        try:
+            from advanced.dqn_reinforcement_learning import train_dqn_gymnax, HAS_GYMNAX
+        except ImportError:
+            pytest.skip("gymnax not installed")
+        
+        if not HAS_GYMNAX:
+            pytest.skip("gymnax not installed")
+        
+        # Very short training just to verify it works
+        agent, rewards, metrics = train_dqn_gymnax(
+            num_episodes=5,
+            max_steps_per_episode=50,
+            hidden_dim=32,
+            buffer_size=500,
+            batch_size=16,
+            seed=42,
+            verbose=False
+        )
+        
+        assert agent is not None
+        assert len(rewards) == 5
+        assert metrics['environment'] == 'gymnax'
+    
+    def test_evaluate_agent_gymnax(self):
+        """Test gymnax-based agent evaluation."""
+        try:
+            from advanced.dqn_reinforcement_learning import (
+                DQNAgent, evaluate_agent_gymnax, HAS_GYMNAX
+            )
+        except ImportError:
+            pytest.skip("gymnax not installed")
+        
+        if not HAS_GYMNAX:
+            pytest.skip("gymnax not installed")
+        
+        # Create agent
+        agent = DQNAgent(
+            state_dim=4,
+            action_dim=2,
+            hidden_dim=32,
+            seed=0
+        )
+        
+        # Evaluate
+        avg_reward = evaluate_agent_gymnax(agent, num_episodes=3, max_steps=50)
+        
+        assert isinstance(avg_reward, float)
+        assert np.isfinite(avg_reward)
 class TestDQNAgent:
     """Tests for DQN agent."""
     

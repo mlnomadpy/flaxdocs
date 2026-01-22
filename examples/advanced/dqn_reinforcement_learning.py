@@ -9,7 +9,8 @@ This example demonstrates:
 - Target network with soft updates
 - Epsilon-greedy exploration
 - Training loop for reinforcement learning
-- Integration with gymnasium for RL environments
+- Integration with gymnasium and gymnax for RL environments
+- JAX-native rollouts using jax.lax.scan with gymnax
 - Video recording of trained agent simulation
 
 Run: python advanced/dqn_reinforcement_learning.py
@@ -20,6 +21,9 @@ Reference:
     
     Mnih et al. "Human-level control through deep reinforcement learning"
     Nature 2015. https://doi.org/10.1038/nature14236
+    
+    Lange "gymnax: Classic Gym Environments in JAX"
+    GitHub 2022. https://github.com/RobertTLange/gymnax
 """
 
 import jax
@@ -27,11 +31,26 @@ import jax.numpy as jnp
 from flax import nnx
 import optax
 import numpy as np
-from typing import Dict, List, Tuple, NamedTuple, Optional
+from typing import Dict, List, Tuple, NamedTuple, Optional, Any
 import time
 from collections import deque
 import random
-import gymnasium as gym
+
+# Import gymnasium (optional, for video recording)
+try:
+    import gymnasium as gym
+    HAS_GYMNASIUM = True
+except ImportError:
+    HAS_GYMNASIUM = False
+    gym = None
+
+# Import gymnax for JAX-native environments
+try:
+    import gymnax
+    HAS_GYMNAX = True
+except ImportError:
+    HAS_GYMNAX = False
+    gymnax = None
 
 import sys
 from pathlib import Path
@@ -726,6 +745,11 @@ class CartPoleEnv:
         Args:
             seed: Random seed for reproducibility
         """
+        if not HAS_GYMNASIUM:
+            raise ImportError(
+                "gymnasium is not installed. Install with: "
+                "pip install gymnasium[classic-control]"
+            )
         self.env = gym.make('CartPole-v1')
         self._seed = seed
         if seed is not None:
@@ -763,9 +787,428 @@ class CartPoleEnv:
         return 2
 
 
+class GymnaxCartPoleEnv:
+    """
+    Wrapper around gymnax's CartPole-v1 environment for JAX-native RL.
+    
+    gymnax provides fully JAX-compatible environments that support:
+    - JIT compilation for fast training
+    - vmap for parallel environment execution
+    - Full compatibility with JAX transformations
+    
+    State: [cart_position, cart_velocity, pole_angle, pole_angular_velocity]
+    Actions: 0 (push left), 1 (push right)
+    
+    Reference:
+        Lange "gymnax: Classic Gym Environments in JAX"
+        https://github.com/RobertTLange/gymnax
+    
+    Example usage:
+        >>> env = GymnaxCartPoleEnv(seed=42)
+        >>> state, obs = env.reset()
+        >>> next_obs, next_state, reward, done, info = env.step(state, action)
+    """
+    
+    def __init__(self, seed: int = 0):
+        """
+        Initialize gymnax CartPole-v1 environment.
+        
+        Args:
+            seed: Random seed for reproducibility
+        """
+        if not HAS_GYMNAX:
+            raise ImportError(
+                "gymnax is not installed. Install with: "
+                "pip install gymnax"
+            )
+        
+        self.env, self.env_params = gymnax.make("CartPole-v1")
+        self.key = jax.random.key(seed)
+        self._seed = seed
+    
+    def reset(self) -> Tuple[Any, jax.Array]:
+        """
+        Reset environment to initial state.
+        
+        Returns:
+            state: Internal environment state (for gymnax step function)
+            obs: Observable state as JAX array (4,)
+        """
+        self.key, key_reset = jax.random.split(self.key)
+        obs, state = self.env.reset(key_reset, self.env_params)
+        return state, obs
+    
+    def step(
+        self,
+        state: Any,
+        action: jax.Array
+    ) -> Tuple[jax.Array, Any, jax.Array, jax.Array, dict]:
+        """
+        Take a step in the environment (JAX-compatible).
+        
+        Args:
+            state: Current environment state
+            action: Action to take (0 or 1)
+            
+        Returns:
+            next_obs: Next observation (4,)
+            next_state: Next internal state
+            reward: Reward received
+            done: Whether episode is done
+            info: Additional info dict
+        """
+        self.key, key_step = jax.random.split(self.key)
+        next_obs, next_state, reward, done, info = self.env.step(
+            key_step, state, action, self.env_params
+        )
+        return next_obs, next_state, reward, done, info
+    
+    def step_numpy(
+        self,
+        state: Any,
+        action: int
+    ) -> Tuple[np.ndarray, Any, float, bool, dict]:
+        """
+        Take a step in the environment (NumPy-compatible for standard training).
+        
+        Args:
+            state: Current environment state
+            action: Action to take (0 or 1)
+            
+        Returns:
+            next_obs: Next observation as numpy array
+            next_state: Next internal state
+            reward: Reward as float
+            done: Whether episode is done
+            info: Additional info dict
+        """
+        next_obs, next_state, reward, done, info = self.step(state, jnp.array(action))
+        return (
+            np.asarray(next_obs, dtype=np.float32),
+            next_state,
+            float(reward),
+            bool(done),
+            info
+        )
+    
+    def reset_numpy(self) -> Tuple[Any, np.ndarray]:
+        """
+        Reset environment (NumPy-compatible for standard training).
+        
+        Returns:
+            state: Internal environment state
+            obs: Observable state as numpy array
+        """
+        state, obs = self.reset()
+        return state, np.asarray(obs, dtype=np.float32)
+    
+    def close(self):
+        """No cleanup needed for gymnax environments."""
+        pass
+    
+    @property
+    def state_dim(self) -> int:
+        return 4
+    
+    @property
+    def action_dim(self) -> int:
+        return 2
+
+
+def gymnax_rollout(
+    key: jax.Array,
+    policy_fn,
+    policy_params: Any,
+    steps_in_episode: int,
+    env_name: str = "CartPole-v1"
+) -> Tuple[jax.Array, jax.Array, jax.Array, jax.Array, jax.Array]:
+    """
+    Perform a JAX-native episode rollout using jax.lax.scan.
+    
+    This function demonstrates the power of gymnax for fully JIT-compiled
+    rollouts, enabling fast training and evaluation.
+    
+    Args:
+        key: JAX random key
+        policy_fn: Policy function: (params, obs, key) -> action
+        policy_params: Parameters for policy function
+        steps_in_episode: Maximum number of steps
+        env_name: Name of gymnax environment
+        
+    Returns:
+        obs: Observations of shape (steps, obs_dim)
+        actions: Actions of shape (steps,)
+        rewards: Rewards of shape (steps,)
+        next_obs: Next observations of shape (steps, obs_dim)
+        dones: Done flags of shape (steps,)
+        
+    Example:
+        >>> from flax import linen as nn
+        >>> class Policy(nn.Module):
+        ...     @nn.compact
+        ...     def __call__(self, x, key):
+        ...         return nn.Dense(2)(x)
+        >>> model = Policy()
+        >>> params = model.init(jax.random.key(0), jnp.zeros(4), None)
+        >>> obs, actions, rewards, next_obs, dones = gymnax_rollout(
+        ...     jax.random.key(42), model.apply, params, 200
+        ... )
+    """
+    if not HAS_GYMNAX:
+        raise ImportError(
+            "gymnax is not installed. Install with: "
+            "pip install gymnax"
+        )
+    
+    env, env_params = gymnax.make(env_name)
+    
+    # Reset the environment
+    key, key_reset, key_episode = jax.random.split(key, 3)
+    obs, state = env.reset(key_reset, env_params)
+    
+    def policy_step(state_input, _):
+        """Step transition in JAX env using jax.lax.scan."""
+        obs, state, policy_params, key = state_input
+        key, key_step, key_net = jax.random.split(key, 3)
+        
+        # Get action from policy
+        action = policy_fn(policy_params, obs, key_net)
+        # For discrete actions, take argmax if output is logits (multi-dimensional output)
+        action_shape = getattr(action, 'shape', ())
+        if action_shape and action_shape[-1] > 1:
+            action = jnp.argmax(action, axis=-1)
+        
+        # Step environment
+        next_obs, next_state, reward, done, _ = env.step(
+            key_step, state, action, env_params
+        )
+        
+        carry = [next_obs, next_state, policy_params, key]
+        return carry, [obs, action, reward, next_obs, done]
+    
+    # Scan over episode step loop
+    _, scan_out = jax.lax.scan(
+        policy_step,
+        [obs, state, policy_params, key_episode],
+        None,  # No input needed, just counting
+        steps_in_episode
+    )
+    
+    obs, action, reward, next_obs, done = scan_out
+    return obs, action, reward, next_obs, done
+
+
+def gymnax_vmap_rollout(
+    keys: jax.Array,
+    policy_fn,
+    policy_params: Any,
+    steps_in_episode: int,
+    env_name: str = "CartPole-v1"
+) -> Tuple[jax.Array, jax.Array, jax.Array, jax.Array, jax.Array]:
+    """
+    Perform parallel episode rollouts using vmap.
+    
+    This enables training on multiple environments simultaneously,
+    significantly speeding up data collection.
+    
+    Args:
+        keys: JAX random keys of shape (num_envs,)
+        policy_fn: Policy function: (params, obs, key) -> action
+        policy_params: Parameters for policy function
+        steps_in_episode: Maximum number of steps
+        env_name: Name of gymnax environment
+        
+    Returns:
+        obs: Observations of shape (num_envs, steps, obs_dim)
+        actions: Actions of shape (num_envs, steps)
+        rewards: Rewards of shape (num_envs, steps)
+        next_obs: Next observations of shape (num_envs, steps, obs_dim)
+        dones: Done flags of shape (num_envs, steps)
+        
+    Example:
+        >>> keys = jax.random.split(jax.random.key(0), 8)  # 8 parallel envs
+        >>> obs, actions, rewards, next_obs, dones = gymnax_vmap_rollout(
+        ...     keys, model.apply, params, 200
+        ... )
+        >>> print(obs.shape)  # (8, 200, 4)
+    """
+    vmap_rollout = jax.vmap(
+        gymnax_rollout,
+        in_axes=(0, None, None, None, None)
+    )
+    return vmap_rollout(keys, policy_fn, policy_params, steps_in_episode, env_name)
+
+
 # ============================================================================
 # 6. TRAINING LOOP
 # ============================================================================
+
+def train_dqn_gymnax(
+    num_episodes: int = 300,
+    max_steps_per_episode: int = 500,
+    learning_rate: float = 1e-3,
+    gamma: float = 0.99,
+    batch_size: int = 64,
+    buffer_size: int = 10000,
+    epsilon_decay_steps: int = 5000,
+    hidden_dim: int = 128,
+    use_dueling: bool = False,
+    architecture: str = None,
+    eval_frequency: int = 20,
+    seed: int = 42,
+    verbose: bool = True
+) -> Tuple[DQNAgent, List[float], Dict]:
+    """
+    Train DQN agent on CartPole environment using gymnax (JAX-native).
+    
+    This function uses gymnax for JAX-compatible environment simulation,
+    enabling faster training through JIT compilation.
+    
+    Args:
+        num_episodes: Number of training episodes
+        max_steps_per_episode: Maximum steps per episode
+        learning_rate: Learning rate
+        gamma: Discount factor
+        batch_size: Training batch size
+        buffer_size: Replay buffer size
+        epsilon_decay_steps: Steps for epsilon decay
+        hidden_dim: Network hidden dimension
+        use_dueling: Whether to use dueling architecture (deprecated, use architecture)
+        architecture: Network architecture: 'standard', 'dueling', 'noisy', 'deep'
+        eval_frequency: Episodes between evaluations
+        seed: Random seed
+        verbose: Whether to print training progress
+        
+    Returns:
+        Trained agent, episode rewards, and training metrics dict
+        
+    Example:
+        >>> agent, rewards, metrics = train_dqn_gymnax(
+        ...     num_episodes=100,
+        ...     architecture='standard',
+        ...     seed=42
+        ... )
+        >>> print(f"Final avg reward: {metrics['final_avg_reward']:.1f}")
+    """
+    if not HAS_GYMNAX:
+        raise ImportError(
+            "gymnax is not installed. Install with: "
+            "pip install gymnax"
+        )
+    
+    # Create gymnax environment
+    env = GymnaxCartPoleEnv(seed=seed)
+    
+    arch = architecture or ('dueling' if use_dueling else 'standard')
+    
+    agent = DQNAgent(
+        state_dim=env.state_dim,
+        action_dim=env.action_dim,
+        hidden_dim=hidden_dim,
+        learning_rate=learning_rate,
+        gamma=gamma,
+        buffer_size=buffer_size,
+        batch_size=batch_size,
+        epsilon_decay_steps=epsilon_decay_steps,
+        architecture=arch,
+        seed=seed
+    )
+    
+    episode_rewards = []
+    best_reward = 0
+    training_times = []
+    
+    arch_names = {
+        'standard': 'Standard DQN',
+        'dueling': 'Dueling DQN',
+        'noisy': 'NoisyNet DQN',
+        'deep': 'Deep DQN (4-layer)'
+    }
+    
+    if verbose:
+        print(f"\n{'='*70}")
+        print("DEEP Q-NETWORK (DQN) TRAINING WITH GYMNAX")
+        print(f"{'='*70}")
+        print(f"Architecture: {arch_names.get(arch, arch)}")
+        print(f"Environment: gymnax CartPole-v1 (JAX-native)")
+        print(f"Episodes: {num_episodes}")
+        print(f"Learning rate: {learning_rate}")
+        print(f"Gamma: {gamma}")
+        print(f"Batch size: {batch_size}")
+        print(f"{'='*70}\n")
+    
+    start_time = time.time()
+    
+    for episode in range(1, num_episodes + 1):
+        # Reset environment (gymnax returns state and obs)
+        env_state, obs = env.reset_numpy()
+        episode_reward = 0
+        
+        for step in range(max_steps_per_episode):
+            # Select and take action
+            action = agent.select_action(obs)
+            next_obs, env_state, reward, done, _ = env.step_numpy(env_state, action)
+            
+            # Store transition
+            agent.store_transition(obs, action, reward, next_obs, done)
+            
+            # Train
+            agent.train_step()
+            
+            episode_reward += reward
+            obs = next_obs
+            
+            if done:
+                break
+        
+        episode_rewards.append(episode_reward)
+        training_times.append(time.time() - start_time)
+        
+        # Update best reward
+        if episode_reward > best_reward:
+            best_reward = episode_reward
+        
+        # Logging
+        if verbose and episode % eval_frequency == 0:
+            avg_reward = np.mean(episode_rewards[-eval_frequency:])
+            elapsed = time.time() - start_time
+            
+            print(f"Episode {episode:4d} | "
+                  f"Avg Reward: {avg_reward:6.1f} | "
+                  f"Best: {best_reward:6.1f} | "
+                  f"Epsilon: {agent.exploration.epsilon:.3f} | "
+                  f"Buffer: {len(agent.replay_buffer):6d} | "
+                  f"Time: {elapsed:.1f}s")
+    
+    total_time = time.time() - start_time
+    
+    if verbose:
+        print(f"\n{'='*70}")
+        print("TRAINING COMPLETE (gymnax)")
+        print(f"{'='*70}")
+        print(f"Total time: {total_time:.2f}s")
+        print(f"Best episode reward: {best_reward:.1f}")
+        print(f"Final average (last 20): {np.mean(episode_rewards[-20:]):.1f}")
+        print(f"{'='*70}\n")
+    
+    # Compute model metrics
+    params = nnx.state(agent.q_network, nnx.Param)
+    num_params = sum(p.size for p in jax.tree.leaves(params))
+    
+    metrics = {
+        'architecture': arch,
+        'environment': 'gymnax',
+        'total_time': total_time,
+        'best_reward': best_reward,
+        'final_avg_reward': float(np.mean(episode_rewards[-20:])),
+        'num_params': num_params,
+        'training_times': training_times,
+        'episode_per_second': num_episodes / total_time
+    }
+    
+    env.close()
+    return agent, episode_rewards, metrics
+
 
 def train_dqn(
     num_episodes: int = 300,
@@ -916,7 +1359,7 @@ def train_dqn(
 
 def evaluate_agent(agent: DQNAgent, num_episodes: int = 10, seed: int = 0) -> float:
     """
-    Evaluate trained agent.
+    Evaluate trained agent using gymnasium.
     
     Args:
         agent: Trained DQN agent
@@ -936,6 +1379,56 @@ def evaluate_agent(agent: DQNAgent, num_episodes: int = 10, seed: int = 0) -> fl
         while True:
             action = agent.select_action(state, eval_mode=True)
             state, reward, done, _ = env.step(action)
+            episode_reward += reward
+            
+            if done:
+                break
+        
+        rewards.append(episode_reward)
+    
+    env.close()
+    return np.mean(rewards)
+
+
+def evaluate_agent_gymnax(
+    agent: DQNAgent,
+    num_episodes: int = 10,
+    seed: int = 0,
+    max_steps: int = 500
+) -> float:
+    """
+    Evaluate trained agent using gymnax (JAX-native).
+    
+    Args:
+        agent: Trained DQN agent
+        num_episodes: Number of evaluation episodes
+        seed: Random seed
+        max_steps: Maximum steps per episode
+        
+    Returns:
+        Average reward across episodes
+        
+    Example:
+        >>> agent, _, _ = train_dqn_gymnax(num_episodes=100)
+        >>> avg_reward = evaluate_agent_gymnax(agent, num_episodes=10)
+        >>> print(f"Average reward: {avg_reward:.1f}")
+    """
+    if not HAS_GYMNAX:
+        raise ImportError(
+            "gymnax is not installed. Install with: "
+            "pip install gymnax"
+        )
+    
+    env = GymnaxCartPoleEnv(seed=seed)
+    rewards = []
+    
+    for episode in range(num_episodes):
+        env_state, obs = env.reset_numpy()
+        episode_reward = 0
+        
+        for _ in range(max_steps):
+            action = agent.select_action(obs, eval_mode=True)
+            obs, env_state, reward, done, _ = env.step_numpy(env_state, action)
             episode_reward += reward
             
             if done:
@@ -1520,7 +2013,56 @@ def main():
     print("FLAX NNX: DEEP Q-NETWORK (DQN) REINFORCEMENT LEARNING")
     print("=" * 70)
     
-    # Compare all architectures
+    # Check for gymnax availability and demonstrate if available
+    if HAS_GYMNAX:
+        print("\n🚀 gymnax detected - demonstrating JAX-native training...")
+        print("=" * 70)
+        
+        # Train with gymnax (faster, JAX-native)
+        print("\n📊 Training DQN with gymnax (JAX-native environment)...")
+        agent_gymnax, rewards_gymnax, metrics_gymnax = train_dqn_gymnax(
+            num_episodes=100,
+            architecture='standard',
+            hidden_dim=128,
+            seed=42,
+            verbose=True
+        )
+        
+        # Evaluate with gymnax
+        print("\n🎯 Evaluating gymnax-trained agent...")
+        eval_reward_gymnax = evaluate_agent_gymnax(agent_gymnax, num_episodes=10)
+        print(f"Average evaluation reward (gymnax): {eval_reward_gymnax:.1f}")
+        
+        # Demonstrate JAX-native rollout
+        print("\n🔧 Demonstrating JAX-native rollout with jax.lax.scan...")
+        key = jax.random.key(42)
+        
+        # Create a simple policy function for demonstration
+        def random_policy(params, obs, key):
+            """Random policy for demonstration."""
+            return jax.random.randint(key, (), 0, 2)
+        
+        obs, actions, rewards, next_obs, dones = gymnax_rollout(
+            key, random_policy, None, 200, "CartPole-v1"
+        )
+        print(f"  Rollout shapes - obs: {obs.shape}, rewards: {rewards.shape}")
+        print(f"  Total reward: {jnp.sum(rewards):.1f}")
+        
+        # Demonstrate parallel rollouts with vmap
+        print("\n🔧 Demonstrating parallel rollouts with vmap...")
+        keys = jax.random.split(key, 8)  # 8 parallel environments
+        obs_batch, _, rewards_batch, _, _ = gymnax_vmap_rollout(
+            keys, random_policy, None, 200, "CartPole-v1"
+        )
+        print(f"  Parallel rollout shapes - obs: {obs_batch.shape}")
+        print(f"  Mean total reward across envs: {jnp.mean(jnp.sum(rewards_batch, axis=1)):.1f}")
+        
+        print("\n" + "=" * 70)
+    else:
+        print("\n⚠️ gymnax not installed - using gymnasium only")
+        print("   Install gymnax: pip install gymnax")
+    
+    # Compare all architectures (using gymnasium for full comparison)
     print("\n📊 Comparing DQN Architectures...")
     comparison_results = compare_architectures(
         architectures=['standard', 'dueling', 'noisy', 'deep'],
@@ -1588,6 +2130,10 @@ def main():
     print("  ✓ TD-learning training loop")
     print("  ✓ Video recording of trained agent")
     print("  ✓ Training progress visualization")
+    if HAS_GYMNAX:
+        print("  ✓ gymnax JAX-native environment integration")
+        print("  ✓ JAX-native rollouts with jax.lax.scan")
+        print("  ✓ Parallel rollouts with vmap")
     print("=" * 70 + "\n")
 
 
