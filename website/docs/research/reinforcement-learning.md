@@ -520,7 +520,7 @@ For maximum performance, you can use [gymnax](https://github.com/RobertTLange/gy
 ### Installing gymnax
 
 ```bash
-pip install git+https://github.com/RobertTLange/gymnax.git@main
+pip install gymnax
 ```
 
 ### Basic gymnax API

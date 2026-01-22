@@ -819,7 +819,7 @@ class GymnaxCartPoleEnv:
         if not HAS_GYMNAX:
             raise ImportError(
                 "gymnax is not installed. Install with: "
-                "pip install git+https://github.com/RobertTLange/gymnax.git@main"
+                "pip install gymnax"
             )
         
         self.env, self.env_params = gymnax.make("CartPole-v1")
@@ -957,7 +957,7 @@ def gymnax_rollout(
     if not HAS_GYMNAX:
         raise ImportError(
             "gymnax is not installed. Install with: "
-            "pip install git+https://github.com/RobertTLange/gymnax.git@main"
+            "pip install gymnax"
         )
     
     env, env_params = gymnax.make(env_name)
@@ -973,8 +973,9 @@ def gymnax_rollout(
         
         # Get action from policy
         action = policy_fn(policy_params, obs, key_net)
-        # For discrete actions, take argmax if output is logits (has multiple dimensions)
-        if hasattr(action, 'shape') and len(action.shape) > 0 and action.shape[-1] > 1:
+        # For discrete actions, take argmax if output is logits (multi-dimensional output)
+        action_shape = getattr(action, 'shape', ())
+        if action_shape and action_shape[-1] > 1:
             action = jnp.argmax(action, axis=-1)
         
         # Step environment
@@ -1092,7 +1093,7 @@ def train_dqn_gymnax(
     if not HAS_GYMNAX:
         raise ImportError(
             "gymnax is not installed. Install with: "
-            "pip install git+https://github.com/RobertTLange/gymnax.git@main"
+            "pip install gymnax"
         )
     
     # Create gymnax environment
@@ -1415,7 +1416,7 @@ def evaluate_agent_gymnax(
     if not HAS_GYMNAX:
         raise ImportError(
             "gymnax is not installed. Install with: "
-            "pip install git+https://github.com/RobertTLange/gymnax.git@main"
+            "pip install gymnax"
         )
     
     env = GymnaxCartPoleEnv(seed=seed)
@@ -2059,7 +2060,7 @@ def main():
         print("\n" + "=" * 70)
     else:
         print("\n⚠️ gymnax not installed - using gymnasium only")
-        print("   Install gymnax: pip install git+https://github.com/RobertTLange/gymnax.git@main")
+        print("   Install gymnax: pip install gymnax")
     
     # Compare all architectures (using gymnasium for full comparison)
     print("\n📊 Comparing DQN Architectures...")
