@@ -439,3 +439,54 @@ class TestDuelingAgent:
         
         assert isinstance(loss, float)
         assert np.isfinite(loss)
+
+
+@pytest.mark.unit
+class TestVisualization:
+    """Tests for visualization functions."""
+    
+    def test_plot_training_progress(self):
+        """Test plot_training_progress function."""
+        from advanced.dqn_reinforcement_learning import plot_training_progress
+        import os
+        import tempfile
+        
+        # Skip if matplotlib not installed
+        try:
+            import matplotlib
+        except ImportError:
+            pytest.skip("matplotlib not installed")
+        
+        # Create dummy episode rewards
+        rewards = [float(i + np.random.randn() * 10) for i in range(100)]
+        
+        # Test with save to temp file
+        with tempfile.NamedTemporaryFile(suffix='.png', delete=False) as f:
+            temp_path = f.name
+        
+        try:
+            # Should not raise
+            plot_training_progress(rewards, save_path=temp_path)
+            
+            # Check file was created
+            assert os.path.exists(temp_path)
+            assert os.path.getsize(temp_path) > 0
+        finally:
+            if os.path.exists(temp_path):
+                os.remove(temp_path)
+    
+    def test_plot_training_progress_no_save(self):
+        """Test plot_training_progress without saving."""
+        from advanced.dqn_reinforcement_learning import plot_training_progress
+        
+        rewards = [float(i) for i in range(50)]
+        
+        # Should not raise (gracefully handles missing matplotlib)
+        plot_training_progress(rewards, save_path=None)
+    
+    def test_record_video_function_exists(self):
+        """Test that record_video function can be imported."""
+        from advanced.dqn_reinforcement_learning import record_video
+        
+        # Function should exist
+        assert callable(record_video)

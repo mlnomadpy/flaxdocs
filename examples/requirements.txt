@@ -29,7 +29,11 @@ pillow>=10.0.0
 # grain-nightly
 
 # Reinforcement Learning
-gymnasium>=0.29.0
+gymnasium[classic-control]>=0.29.0  # Includes pygame for rendering
+moviepy>=1.0.0  # For video recording in gymnasium
+
+# Visualization
+matplotlib>=3.7.0
 
 # Development
 numpy>=1.24.0

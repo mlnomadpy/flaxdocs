@@ -10,6 +10,7 @@ This example demonstrates:
 - Epsilon-greedy exploration
 - Training loop for reinforcement learning
 - Integration with gymnasium for RL environments
+- Video recording of trained agent simulation
 
 Run: python advanced/dqn_reinforcement_learning.py
 
@@ -785,7 +786,158 @@ def evaluate_agent(agent: DQNAgent, num_episodes: int = 10, seed: int = 0) -> fl
 
 
 # ============================================================================
-# 7. MAIN DEMONSTRATION
+# 7. VIDEO RECORDING AND VISUALIZATION
+# ============================================================================
+
+def record_video(
+    agent: DQNAgent,
+    video_folder: str = "videos",
+    video_name: str = "dqn_cartpole",
+    num_episodes: int = 3,
+    max_steps: int = 500,
+    seed: int = 0
+) -> str:
+    """
+    Record video of trained agent playing CartPole.
+    
+    Uses gymnasium's RecordVideo wrapper to capture the simulation
+    and save it as an MP4 video file.
+    
+    Args:
+        agent: Trained DQN agent
+        video_folder: Directory to save videos
+        video_name: Name prefix for the video file
+        num_episodes: Number of episodes to record
+        max_steps: Maximum steps per episode
+        seed: Random seed for reproducibility
+        
+    Returns:
+        Path to the saved video file
+        
+    Example:
+        >>> agent, _ = train_dqn(num_episodes=100)
+        >>> video_path = record_video(agent, video_folder="./my_videos")
+        >>> print(f"Video saved to: {video_path}")
+    """
+    from gymnasium.wrappers import RecordVideo
+    import os
+    
+    # Create video folder if it doesn't exist
+    os.makedirs(video_folder, exist_ok=True)
+    
+    # Create environment with rgb_array render mode for video recording
+    env = gym.make('CartPole-v1', render_mode='rgb_array')
+    
+    # Wrap with RecordVideo - records all episodes
+    env = RecordVideo(
+        env, 
+        video_folder=video_folder,
+        name_prefix=video_name,
+        episode_trigger=lambda x: True  # Record all episodes
+    )
+    
+    print(f"\n🎬 Recording {num_episodes} episodes...")
+    
+    total_rewards = []
+    
+    for episode in range(num_episodes):
+        state, _ = env.reset(seed=seed + episode)
+        state = state.astype(np.float32)
+        episode_reward = 0
+        
+        for step in range(max_steps):
+            # Get action from trained agent (greedy/eval mode)
+            action = agent.select_action(state, eval_mode=True)
+            
+            # Take step in environment
+            next_state, reward, terminated, truncated, _ = env.step(action)
+            done = terminated or truncated
+            
+            episode_reward += reward
+            state = next_state.astype(np.float32)
+            
+            if done:
+                break
+        
+        total_rewards.append(episode_reward)
+        print(f"  Episode {episode + 1}/{num_episodes}: Reward = {episode_reward:.0f}")
+    
+    env.close()
+    
+    # Find the recorded video file
+    video_files = [f for f in os.listdir(video_folder) if f.startswith(video_name) and f.endswith('.mp4')]
+    video_path = os.path.join(video_folder, video_files[-1]) if video_files else video_folder
+    
+    print(f"\n✅ Video saved to: {video_folder}/")
+    print(f"   Average reward: {np.mean(total_rewards):.1f}")
+    
+    return video_path
+
+
+def plot_training_progress(
+    episode_rewards: List[float],
+    window_size: int = 20,
+    save_path: str = None,
+    title: str = "DQN Training Progress"
+) -> None:
+    """
+    Plot training progress with episode rewards and moving average.
+    
+    Args:
+        episode_rewards: List of rewards per episode
+        window_size: Window size for moving average
+        save_path: Optional path to save the plot image
+        title: Title for the plot
+        
+    Example:
+        >>> agent, rewards = train_dqn(num_episodes=200)
+        >>> plot_training_progress(rewards, save_path="training_plot.png")
+    """
+    try:
+        import matplotlib.pyplot as plt
+    except ImportError:
+        print("matplotlib not installed. Skipping plot.")
+        print("Install with: pip install matplotlib")
+        return
+    
+    fig, ax = plt.subplots(figsize=(10, 6))
+    
+    episodes = range(1, len(episode_rewards) + 1)
+    
+    # Plot raw rewards
+    ax.plot(episodes, episode_rewards, alpha=0.3, color='blue', label='Episode Reward')
+    
+    # Calculate and plot moving average
+    if len(episode_rewards) >= window_size:
+        moving_avg = []
+        for i in range(len(episode_rewards)):
+            if i < window_size:
+                moving_avg.append(np.mean(episode_rewards[:i+1]))
+            else:
+                moving_avg.append(np.mean(episode_rewards[i-window_size+1:i+1]))
+        ax.plot(episodes, moving_avg, color='red', linewidth=2, 
+                label=f'Moving Average ({window_size} episodes)')
+    
+    ax.set_xlabel('Episode')
+    ax.set_ylabel('Reward')
+    ax.set_title(title)
+    ax.legend()
+    ax.grid(True, alpha=0.3)
+    
+    # Set y-axis limit based on CartPole max reward
+    ax.set_ylim(0, 550)
+    
+    plt.tight_layout()
+    
+    if save_path:
+        plt.savefig(save_path, dpi=150)
+        print(f"📊 Plot saved to: {save_path}")
+    
+    plt.close(fig)
+
+
+# ============================================================================
+# 8. MAIN DEMONSTRATION
 # ============================================================================
 
 def main():
@@ -834,6 +986,33 @@ def main():
     dueling_eval_reward = evaluate_agent(dueling_agent, num_episodes=10)
     print(f"Average evaluation reward (Dueling): {dueling_eval_reward:.1f}")
     
+    # Plot training progress
+    print("\n📈 Plotting training progress...")
+    plot_training_progress(
+        rewards, 
+        save_path="dqn_training_progress.png",
+        title="Standard DQN Training Progress"
+    )
+    plot_training_progress(
+        dueling_rewards,
+        save_path="dueling_dqn_training_progress.png", 
+        title="Dueling DQN Training Progress"
+    )
+    
+    # Record video of trained agent
+    print("\n🎬 Recording video of trained Dueling DQN agent...")
+    try:
+        video_path = record_video(
+            dueling_agent,
+            video_folder="videos",
+            video_name="dueling_dqn_cartpole",
+            num_episodes=3,
+            seed=42
+        )
+    except Exception as e:
+        print(f"Video recording skipped: {e}")
+        print("Note: Video recording requires 'moviepy' package and may not work in headless environments.")
+    
     # Summary
     print("\n" + "=" * 70)
     print("SUMMARY")
@@ -847,6 +1026,8 @@ def main():
     print("  ✓ Epsilon-greedy exploration")
     print("  ✓ Target network with soft updates")
     print("  ✓ TD-learning training loop")
+    print("  ✓ Video recording of trained agent")
+    print("  ✓ Training progress visualization")
     print("=" * 70 + "\n")
 
 
