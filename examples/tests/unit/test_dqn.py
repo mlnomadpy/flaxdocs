@@ -490,3 +490,111 @@ class TestVisualization:
         
         # Function should exist
         assert callable(record_video)
+    
+    def test_compare_architectures_function_exists(self):
+        """Test that compare_architectures function can be imported."""
+        from advanced.dqn_reinforcement_learning import compare_architectures
+        
+        # Function should exist
+        assert callable(compare_architectures)
+
+
+@pytest.mark.unit
+class TestNewArchitectures:
+    """Tests for new network architectures."""
+    
+    def test_noisy_qnetwork_creation(self):
+        """Test NoisyQNetwork can be created."""
+        from advanced.dqn_reinforcement_learning import NoisyQNetwork
+        
+        rngs = nnx.Rngs(0)
+        model = NoisyQNetwork(
+            state_dim=4,
+            action_dim=2,
+            hidden_dim=64,
+            rngs=rngs
+        )
+        assert model is not None
+    
+    def test_noisy_qnetwork_forward_shape(self):
+        """Test NoisyQNetwork forward pass output shape."""
+        from advanced.dqn_reinforcement_learning import NoisyQNetwork
+        
+        batch_size = 8
+        state_dim = 4
+        action_dim = 2
+        
+        rngs = nnx.Rngs(0)
+        model = NoisyQNetwork(
+            state_dim=state_dim,
+            action_dim=action_dim,
+            hidden_dim=64,
+            rngs=rngs
+        )
+        
+        state = jnp.ones((batch_size, state_dim))
+        q_values = model(state)
+        
+        assert q_values.shape == (batch_size, action_dim)
+    
+    def test_deep_qnetwork_creation(self):
+        """Test DeepQNetwork can be created."""
+        from advanced.dqn_reinforcement_learning import DeepQNetwork
+        
+        rngs = nnx.Rngs(0)
+        model = DeepQNetwork(
+            state_dim=4,
+            action_dim=2,
+            hidden_dim=64,
+            rngs=rngs
+        )
+        assert model is not None
+    
+    def test_deep_qnetwork_forward_shape(self):
+        """Test DeepQNetwork forward pass output shape."""
+        from advanced.dqn_reinforcement_learning import DeepQNetwork
+        
+        batch_size = 8
+        state_dim = 4
+        action_dim = 2
+        
+        rngs = nnx.Rngs(0)
+        model = DeepQNetwork(
+            state_dim=state_dim,
+            action_dim=action_dim,
+            hidden_dim=64,
+            rngs=rngs
+        )
+        
+        state = jnp.ones((batch_size, state_dim))
+        q_values = model(state)
+        
+        assert q_values.shape == (batch_size, action_dim)
+    
+    def test_agent_with_noisy_architecture(self):
+        """Test DQNAgent with noisy architecture."""
+        from advanced.dqn_reinforcement_learning import DQNAgent
+        
+        agent = DQNAgent(
+            state_dim=4,
+            action_dim=2,
+            hidden_dim=64,
+            architecture='noisy',
+            seed=0
+        )
+        assert agent is not None
+        assert agent.architecture == 'noisy'
+    
+    def test_agent_with_deep_architecture(self):
+        """Test DQNAgent with deep architecture."""
+        from advanced.dqn_reinforcement_learning import DQNAgent
+        
+        agent = DQNAgent(
+            state_dim=4,
+            action_dim=2,
+            hidden_dim=64,
+            architecture='deep',
+            seed=0
+        )
+        assert agent is not None
+        assert agent.architecture == 'deep'
