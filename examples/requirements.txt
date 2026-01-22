@@ -31,6 +31,7 @@ pillow>=10.0.0
 # Reinforcement Learning
 gymnasium[classic-control]>=0.29.0  # Includes pygame for rendering
 moviepy>=1.0.0  # For video recording in gymnasium
+gymnax>=0.0.8  # JAX-native RL environments for fast, jit-compiled training
 
 # Visualization
 matplotlib>=3.7.0
