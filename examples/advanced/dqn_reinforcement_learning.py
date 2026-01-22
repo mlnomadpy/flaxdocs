@@ -27,7 +27,7 @@ import jax.numpy as jnp
 from flax import nnx
 import optax
 import numpy as np
-from typing import Dict, List, Tuple, NamedTuple
+from typing import Dict, List, Tuple, NamedTuple, Optional
 import time
 from collections import deque
 import random
@@ -796,7 +796,7 @@ def record_video(
     num_episodes: int = 3,
     max_steps: int = 500,
     seed: int = 0
-) -> str:
+) -> Optional[str]:
     """
     Record video of trained agent playing CartPole.
     
@@ -812,12 +812,13 @@ def record_video(
         seed: Random seed for reproducibility
         
     Returns:
-        Path to the saved video file
+        Path to the saved video file, or None if video creation failed
         
     Example:
         >>> agent, _ = train_dqn(num_episodes=100)
         >>> video_path = record_video(agent, video_folder="./my_videos")
-        >>> print(f"Video saved to: {video_path}")
+        >>> if video_path:
+        ...     print(f"Video saved to: {video_path}")
     """
     from gymnasium.wrappers import RecordVideo
     import os
@@ -864,11 +865,16 @@ def record_video(
     
     env.close()
     
-    # Find the recorded video file
-    video_files = [f for f in os.listdir(video_folder) if f.startswith(video_name) and f.endswith('.mp4')]
-    video_path = os.path.join(video_folder, video_files[-1]) if video_files else video_folder
+    # Find the recorded video file(s)
+    video_files = sorted([f for f in os.listdir(video_folder) if f.startswith(video_name) and f.endswith('.mp4')])
     
-    print(f"\n✅ Video saved to: {video_folder}/")
+    if video_files:
+        video_path = os.path.join(video_folder, video_files[-1])
+        print(f"\n✅ Video saved to: {video_path}")
+    else:
+        video_path = None
+        print(f"\n⚠️ No video files found in: {video_folder}")
+    
     print(f"   Average reward: {np.mean(total_rewards):.1f}")
     
     return video_path
