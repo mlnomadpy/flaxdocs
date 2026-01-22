@@ -10,6 +10,7 @@ This example demonstrates:
 - Epsilon-greedy exploration
 - Training loop for reinforcement learning
 - Integration with gymnasium for RL environments
+- Video recording of trained agent simulation
 
 Run: python advanced/dqn_reinforcement_learning.py
 
@@ -26,7 +27,7 @@ import jax.numpy as jnp
 from flax import nnx
 import optax
 import numpy as np
-from typing import Dict, List, Tuple, NamedTuple
+from typing import Dict, List, Tuple, NamedTuple, Optional
 import time
 from collections import deque
 import random
@@ -149,6 +150,117 @@ class DuelingQNetwork(nnx.Module):
         q_values = value + (advantage - jnp.mean(advantage, axis=-1, keepdims=True))
         
         return q_values
+
+
+class NoisyLinear(nnx.Module):
+    """
+    Noisy Linear layer for exploration via parameter noise.
+    
+    Reference:
+        Fortunato et al. "Noisy Networks for Exploration"
+        ICLR 2018. https://arxiv.org/abs/1706.10295
+    """
+    
+    def __init__(
+        self,
+        in_features: int,
+        out_features: int,
+        sigma_init: float = 0.5,
+        *,
+        rngs: nnx.Rngs
+    ):
+        self.in_features = in_features
+        self.out_features = out_features
+        self.sigma_init = sigma_init
+        
+        # Learnable parameters
+        mu_range = 1 / np.sqrt(in_features)
+        self.weight_mu = nnx.Param(
+            jax.random.uniform(rngs.params(), (out_features, in_features), minval=-mu_range, maxval=mu_range)
+        )
+        self.weight_sigma = nnx.Param(
+            jnp.full((out_features, in_features), sigma_init / np.sqrt(in_features))
+        )
+        self.bias_mu = nnx.Param(
+            jax.random.uniform(rngs.params(), (out_features,), minval=-mu_range, maxval=mu_range)
+        )
+        self.bias_sigma = nnx.Param(
+            jnp.full((out_features,), sigma_init / np.sqrt(out_features))
+        )
+        
+        self.rngs = rngs
+    
+    def __call__(self, x: jax.Array) -> jax.Array:
+        # Generate noise
+        weight_epsilon = jax.random.normal(self.rngs.noise(), (self.out_features, self.in_features))
+        bias_epsilon = jax.random.normal(self.rngs.noise(), (self.out_features,))
+        
+        # Noisy weights (using direct array access to avoid deprecation warnings)
+        weight = self.weight_mu[...] + self.weight_sigma[...] * weight_epsilon
+        bias = self.bias_mu[...] + self.bias_sigma[...] * bias_epsilon
+        
+        return x @ weight.T + bias
+
+
+class NoisyQNetwork(nnx.Module):
+    """
+    NoisyNet DQN that uses noisy layers for exploration.
+    
+    Replaces epsilon-greedy with learned exploration through parameter noise.
+    
+    Reference:
+        Fortunato et al. "Noisy Networks for Exploration"
+        ICLR 2018. https://arxiv.org/abs/1706.10295
+    """
+    
+    def __init__(
+        self,
+        state_dim: int,
+        action_dim: int,
+        hidden_dim: int = 128,
+        *,
+        rngs: nnx.Rngs
+    ):
+        self.fc1 = nnx.Linear(state_dim, hidden_dim, rngs=rngs)
+        self.fc2 = NoisyLinear(hidden_dim, hidden_dim, rngs=rngs)
+        self.fc3 = NoisyLinear(hidden_dim, action_dim, rngs=rngs)
+    
+    def __call__(self, state: jax.Array) -> jax.Array:
+        x = self.fc1(state)
+        x = nnx.relu(x)
+        x = self.fc2(x)
+        x = nnx.relu(x)
+        q_values = self.fc3(x)
+        return q_values
+
+
+class DeepQNetwork(nnx.Module):
+    """
+    Deep Q-Network with more layers for complex environments.
+    
+    Has 4 hidden layers instead of 2 for potentially better representation.
+    """
+    
+    def __init__(
+        self,
+        state_dim: int,
+        action_dim: int,
+        hidden_dim: int = 128,
+        *,
+        rngs: nnx.Rngs
+    ):
+        self.fc1 = nnx.Linear(state_dim, hidden_dim, rngs=rngs)
+        self.fc2 = nnx.Linear(hidden_dim, hidden_dim, rngs=rngs)
+        self.fc3 = nnx.Linear(hidden_dim, hidden_dim // 2, rngs=rngs)
+        self.fc4 = nnx.Linear(hidden_dim // 2, hidden_dim // 2, rngs=rngs)
+        self.fc5 = nnx.Linear(hidden_dim // 2, action_dim, rngs=rngs)
+    
+    def __call__(self, state: jax.Array) -> jax.Array:
+        x = nnx.relu(self.fc1(state))
+        x = nnx.relu(self.fc2(x))
+        x = nnx.relu(self.fc3(x))
+        x = nnx.relu(self.fc4(x))
+        return self.fc5(x)
 
 
 # ============================================================================
@@ -380,6 +492,8 @@ class DQNAgent:
     - Target network for stable learning
     - Experience replay for decorrelated training
     - Epsilon-greedy for exploration
+    
+    Supported architectures: 'standard', 'dueling', 'noisy', 'deep'
     """
     
     def __init__(
@@ -396,6 +510,7 @@ class DQNAgent:
         epsilon_end: float = 0.01,
         epsilon_decay_steps: int = 10000,
         use_dueling: bool = False,
+        architecture: str = None,
         seed: int = 0
     ):
         """
@@ -411,7 +526,8 @@ class DQNAgent:
             epsilon_start: Initial exploration rate
             epsilon_end: Final exploration rate
             epsilon_decay_steps: Steps for epsilon decay
-            use_dueling: Whether to use dueling architecture
+            use_dueling: Whether to use dueling architecture (deprecated, use architecture='dueling')
+            architecture: Network architecture: 'standard', 'dueling', 'noisy', 'deep'
             seed: Random seed
         """
         self.action_dim = action_dim
@@ -419,10 +535,26 @@ class DQNAgent:
         self.tau = tau
         self.batch_size = batch_size
         
+        # Resolve architecture (architecture param takes precedence over use_dueling)
+        if architecture is not None:
+            self.architecture = architecture
+        elif use_dueling:
+            self.architecture = 'dueling'
+        else:
+            self.architecture = 'standard'
+        
         # Initialize networks
         rngs = nnx.Rngs(seed)
         
-        NetworkClass = DuelingQNetwork if use_dueling else QNetwork
+        # Select network architecture
+        network_classes = {
+            'standard': QNetwork,
+            'dueling': DuelingQNetwork,
+            'noisy': NoisyQNetwork,
+            'deep': DeepQNetwork
+        }
+        NetworkClass = network_classes.get(self.architecture, QNetwork)
+        
         self.q_network = NetworkClass(
             state_dim=state_dim,
             action_dim=action_dim,
@@ -645,9 +777,11 @@ def train_dqn(
     epsilon_decay_steps: int = 5000,
     hidden_dim: int = 128,
     use_dueling: bool = False,
+    architecture: str = None,
     eval_frequency: int = 20,
-    seed: int = 42
-) -> Tuple[DQNAgent, List[float]]:
+    seed: int = 42,
+    verbose: bool = True
+) -> Tuple[DQNAgent, List[float], Dict]:
     """
     Train DQN agent on CartPole environment.
     
@@ -660,15 +794,19 @@ def train_dqn(
         buffer_size: Replay buffer size
         epsilon_decay_steps: Steps for epsilon decay
         hidden_dim: Network hidden dimension
-        use_dueling: Whether to use dueling architecture
+        use_dueling: Whether to use dueling architecture (deprecated, use architecture)
+        architecture: Network architecture: 'standard', 'dueling', 'noisy', 'deep'
         eval_frequency: Episodes between evaluations
         seed: Random seed
+        verbose: Whether to print training progress
         
     Returns:
-        Trained agent and episode rewards
+        Trained agent, episode rewards, and training metrics dict
     """
     # Create environment and agent
     env = CartPoleEnv(seed=seed)
+    
+    arch = architecture or ('dueling' if use_dueling else 'standard')
     
     agent = DQNAgent(
         state_dim=env.state_dim,
@@ -679,22 +817,31 @@ def train_dqn(
         buffer_size=buffer_size,
         batch_size=batch_size,
         epsilon_decay_steps=epsilon_decay_steps,
-        use_dueling=use_dueling,
+        architecture=arch,
         seed=seed
     )
     
     episode_rewards = []
     best_reward = 0
+    training_times = []
     
-    print(f"\n{'='*70}")
-    print("DEEP Q-NETWORK (DQN) TRAINING")
-    print(f"{'='*70}")
-    print(f"Architecture: {'Dueling DQN' if use_dueling else 'Standard DQN'}")
-    print(f"Episodes: {num_episodes}")
-    print(f"Learning rate: {learning_rate}")
-    print(f"Gamma: {gamma}")
-    print(f"Batch size: {batch_size}")
-    print(f"{'='*70}\n")
+    arch_names = {
+        'standard': 'Standard DQN',
+        'dueling': 'Dueling DQN',
+        'noisy': 'NoisyNet DQN',
+        'deep': 'Deep DQN (4-layer)'
+    }
+    
+    if verbose:
+        print(f"\n{'='*70}")
+        print("DEEP Q-NETWORK (DQN) TRAINING")
+        print(f"{'='*70}")
+        print(f"Architecture: {arch_names.get(arch, arch)}")
+        print(f"Episodes: {num_episodes}")
+        print(f"Learning rate: {learning_rate}")
+        print(f"Gamma: {gamma}")
+        print(f"Batch size: {batch_size}")
+        print(f"{'='*70}\n")
     
     start_time = time.time()
     
@@ -720,13 +867,14 @@ def train_dqn(
                 break
         
         episode_rewards.append(episode_reward)
+        training_times.append(time.time() - start_time)
         
         # Update best reward
         if episode_reward > best_reward:
             best_reward = episode_reward
         
         # Logging
-        if episode % eval_frequency == 0:
+        if verbose and episode % eval_frequency == 0:
             avg_reward = np.mean(episode_rewards[-eval_frequency:])
             elapsed = time.time() - start_time
             
@@ -739,16 +887,31 @@ def train_dqn(
     
     total_time = time.time() - start_time
     
-    print(f"\n{'='*70}")
-    print("TRAINING COMPLETE")
-    print(f"{'='*70}")
-    print(f"Total time: {total_time:.2f}s")
-    print(f"Best episode reward: {best_reward:.1f}")
-    print(f"Final average (last 20): {np.mean(episode_rewards[-20:]):.1f}")
-    print(f"{'='*70}\n")
+    if verbose:
+        print(f"\n{'='*70}")
+        print("TRAINING COMPLETE")
+        print(f"{'='*70}")
+        print(f"Total time: {total_time:.2f}s")
+        print(f"Best episode reward: {best_reward:.1f}")
+        print(f"Final average (last 20): {np.mean(episode_rewards[-20:]):.1f}")
+        print(f"{'='*70}\n")
+    
+    # Compute model metrics
+    params = nnx.state(agent.q_network, nnx.Param)
+    num_params = sum(p.size for p in jax.tree.leaves(params))
+    
+    metrics = {
+        'architecture': arch,
+        'total_time': total_time,
+        'best_reward': best_reward,
+        'final_avg_reward': float(np.mean(episode_rewards[-20:])),
+        'num_params': num_params,
+        'training_times': training_times,
+        'episode_per_second': num_episodes / total_time
+    }
     
     env.close()
-    return agent, episode_rewards
+    return agent, episode_rewards, metrics
 
 
 def evaluate_agent(agent: DQNAgent, num_episodes: int = 10, seed: int = 0) -> float:
@@ -785,28 +948,599 @@ def evaluate_agent(agent: DQNAgent, num_episodes: int = 10, seed: int = 0) -> fl
 
 
 # ============================================================================
-# 7. MAIN DEMONSTRATION
+# 7. VIDEO RECORDING AND VISUALIZATION
+# ============================================================================
+
+def record_video(
+    agent: DQNAgent,
+    video_folder: str = "videos",
+    video_name: str = "dqn_cartpole",
+    num_episodes: int = 3,
+    max_steps: int = 500,
+    seed: int = 0
+) -> Optional[str]:
+    """
+    Record video of trained agent playing CartPole.
+    
+    Uses gymnasium's RecordVideo wrapper to capture the simulation
+    and save it as an MP4 video file.
+    
+    Args:
+        agent: Trained DQN agent
+        video_folder: Directory to save videos
+        video_name: Name prefix for the video file
+        num_episodes: Number of episodes to record
+        max_steps: Maximum steps per episode
+        seed: Random seed for reproducibility
+        
+    Returns:
+        Path to the saved video file, or None if video creation failed
+        
+    Example:
+        >>> agent, _ = train_dqn(num_episodes=100)
+        >>> video_path = record_video(agent, video_folder="./my_videos")
+        >>> if video_path:
+        ...     print(f"Video saved to: {video_path}")
+    """
+    from gymnasium.wrappers import RecordVideo
+    import os
+    
+    # Create video folder if it doesn't exist
+    os.makedirs(video_folder, exist_ok=True)
+    
+    # Create environment with rgb_array render mode for video recording
+    env = gym.make('CartPole-v1', render_mode='rgb_array')
+    
+    # Wrap with RecordVideo - records all episodes
+    env = RecordVideo(
+        env, 
+        video_folder=video_folder,
+        name_prefix=video_name,
+        episode_trigger=lambda x: True  # Record all episodes
+    )
+    
+    print(f"\n🎬 Recording {num_episodes} episodes...")
+    
+    total_rewards = []
+    
+    for episode in range(num_episodes):
+        state, _ = env.reset(seed=seed + episode)
+        state = state.astype(np.float32)
+        episode_reward = 0
+        
+        for step in range(max_steps):
+            # Get action from trained agent (greedy/eval mode)
+            action = agent.select_action(state, eval_mode=True)
+            
+            # Take step in environment
+            next_state, reward, terminated, truncated, _ = env.step(action)
+            done = terminated or truncated
+            
+            episode_reward += reward
+            state = next_state.astype(np.float32)
+            
+            if done:
+                break
+        
+        total_rewards.append(episode_reward)
+        print(f"  Episode {episode + 1}/{num_episodes}: Reward = {episode_reward:.0f}")
+    
+    env.close()
+    
+    # Find the recorded video file(s)
+    video_files = sorted([f for f in os.listdir(video_folder) if f.startswith(video_name) and f.endswith('.mp4')])
+    
+    if video_files:
+        video_path = os.path.join(video_folder, video_files[-1])
+        print(f"\n✅ Video saved to: {video_path}")
+    else:
+        video_path = None
+        print(f"\n⚠️ No video files found in: {video_folder}")
+    
+    print(f"   Average reward: {np.mean(total_rewards):.1f}")
+    
+    return video_path
+
+
+def plot_training_progress(
+    episode_rewards: List[float],
+    window_size: int = 20,
+    save_path: str = None,
+    title: str = "DQN Training Progress"
+) -> None:
+    """
+    Plot training progress with episode rewards and moving average.
+    
+    Args:
+        episode_rewards: List of rewards per episode
+        window_size: Window size for moving average
+        save_path: Optional path to save the plot image
+        title: Title for the plot
+        
+    Example:
+        >>> agent, rewards = train_dqn(num_episodes=200)
+        >>> plot_training_progress(rewards, save_path="training_plot.png")
+    """
+    try:
+        import matplotlib.pyplot as plt
+    except ImportError:
+        print("matplotlib not installed. Skipping plot.")
+        print("Install with: pip install matplotlib")
+        return
+    
+    fig, ax = plt.subplots(figsize=(10, 6))
+    
+    episodes = range(1, len(episode_rewards) + 1)
+    
+    # Plot raw rewards
+    ax.plot(episodes, episode_rewards, alpha=0.3, color='blue', label='Episode Reward')
+    
+    # Calculate and plot moving average
+    if len(episode_rewards) >= window_size:
+        moving_avg = []
+        for i in range(len(episode_rewards)):
+            if i < window_size:
+                moving_avg.append(np.mean(episode_rewards[:i+1]))
+            else:
+                moving_avg.append(np.mean(episode_rewards[i-window_size+1:i+1]))
+        ax.plot(episodes, moving_avg, color='red', linewidth=2, 
+                label=f'Moving Average ({window_size} episodes)')
+    
+    ax.set_xlabel('Episode')
+    ax.set_ylabel('Reward')
+    ax.set_title(title)
+    ax.legend()
+    ax.grid(True, alpha=0.3)
+    
+    # Set y-axis limit based on CartPole max reward
+    ax.set_ylim(0, 550)
+    
+    plt.tight_layout()
+    
+    if save_path:
+        plt.savefig(save_path, dpi=150)
+        print(f"📊 Plot saved to: {save_path}")
+    
+    plt.close(fig)
+
+
+def compare_architectures(
+    architectures: List[str] = None,
+    num_episodes: int = 150,
+    num_runs: int = 1,
+    hidden_dim: int = 128,
+    seed: int = 42,
+    save_dir: str = "comparison_plots"
+) -> Dict:
+    """
+    Train and compare multiple DQN architectures.
+    
+    Generates comparison plots for:
+    - Training rewards over time
+    - Performance (final average reward)
+    - Training speed (episodes per second)
+    - Model size (number of parameters)
+    - Weight statistics (mean, std) over training
+    
+    Args:
+        architectures: List of architectures to compare ('standard', 'dueling', 'noisy', 'deep')
+        num_episodes: Number of training episodes per model
+        num_runs: Number of runs for averaging (use >1 for statistical significance)
+        hidden_dim: Hidden layer dimension
+        seed: Base random seed
+        save_dir: Directory to save comparison plots
+        
+    Returns:
+        Dictionary with comparison results and metrics
+        
+    Example:
+        >>> results = compare_architectures(['standard', 'dueling', 'deep'], num_episodes=100)
+        >>> print(results['summary'])
+    """
+    import os
+    
+    try:
+        import matplotlib.pyplot as plt
+    except ImportError:
+        print("matplotlib not installed. Skipping comparison plots.")
+        print("Install with: pip install matplotlib")
+        return {}
+    
+    os.makedirs(save_dir, exist_ok=True)
+    
+    if architectures is None:
+        architectures = ['standard', 'dueling', 'noisy', 'deep']
+    
+    arch_names = {
+        'standard': 'Standard DQN',
+        'dueling': 'Dueling DQN',
+        'noisy': 'NoisyNet DQN',
+        'deep': 'Deep DQN (4-layer)'
+    }
+    
+    colors = {
+        'standard': '#1f77b4',
+        'dueling': '#ff7f0e',
+        'noisy': '#2ca02c',
+        'deep': '#d62728'
+    }
+    
+    results = {
+        'architectures': architectures,
+        'rewards': {},
+        'metrics': {},
+        'weight_stats': {}
+    }
+    
+    print("\n" + "=" * 70)
+    print("DQN ARCHITECTURE COMPARISON")
+    print("=" * 70)
+    print(f"Architectures: {', '.join([arch_names.get(a, a) for a in architectures])}")
+    print(f"Episodes per model: {num_episodes}")
+    print(f"Runs per architecture: {num_runs}")
+    print("=" * 70 + "\n")
+    
+    # Train each architecture
+    for arch in architectures:
+        print(f"\n🔄 Training {arch_names.get(arch, arch)}...")
+        
+        all_rewards = []
+        all_metrics = []
+        
+        for run in range(num_runs):
+            run_seed = seed + run * 100
+            agent, rewards, metrics = train_dqn(
+                num_episodes=num_episodes,
+                architecture=arch,
+                hidden_dim=hidden_dim,
+                seed=run_seed,
+                verbose=(num_runs == 1)
+            )
+            all_rewards.append(rewards)
+            all_metrics.append(metrics)
+            
+            # Track weight statistics
+            params = nnx.state(agent.q_network, nnx.Param)
+            param_values = [p.flatten() for p in jax.tree.leaves(params)]
+            all_params = jnp.concatenate(param_values)
+            
+            if arch not in results['weight_stats']:
+                results['weight_stats'][arch] = {
+                    'mean': [],
+                    'std': [],
+                    'min': [],
+                    'max': []
+                }
+            results['weight_stats'][arch]['mean'].append(float(jnp.mean(all_params)))
+            results['weight_stats'][arch]['std'].append(float(jnp.std(all_params)))
+            results['weight_stats'][arch]['min'].append(float(jnp.min(all_params)))
+            results['weight_stats'][arch]['max'].append(float(jnp.max(all_params)))
+        
+        # Average rewards across runs (with empty list protection)
+        if all_rewards and all(len(r) > 0 for r in all_rewards):
+            max_len = max(len(r) for r in all_rewards)
+            padded_rewards = [r + [r[-1]] * (max_len - len(r)) for r in all_rewards]
+            avg_rewards = np.mean(padded_rewards, axis=0)
+        else:
+            avg_rewards = np.array([0.0])  # Default if no rewards
+        
+        results['rewards'][arch] = avg_rewards.tolist()
+        results['metrics'][arch] = {
+            'num_params': all_metrics[0]['num_params'],
+            'avg_time': np.mean([m['total_time'] for m in all_metrics]),
+            'avg_final_reward': np.mean([m['final_avg_reward'] for m in all_metrics]),
+            'avg_best_reward': np.mean([m['best_reward'] for m in all_metrics]),
+            'episodes_per_second': np.mean([m['episode_per_second'] for m in all_metrics])
+        }
+    
+    # Generate comparison plots
+    _plot_reward_comparison(results, arch_names, colors, save_dir)
+    _plot_performance_comparison(results, arch_names, colors, save_dir)
+    _plot_speed_comparison(results, arch_names, colors, save_dir)
+    _plot_size_comparison(results, arch_names, colors, save_dir)
+    _plot_weight_dynamics(results, arch_names, colors, save_dir)
+    
+    # Print summary
+    _print_comparison_summary(results, arch_names)
+    
+    results['summary'] = _generate_summary_dict(results, arch_names)
+    
+    return results
+
+
+def _plot_reward_comparison(results: Dict, arch_names: Dict, colors: Dict, save_dir: str):
+    """Plot training rewards comparison across architectures."""
+    import matplotlib.pyplot as plt
+    
+    fig, ax = plt.subplots(figsize=(12, 6))
+    
+    for arch, rewards in results['rewards'].items():
+        episodes = range(1, len(rewards) + 1)
+        
+        # Calculate moving average
+        window = 20
+        moving_avg = []
+        for i in range(len(rewards)):
+            if i < window:
+                moving_avg.append(np.mean(rewards[:i+1]))
+            else:
+                moving_avg.append(np.mean(rewards[i-window+1:i+1]))
+        
+        ax.plot(episodes, moving_avg, label=arch_names.get(arch, arch), 
+                color=colors.get(arch, 'gray'), linewidth=2)
+        ax.fill_between(episodes, 
+                        np.array(moving_avg) - 20,
+                        np.array(moving_avg) + 20,
+                        color=colors.get(arch, 'gray'), alpha=0.1)
+    
+    ax.set_xlabel('Episode', fontsize=12)
+    ax.set_ylabel('Reward (20-episode moving average)', fontsize=12)
+    ax.set_title('Training Reward Comparison Across DQN Architectures', fontsize=14)
+    ax.legend(loc='lower right', fontsize=10)
+    ax.grid(True, alpha=0.3)
+    ax.set_ylim(0, 550)
+    
+    plt.tight_layout()
+    save_path = f"{save_dir}/reward_comparison.png"
+    plt.savefig(save_path, dpi=150)
+    print(f"📊 Saved: {save_path}")
+    plt.close(fig)
+
+
+def _plot_performance_comparison(results: Dict, arch_names: Dict, colors: Dict, save_dir: str):
+    """Plot final performance bar chart."""
+    import matplotlib.pyplot as plt
+    
+    fig, ax = plt.subplots(figsize=(10, 6))
+    
+    archs = list(results['metrics'].keys())
+    final_rewards = [results['metrics'][a]['avg_final_reward'] for a in archs]
+    best_rewards = [results['metrics'][a]['avg_best_reward'] for a in archs]
+    
+    x = np.arange(len(archs))
+    width = 0.35
+    
+    bars1 = ax.bar(x - width/2, final_rewards, width, 
+                   label='Final Avg Reward (last 20 ep.)',
+                   color=[colors.get(a, 'gray') for a in archs], alpha=0.8)
+    bars2 = ax.bar(x + width/2, best_rewards, width,
+                   label='Best Episode Reward',
+                   color=[colors.get(a, 'gray') for a in archs], alpha=0.5)
+    
+    ax.set_xlabel('Architecture', fontsize=12)
+    ax.set_ylabel('Reward', fontsize=12)
+    ax.set_title('Performance Comparison: Final and Best Rewards', fontsize=14)
+    ax.set_xticks(x)
+    ax.set_xticklabels([arch_names.get(a, a) for a in archs], rotation=15)
+    ax.legend()
+    ax.grid(True, alpha=0.3, axis='y')
+    
+    # Add value labels on bars
+    for bar in bars1:
+        height = bar.get_height()
+        ax.annotate(f'{height:.1f}',
+                    xy=(bar.get_x() + bar.get_width() / 2, height),
+                    xytext=(0, 3), textcoords="offset points",
+                    ha='center', va='bottom', fontsize=9)
+    
+    plt.tight_layout()
+    save_path = f"{save_dir}/performance_comparison.png"
+    plt.savefig(save_path, dpi=150)
+    print(f"📊 Saved: {save_path}")
+    plt.close(fig)
+
+
+def _plot_speed_comparison(results: Dict, arch_names: Dict, colors: Dict, save_dir: str):
+    """Plot training speed comparison."""
+    import matplotlib.pyplot as plt
+    
+    fig, (ax1, ax2) = plt.subplots(1, 2, figsize=(14, 5))
+    
+    archs = list(results['metrics'].keys())
+    times = [results['metrics'][a]['avg_time'] for a in archs]
+    eps_per_sec = [results['metrics'][a]['episodes_per_second'] for a in archs]
+    
+    # Total training time
+    bars1 = ax1.bar(range(len(archs)), times, 
+                    color=[colors.get(a, 'gray') for a in archs])
+    ax1.set_xlabel('Architecture', fontsize=12)
+    ax1.set_ylabel('Training Time (seconds)', fontsize=12)
+    ax1.set_title('Total Training Time', fontsize=14)
+    ax1.set_xticks(range(len(archs)))
+    ax1.set_xticklabels([arch_names.get(a, a) for a in archs], rotation=15)
+    ax1.grid(True, alpha=0.3, axis='y')
+    
+    for bar in bars1:
+        height = bar.get_height()
+        ax1.annotate(f'{height:.1f}s',
+                     xy=(bar.get_x() + bar.get_width() / 2, height),
+                     xytext=(0, 3), textcoords="offset points",
+                     ha='center', va='bottom', fontsize=9)
+    
+    # Episodes per second
+    bars2 = ax2.bar(range(len(archs)), eps_per_sec,
+                    color=[colors.get(a, 'gray') for a in archs])
+    ax2.set_xlabel('Architecture', fontsize=12)
+    ax2.set_ylabel('Episodes per Second', fontsize=12)
+    ax2.set_title('Training Speed', fontsize=14)
+    ax2.set_xticks(range(len(archs)))
+    ax2.set_xticklabels([arch_names.get(a, a) for a in archs], rotation=15)
+    ax2.grid(True, alpha=0.3, axis='y')
+    
+    for bar in bars2:
+        height = bar.get_height()
+        ax2.annotate(f'{height:.1f}',
+                     xy=(bar.get_x() + bar.get_width() / 2, height),
+                     xytext=(0, 3), textcoords="offset points",
+                     ha='center', va='bottom', fontsize=9)
+    
+    plt.tight_layout()
+    save_path = f"{save_dir}/speed_comparison.png"
+    plt.savefig(save_path, dpi=150)
+    print(f"📊 Saved: {save_path}")
+    plt.close(fig)
+
+
+def _plot_size_comparison(results: Dict, arch_names: Dict, colors: Dict, save_dir: str):
+    """Plot model size (parameter count) comparison."""
+    import matplotlib.pyplot as plt
+    
+    fig, ax = plt.subplots(figsize=(10, 6))
+    
+    archs = list(results['metrics'].keys())
+    params = [results['metrics'][a]['num_params'] for a in archs]
+    
+    bars = ax.bar(range(len(archs)), params,
+                  color=[colors.get(a, 'gray') for a in archs])
+    
+    ax.set_xlabel('Architecture', fontsize=12)
+    ax.set_ylabel('Number of Parameters', fontsize=12)
+    ax.set_title('Model Size Comparison', fontsize=14)
+    ax.set_xticks(range(len(archs)))
+    ax.set_xticklabels([arch_names.get(a, a) for a in archs], rotation=15)
+    ax.grid(True, alpha=0.3, axis='y')
+    
+    for bar in bars:
+        height = bar.get_height()
+        ax.annotate(f'{height:,}',
+                    xy=(bar.get_x() + bar.get_width() / 2, height),
+                    xytext=(0, 3), textcoords="offset points",
+                    ha='center', va='bottom', fontsize=9)
+    
+    plt.tight_layout()
+    save_path = f"{save_dir}/size_comparison.png"
+    plt.savefig(save_path, dpi=150)
+    print(f"📊 Saved: {save_path}")
+    plt.close(fig)
+
+
+def _plot_weight_dynamics(results: Dict, arch_names: Dict, colors: Dict, save_dir: str):
+    """Plot weight statistics comparison."""
+    import matplotlib.pyplot as plt
+    
+    fig, axes = plt.subplots(2, 2, figsize=(12, 10))
+    
+    archs = list(results['weight_stats'].keys())
+    metrics_names = ['mean', 'std', 'min', 'max']
+    titles = ['Weight Mean', 'Weight Std Dev', 'Weight Min', 'Weight Max']
+    
+    for idx, (metric, title) in enumerate(zip(metrics_names, titles)):
+        ax = axes[idx // 2, idx % 2]
+        
+        values = [np.mean(results['weight_stats'][a][metric]) for a in archs]
+        
+        bars = ax.bar(range(len(archs)), values,
+                      color=[colors.get(a, 'gray') for a in archs])
+        
+        ax.set_xlabel('Architecture', fontsize=10)
+        ax.set_ylabel(title, fontsize=10)
+        ax.set_title(f'Final {title}', fontsize=12)
+        ax.set_xticks(range(len(archs)))
+        ax.set_xticklabels([arch_names.get(a, a) for a in archs], rotation=15, fontsize=9)
+        ax.grid(True, alpha=0.3, axis='y')
+        
+        for bar in bars:
+            height = bar.get_height()
+            ax.annotate(f'{height:.4f}',
+                        xy=(bar.get_x() + bar.get_width() / 2, height),
+                        xytext=(0, 3), textcoords="offset points",
+                        ha='center', va='bottom', fontsize=8)
+    
+    plt.suptitle('Weight Dynamics Comparison After Training', fontsize=14, y=1.02)
+    plt.tight_layout()
+    save_path = f"{save_dir}/weight_dynamics.png"
+    plt.savefig(save_path, dpi=150, bbox_inches='tight')
+    print(f"📊 Saved: {save_path}")
+    plt.close(fig)
+
+
+def _print_comparison_summary(results: Dict, arch_names: Dict):
+    """Print a summary table of comparison results."""
+    print("\n" + "=" * 90)
+    print("COMPARISON SUMMARY")
+    print("=" * 90)
+    
+    print(f"\n{'Architecture':<20} {'Params':>12} {'Time (s)':>12} {'Final Reward':>14} {'Best Reward':>12} {'Ep/s':>8}")
+    print("-" * 90)
+    
+    for arch, metrics in results['metrics'].items():
+        name = arch_names.get(arch, arch)
+        print(f"{name:<20} {metrics['num_params']:>12,} {metrics['avg_time']:>12.1f} "
+              f"{metrics['avg_final_reward']:>14.1f} {metrics['avg_best_reward']:>12.1f} "
+              f"{metrics['episodes_per_second']:>8.1f}")
+    
+    print("=" * 90)
+    
+    # Find best performers
+    best_performance = max(results['metrics'].items(), key=lambda x: x[1]['avg_final_reward'])
+    fastest = max(results['metrics'].items(), key=lambda x: x[1]['episodes_per_second'])
+    smallest = min(results['metrics'].items(), key=lambda x: x[1]['num_params'])
+    
+    print(f"\n🏆 Best Performance: {arch_names.get(best_performance[0], best_performance[0])} "
+          f"(Final Reward: {best_performance[1]['avg_final_reward']:.1f})")
+    print(f"⚡ Fastest Training: {arch_names.get(fastest[0], fastest[0])} "
+          f"({fastest[1]['episodes_per_second']:.1f} ep/s)")
+    print(f"📦 Smallest Model: {arch_names.get(smallest[0], smallest[0])} "
+          f"({smallest[1]['num_params']:,} params)")
+    print("=" * 90 + "\n")
+
+
+def _generate_summary_dict(results: Dict, arch_names: Dict) -> Dict:
+    """Generate a summary dictionary of comparison results."""
+    best_performance = max(results['metrics'].items(), key=lambda x: x[1]['avg_final_reward'])
+    fastest = max(results['metrics'].items(), key=lambda x: x[1]['episodes_per_second'])
+    smallest = min(results['metrics'].items(), key=lambda x: x[1]['num_params'])
+    
+    return {
+        'best_performance': {
+            'architecture': best_performance[0],
+            'name': arch_names.get(best_performance[0], best_performance[0]),
+            'final_reward': best_performance[1]['avg_final_reward']
+        },
+        'fastest': {
+            'architecture': fastest[0],
+            'name': arch_names.get(fastest[0], fastest[0]),
+            'episodes_per_second': fastest[1]['episodes_per_second']
+        },
+        'smallest': {
+            'architecture': smallest[0],
+            'name': arch_names.get(smallest[0], smallest[0]),
+            'num_params': smallest[1]['num_params']
+        }
+    }
+
+
+# ============================================================================
+# 8. MAIN DEMONSTRATION
 # ============================================================================
 
 def main():
-    """Main training demonstration."""
+    """Main training demonstration with architecture comparison."""
     print("\n" + "=" * 70)
     print("FLAX NNX: DEEP Q-NETWORK (DQN) REINFORCEMENT LEARNING")
     print("=" * 70)
     
-    # Train with standard DQN
-    print("\n📊 Training Standard DQN...")
-    agent, rewards = train_dqn(
-        num_episodes=200,
-        learning_rate=1e-3,
-        gamma=0.99,
-        batch_size=64,
-        buffer_size=10000,
-        epsilon_decay_steps=3000,
+    # Compare all architectures
+    print("\n📊 Comparing DQN Architectures...")
+    comparison_results = compare_architectures(
+        architectures=['standard', 'dueling', 'noisy', 'deep'],
+        num_episodes=150,
+        num_runs=1,
         hidden_dim=128,
-        use_dueling=False,
-        eval_frequency=20,
-        seed=42
+        seed=42,
+        save_dir="comparison_plots"
+    )
+    
+    # Train best performer for video recording
+    best_arch = comparison_results['summary']['best_performance']['architecture']
+    print(f"\n🎯 Training best performer ({best_arch}) for evaluation and video...")
+    
+    agent, rewards, metrics = train_dqn(
+        num_episodes=200,
+        architecture=best_arch,
+        hidden_dim=128,
+        seed=42,
+        verbose=True
     )
     
     # Evaluate
@@ -814,39 +1548,46 @@ def main():
     eval_reward = evaluate_agent(agent, num_episodes=10)
     print(f"Average evaluation reward: {eval_reward:.1f}")
     
-    # Train with Dueling DQN
-    print("\n📊 Training Dueling DQN...")
-    dueling_agent, dueling_rewards = train_dqn(
-        num_episodes=200,
-        learning_rate=1e-3,
-        gamma=0.99,
-        batch_size=64,
-        buffer_size=10000,
-        epsilon_decay_steps=3000,
-        hidden_dim=128,
-        use_dueling=True,
-        eval_frequency=20,
-        seed=42
+    # Plot training progress for best model
+    print("\n📈 Plotting training progress...")
+    plot_training_progress(
+        rewards,
+        save_path=f"comparison_plots/{best_arch}_training_progress.png",
+        title=f"{best_arch.title()} DQN Training Progress"
     )
     
-    # Evaluate dueling
-    print("\n🎯 Evaluating Dueling DQN agent...")
-    dueling_eval_reward = evaluate_agent(dueling_agent, num_episodes=10)
-    print(f"Average evaluation reward (Dueling): {dueling_eval_reward:.1f}")
+    # Record video of trained agent
+    print("\n🎬 Recording video of trained agent...")
+    try:
+        video_path = record_video(
+            agent,
+            video_folder="videos",
+            video_name=f"{best_arch}_dqn_cartpole",
+            num_episodes=3,
+            seed=42
+        )
+    except Exception as e:
+        print(f"Video recording skipped: {e}")
+        print("Note: Video recording requires 'moviepy' package and may not work in headless environments.")
     
     # Summary
     print("\n" + "=" * 70)
     print("SUMMARY")
     print("=" * 70)
-    print(f"Standard DQN - Eval Reward: {eval_reward:.1f}")
-    print(f"Dueling DQN  - Eval Reward: {dueling_eval_reward:.1f}")
+    print(f"\nBest Architecture: {comparison_results['summary']['best_performance']['name']}")
+    print(f"Final Eval Reward: {eval_reward:.1f}")
     print("\nKey Components Demonstrated:")
-    print("  ✓ Q-Network architecture with Flax NNX")
+    print("  ✓ Standard Q-Network architecture")
     print("  ✓ Dueling DQN architecture")
+    print("  ✓ NoisyNet DQN architecture")
+    print("  ✓ Deep DQN (4-layer) architecture")
+    print("  ✓ Architecture comparison (performance, speed, size, weights)")
     print("  ✓ Experience replay buffer")
     print("  ✓ Epsilon-greedy exploration")
     print("  ✓ Target network with soft updates")
     print("  ✓ TD-learning training loop")
+    print("  ✓ Video recording of trained agent")
+    print("  ✓ Training progress visualization")
     print("=" * 70 + "\n")
 
 
