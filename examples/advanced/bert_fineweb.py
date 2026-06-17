@@ -356,7 +356,7 @@ def train_step(model: BERTModel, optimizer: nnx.Optimizer, batch: Dict):
     (loss, logits), grads = grad_fn(model)
     
     # Update
-    optimizer.update(grads)
+    optimizer.update(model, grads)
     
     # Accuracy on masked tokens
     predictions = jnp.argmax(logits, axis=-1)
@@ -493,7 +493,7 @@ def main():
     # ========================================================================
     # Initialize Optimizer
     # ========================================================================
-    optimizer = nnx.Optimizer(model, optax.adam(config['learning_rate']))
+    optimizer = nnx.Optimizer(model, optax.adam(config['learning_rate']), wrt=nnx.Param)
     
     # ========================================================================
     # Load Data

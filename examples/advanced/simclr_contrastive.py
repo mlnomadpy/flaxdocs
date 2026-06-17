@@ -282,8 +282,8 @@ def train_step(model: ContrastiveEncoder, optimizer: nnx.Optimizer,
     loss, grads = grad_fn(model)
     
     # Update parameters
-    optimizer.update(grads)
-    
+    optimizer.update(model, grads)
+
     return {'loss': loss}
 
 
@@ -312,7 +312,7 @@ def train_contrastive(
     model_rng, train_rng = jax.random.split(rng)
     
     model = ContrastiveEncoder(hidden_dim=hidden_dim, rngs=nnx.Rngs(model_rng))
-    optimizer = nnx.Optimizer(model, optax.adam(learning_rate))
+    optimizer = nnx.Optimizer(model, optax.adam(learning_rate), wrt=nnx.Param)
     
     print(f"✓ Model initialized with {sum(x.size for x in jax.tree_util.tree_leaves(nnx.state(model)))} parameters")
     
@@ -398,7 +398,7 @@ def evaluate_representations(pretrained_model: ContrastiveEncoder,
     # Create linear classifier
     rng = jax.random.PRNGKey(42)
     classifier = LinearClassifier(pretrained_model, num_classes=10, rngs=nnx.Rngs(rng))
-    optimizer = nnx.Optimizer(classifier, optax.adam(1e-3))
+    optimizer = nnx.Optimizer(classifier, optax.adam(1e-3), wrt=nnx.Param)
     
     # Training step for classifier
     @nnx.jit
@@ -411,7 +411,7 @@ def evaluate_representations(pretrained_model: ContrastiveEncoder,
         
         grad_fn = nnx.value_and_grad(loss_fn, has_aux=True)
         (loss, logits), grads = grad_fn(classifier)
-        optimizer.update(grads)
+        optimizer.update(classifier, grads)
         
         accuracy = jnp.mean(jnp.argmax(logits, -1) == batch['label'])
         return {'loss': loss, 'accuracy': accuracy}

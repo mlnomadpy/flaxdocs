@@ -1,5 +1,8 @@
 ---
 sidebar_position: 8
+title: Experiment Reproducibility in JAX
+description: "Make JAX and Flax experiments reproducible — control RNG seeds, explicit PRNG keys, config management, XLA determinism, and debugging run-to-run divergence."
+keywords: [reproducibility, JAX, Flax, PRNG keys, random seeds, XLA determinism, config management, experiment tracking]
 ---
 
 # Experiment Reproducibility
@@ -7,6 +10,18 @@ sidebar_position: 8
 Reproducibility is the bedrock of scientific research. In deep learning, subtle factors like random seed initialization, nondeterministic GPU operations, and floating-point associativity can lead to vastly different results across runs.
 
 JAX and Flax are designed with reproducibility in mind, primarily through explicit RNG key handling.
+
+:::note Prerequisites
+A research-grade guide. Comfortable with [training loops](/basics/workflows/simple-training) and [training best practices](/basics/training-best-practices)? Good. This page applies to every other technique in the section — reproducibility is what makes their results trustworthy.
+:::
+
+:::tip What you'll learn
+- Identify the three sources of randomness: Python/NumPy, JAX/Flax, and hardware
+- Use explicit `PRNGKey` splitting instead of hardcoded seeds for composable randomness
+- Save the exact run configuration to disk so a result can be reconstructed later
+- Force deterministic XLA kernels with `--xla_gpu_deterministic_ops=true`
+- Debug run-to-run divergence by checking init, first-batch, and gradient checksums
+:::
 
 ## The Sources of Randomness
 
@@ -158,3 +173,10 @@ print(f"Grads 0 checksum: {grads_checksum}")
 - [ ] **Seeds**: Global seeds set for Numpy/Python.
 - [ ] **Keys**: JAX PRNG keys explicitly split and passed.
 - [ ] **Determinism**: XLA deterministic flags set if precision is critical.
+
+## Next steps
+
+- [Custom Training Loops](/research/custom-training-loops) — thread an explicit `dropout_rng` through your step for repeatable stochasticity.
+- [Reinforcement Learning](/research/reinforcement-learning) — where seed control over rollouts and replay sampling matters most.
+- [Scaling](/scale) — extend determinism considerations to multi-device runs.
+- Back to the [Research hub](/research/advanced-techniques).

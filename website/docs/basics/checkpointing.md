@@ -1,6 +1,6 @@
 ---
 sidebar_position: 4
-title: State Management and Checkpointing - Save and Load Models
+title: Checkpointing Flax NNX Models
 description: Learn Flax NNX state management and checkpointing with Orbax. Master saving and loading model checkpoints for training and deployment.
 keywords: [Flax checkpointing, model saving, Orbax, state management, model persistence, checkpoint loading, training resume]
 ---
@@ -8,6 +8,18 @@ keywords: [Flax checkpointing, model saving, Orbax, state management, model pers
 # State Management and Checkpointing
 
 Understand how Flax NNX manages model state and how to save/load checkpoints for long training runs and deployment.
+
+:::note Prerequisites
+This guide builds on [Understanding State](/basics/fundamentals/understanding-state) and [Your First Training Loop](/basics/workflows/simple-training).
+:::
+
+:::tip What you'll learn
+- How `nnx.state` and `nnx.update` form the foundation of checkpointing
+- How to save and restore checkpoints with Orbax `PyTreeCheckpointer`
+- Why you must save optimizer state, not just model parameters, to resume cleanly
+- How `CheckpointManager` handles versioning, best-model tracking, and auto-pruning
+- When to use async checkpointing and how to resume an interrupted run
+:::
 
 ## Understanding State in Flax NNX
 
@@ -430,7 +442,7 @@ def train_with_checkpointing(
     """Training loop with checkpoint resume support"""
     
     # Create optimizer
-    optimizer = nnx.Optimizer(model, optax.adamw(1e-3))
+    optimizer = nnx.Optimizer(model, optax.adamw(1e-3), wrt=nnx.Param)
     
     # Setup checkpoint manager
     manager = ocp.CheckpointManager(
@@ -474,15 +486,14 @@ def train_with_checkpointing(
     return model
 ```
 
-## Next Steps
-
-You now understand state management and checkpointing! Learn:
-- [Export models for deployment](./workflows/model-export.md)
-- [Scale training to multiple GPUs](../scale/)
-- [Track experiments with W&B](./workflows/observability.md)
-
 ## Reference Code
 
 **Complete modular examples:**
 - [`examples/basics/save_load_model.py`](https://github.com/mlnomadpy/flaxdocs/tree/master/examples/basics/save_load_model.py) - All checkpointing patterns (basic, manager, best model tracking)
 - [`examples/training/vision_mnist.py`](https://github.com/mlnomadpy/flaxdocs/tree/master/examples/training/vision_mnist.py) - Training with checkpoints using shared components
+
+## Next steps
+
+- [Model Export](/basics/workflows/model-export) - Convert checkpoints into deployable formats
+- [Experiment Tracking](/basics/workflows/observability) - Track and save best models automatically
+- [Distributed Training](/scale) - Checkpoint sharded models across multiple GPUs

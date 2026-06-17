@@ -258,7 +258,7 @@ def train_step(model: ResNet, optimizer: nnx.Optimizer, batch: Dict,
     (loss, logits), grads = grad_fn(model)
     
     # Update parameters
-    optimizer.update(grads)
+    optimizer.update(model, grads)
     
     # Compute metrics
     accuracy = compute_metrics(logits, batch['labels'])
@@ -314,7 +314,7 @@ def train_resnet_streaming(
     # ========================================================================
     # Initialize Optimizer
     # ========================================================================
-    optimizer = nnx.Optimizer(model, optax.adam(learning_rate))
+    optimizer = nnx.Optimizer(model, optax.adam(learning_rate), wrt=nnx.Param)
     
     # ========================================================================
     # Create Streaming DataLoader

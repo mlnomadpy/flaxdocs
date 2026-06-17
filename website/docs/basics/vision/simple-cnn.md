@@ -1,6 +1,6 @@
 ---
 sidebar_position: 1
-title: Image Classification with CNNs - Convolutional Neural Networks
+title: CNN Image Classification in Flax NNX
 description: Build convolutional neural networks (CNNs) for computer vision with Flax NNX. Learn convolutions, pooling, and architectures for image classification.
 keywords: [CNN, convolutional neural network, image classification, computer vision, Flax CNN, image recognition, deep learning]
 ---
@@ -8,6 +8,17 @@ keywords: [CNN, convolutional neural network, image classification, computer vis
 # Image Classification with CNNs
 
 Learn to build convolutional neural networks (CNNs) for computer vision tasks, starting with the simplest approach and building up.
+
+:::note Prerequisites
+This guide builds on [Simple Training Loop](/basics/workflows/simple-training) and [Your First Model](/basics/fundamentals/your-first-model).
+:::
+
+:::tip What you'll learn
+- Build a SimpleCNN with `nnx.Conv` and `nnx.max_pool` for MNIST classification
+- Track tensor shapes through conv and pooling layers to avoid flatten mismatches
+- Write an MNIST training loop with `nnx.value_and_grad` and `nnx.Optimizer`
+- Apply on-the-fly augmentation (random flip, crop, brightness) with `nnx.Rngs`
+:::
 
 ## Why CNNs for Vision?
 
@@ -160,12 +171,12 @@ def train_step(model, optimizer, batch):
         return loss
     
     loss, grads = nnx.value_and_grad(loss_fn)(model)
-    optimizer.update(grads)
+    optimizer.update(model, grads)
     return loss
 
 # Setup
 model = SimpleCNN(rngs=nnx.Rngs(params=0))
-optimizer = nnx.Optimizer(model, optax.adam(1e-3))
+optimizer = nnx.Optimizer(model, optax.adam(1e-3), wrt=nnx.Param)
 train_loader = create_dataloader()
 
 # Train
@@ -255,11 +266,11 @@ images = (images / 255.0) * 2 - 1  # Scale to [-1, 1]
 3. **Monitor validation accuracy**: Stop when it plateaus
 4. **Use data augmentation**: Crucial for small datasets
 
-## Next Steps
+## Next steps
 
-- [ResNet Architecture](./resnet-architecture.md) - Build deeper networks with skip connections
-- [Data Loading](../workflows/data-loading-simple.md) - Efficient data pipelines
-- [Streaming Data](../workflows/streaming-data.md) - Handle large datasets
+- [ResNet Architecture](/basics/vision/resnet-architecture) - Build deeper networks with skip connections
+- [Data Loading](/basics/workflows/data-loading-simple) - Efficient data pipelines
+- [Training Best Practices](/basics/training-best-practices) - Scheduling, clipping, and regularization
 
 ## Complete Examples
 

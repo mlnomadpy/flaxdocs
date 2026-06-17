@@ -1,10 +1,25 @@
 ---
 sidebar_position: 3
+title: Experiment Tracking with W&B in JAX
+description: Track JAX and Flax NNX experiments with Weights & Biases - log metrics, gradient and parameter stats, run hyperparameter sweeps, and version model artifacts.
+keywords: [experiment tracking, Weights & Biases, wandb, observability, hyperparameter sweeps, gradient monitoring, model artifacts, Flax NNX]
 ---
 
 # Experiment Tracking and Observability
 
 Learn how to track experiments, monitor training, and debug models using Weights & Biases (W&B). Understand why observability is critical for machine learning research and production.
+
+:::note Prerequisites
+This guide builds on [Your First Training Loop](/basics/workflows/simple-training).
+:::
+
+:::tip What you'll learn
+- How `wandb.init`, `wandb.log`, and `wandb.finish` structure a tracked run
+- Which metrics to log: loss, learning rate, gradient and parameter norms
+- How to read gradient stats to spot exploding, vanishing, or dead neurons
+- How to run hyperparameter sweeps with random, grid, and Bayesian search
+- How to version models as W&B artifacts and track runs reproducibly
+:::
 
 ## Why Observability Matters
 
@@ -85,7 +100,7 @@ wandb.init(
 
 # 2. Create model
 model = CNN(rngs=nnx.Rngs(params=0))
-optimizer = nnx.Optimizer(model, optax.adam(wandb.config.learning_rate))
+optimizer = nnx.Optimizer(model, optax.adam(wandb.config.learning_rate), wrt=nnx.Param)
 
 # 3. Training loop
 for epoch in range(wandb.config.epochs):
@@ -192,7 +207,7 @@ def log_gradient_stats(grads):
 # In training loop
 grads = compute_gradients(model, batch)
 log_gradient_stats(grads)
-optimizer.update(grads)
+optimizer.update(model, grads)
 ```
 
 **Why this matters**:
@@ -387,7 +402,8 @@ def train_sweep():
     
     optimizer = nnx.Optimizer(
         model,
-        optax.adam(learning_rate=config.learning_rate)
+        optax.adam(learning_rate=config.learning_rate),
+        wrt=nnx.Param
     )
     
     # Train
@@ -639,13 +655,13 @@ wandb.log({
 })
 ```
 
-## Next Steps
-
-You now know how to track experiments professionally! Learn more:
-- [Scale training to distributed systems](../../scale/)
-- [Build production pipelines](./model-export.md)
-
 ## Reference Code
 
 **Complete modular example:**
 - [`examples/integrations/wandb.py`](https://github.com/mlnomadpy/flaxdocs/tree/master/examples/integrations/wandb.py) - Full W&B integration with comprehensive logging, sweeps, and visualizations
+
+## Next steps
+
+- [Model Export](/basics/workflows/model-export) - Ship the models you've trained and tracked
+- [Checkpointing](/basics/checkpointing) - Save best models found during sweeps
+- [Distributed Training](/scale) - Scale training across multiple GPUs

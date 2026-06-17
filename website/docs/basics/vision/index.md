@@ -1,10 +1,24 @@
 ---
 sidebar_position: 0
+title: Computer Vision with Flax NNX
+description: Build computer vision models in Flax NNX, from simple CNNs for image classification to ResNets with skip connections for deeper, stronger networks.
+keywords: [computer vision, CNN, ResNet, image classification, Flax NNX, convolutional neural network, MNIST, skip connections]
 ---
 
 # Computer Vision
 
 Learn to build neural networks for visual tasks - from simple CNNs to advanced architectures like ResNet.
+
+:::note Prerequisites
+This guide builds on [Your First Model](/basics/fundamentals/your-first-model) and [Simple Training Loop](/basics/workflows/simple-training).
+:::
+
+:::tip What you'll learn
+- When to reach for a CNN versus a ResNet for an image task
+- How convolutions and pooling capture spatial patterns and translation invariance
+- How skip connections let you train networks 10+ layers deep
+- Build a SimpleCNN that hits 90%+ accuracy on MNIST
+:::
 
 ## What You'll Build
 
@@ -75,11 +89,13 @@ class SimpleCNN(nnx.Module):
 
 This section focuses on classification, which is the foundation for all other tasks.
 
-## What's Next?
+## Next steps
 
-After mastering vision models, explore streaming data and advanced architectures in the research section.
+- [Simple CNN](/basics/vision/simple-cnn) - Build your first convolutional classifier
+- [ResNet Architecture](/basics/vision/resnet-architecture) - Go deeper with skip connections
+- [Streaming Data](/basics/workflows/streaming-data) - Train on datasets larger than memory
 
 ## Complete Examples
 
-- [`examples/05_vision_training_mnist.py`](https://github.com/mlnomadpy/flaxdocs/tree/master/examples/05_vision_training_mnist.py) - Complete MNIST training
-- [`examples/09_resnet_streaming_training.py`](https://github.com/mlnomadpy/flaxdocs/tree/master/examples/09_resnet_streaming_training.py) - ResNet with streaming data
+- [`examples/training/vision_mnist.py`](https://github.com/mlnomadpy/flaxdocs/tree/master/examples/training/vision_mnist.py) - Complete MNIST training
+- [`examples/integrations/resnet_streaming.py`](https://github.com/mlnomadpy/flaxdocs/tree/master/examples/integrations/resnet_streaming.py) - ResNet with streaming data

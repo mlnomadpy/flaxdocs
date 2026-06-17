@@ -37,6 +37,7 @@ const sidebars: SidebarsConfig = {
             'basics/workflows/simple-training',
             'basics/workflows/data-loading-simple',
             'basics/data-streaming',
+            'basics/workflows/streaming-data',
             'basics/workflows/observability',
             'basics/workflows/model-export',
           ],

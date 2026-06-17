@@ -357,7 +357,7 @@ def train_step(model: GPTModel, optimizer: nnx.Optimizer, batch: Dict):
     (loss, logits), grads = grad_fn(model)
     
     # Update parameters
-    optimizer.update(grads)
+    optimizer.update(model, grads)
     
     # Compute metrics
     perplexity = compute_perplexity(loss)
@@ -527,7 +527,7 @@ def main():
         optax.adamw(learning_rate=schedule, weight_decay=config['weight_decay'])
     )
     
-    optimizer = nnx.Optimizer(model, optimizer_def)
+    optimizer = nnx.Optimizer(model, optimizer_def, wrt=nnx.Param)
     
     # ========================================================================
     # Load Data

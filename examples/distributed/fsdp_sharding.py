@@ -317,7 +317,7 @@ def create_fsdp_train_step(mesh: Mesh):
         (loss, metrics), grads = grad_fn(state.model)
         
         # Update parameters (they remain sharded)
-        state.update(grads)
+        state.update(state.model, grads)
         
         return state, loss, metrics
     
@@ -405,7 +405,7 @@ def main():
     
     # Create optimizer
     optimizer = optax.adam(learning_rate)
-    state = nnx.Optimizer(model, optimizer)
+    state = nnx.Optimizer(model, optimizer, wrt=nnx.Param)
     
     # Create training step
     train_step = create_fsdp_train_step(mesh)

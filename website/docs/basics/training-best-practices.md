@@ -9,6 +9,18 @@ keywords: [Flax training, learning rate scheduling, gradient clipping, regulariz
 
 Learn proven strategies and techniques for training neural networks effectively with Flax.
 
+:::note Prerequisites
+This guide builds on [Simple Training Loop](/basics/workflows/simple-training).
+:::
+
+:::tip What you'll learn
+- Build learning rate schedules with warmup, cosine, exponential, and step decay
+- Clip gradients by global norm or value via `optax.chain`
+- Apply weight decay with `adamw`, plus dropout and BatchNorm in NNX modules
+- Speed up training with bfloat16 mixed precision
+- Add metrics logging and early stopping to a training loop
+:::
+
 ## Learning Rate Scheduling
 
 A good learning rate schedule can significantly improve training performance.
@@ -95,48 +107,56 @@ optimizer = optax.adamw(
 ### Dropout
 
 ```python
-class ModelWithDropout(nn.Module):
-    dropout_rate: float = 0.1
-    
-    @nn.compact
-    def __call__(self, x, training: bool = False):
-        x = nn.Dense(256)(x)
-        x = nn.relu(x)
-        x = nn.Dropout(rate=self.dropout_rate, deterministic=not training)(x)
-        x = nn.Dense(10)(x)
+from flax import nnx
+
+class ModelWithDropout(nnx.Module):
+    def __init__(self, dropout_rate: float = 0.1, *, rngs: nnx.Rngs):
+        self.linear1 = nnx.Linear(784, 256, rngs=rngs)
+        self.dropout = nnx.Dropout(rate=dropout_rate, rngs=rngs)
+        self.linear2 = nnx.Linear(256, 10, rngs=rngs)
+
+    def __call__(self, x, train: bool = False):
+        x = self.linear1(x)
+        x = nnx.relu(x)
+        x = self.dropout(x, deterministic=not train)
+        x = self.linear2(x)
         return x
 
-# During training
-logits = model.apply({'params': params}, x, training=True, rngs={'dropout': dropout_rng})
+# RNGs supply both the parameter init and the dropout mask
+model = ModelWithDropout(rngs=nnx.Rngs(params=0, dropout=1))
 
-# During evaluation
-logits = model.apply({'params': params}, x, training=False)
+# During training — dropout is active
+logits = model(x, train=True)
+
+# During evaluation — dropout is disabled
+logits = model(x, train=False)
 ```
 
 ## Batch Normalization
 
 ```python
-class ModelWithBatchNorm(nn.Module):
-    @nn.compact
-    def __call__(self, x, training: bool = False):
-        x = nn.Dense(256)(x)
-        x = nn.BatchNorm(use_running_average=not training)(x)
-        x = nn.relu(x)
-        x = nn.Dense(10)(x)
+import optax
+
+class ModelWithBatchNorm(nnx.Module):
+    def __init__(self, *, rngs: nnx.Rngs):
+        self.linear1 = nnx.Linear(784, 256, rngs=rngs)
+        self.bn = nnx.BatchNorm(256, rngs=rngs)
+        self.linear2 = nnx.Linear(256, 10, rngs=rngs)
+
+    def __call__(self, x, train: bool = False):
+        x = self.linear1(x)
+        x = self.bn(x, use_running_average=not train)
+        x = nnx.relu(x)
+        x = self.linear2(x)
         return x
 
-# Initialize with batch stats
-variables = model.init(rng, jnp.ones([1, 784]), training=True)
-params = variables['params']
-batch_stats = variables['batch_stats']
-
-# Update training state to include batch_stats
-state = train_state.TrainState.create(
-    apply_fn=model.apply,
-    params=params,
-    tx=optimizer
-)
-# Store batch_stats separately or extend TrainState
+# NNX tracks the running batch statistics as part of the model state
+# automatically — no separate `batch_stats` collection and no TrainState
+# juggling. Create the model and optimizer and you're done:
+model = ModelWithBatchNorm(rngs=nnx.Rngs(0))
+optimizer = nnx.Optimizer(model, optax.adamw(1e-3), wrt=nnx.Param)
+# Only nnx.Param is optimized; the BatchNorm stats update in place during
+# the forward pass when train=True.
 ```
 
 ## Mixed Precision Training
@@ -145,23 +165,21 @@ Use mixed precision to speed up training and reduce memory usage.
 
 ```python
 # Use bfloat16 or float16
-@jax.jit
-def train_step_mixed_precision(state, batch):
-    def loss_fn(params):
+@nnx.jit
+def train_step_mixed_precision(model, optimizer, batch):
+    def loss_fn(model):
         # Cast inputs to bfloat16
         images = batch['image'].astype(jnp.bfloat16)
-        logits = state.apply_fn({'params': params}, images)
+        logits = model(images)
         # Cast logits back to float32 for loss computation
         logits = logits.astype(jnp.float32)
-        loss = optax.softmax_cross_entropy_with_integer_labels(
+        return optax.softmax_cross_entropy_with_integer_labels(
             logits=logits, labels=batch['label']
         ).mean()
-        return loss
-    
-    grad_fn = jax.grad(loss_fn)
-    grads = grad_fn(state.params)
-    state = state.apply_gradients(grads=grads)
-    return state
+
+    loss, grads = nnx.value_and_grad(loss_fn)(model)
+    optimizer.update(model, grads)
+    return loss
 ```
 
 ## Data Augmentation
@@ -238,8 +256,8 @@ class MetricsLogger:
 logger = MetricsLogger()
 
 for step in range(num_steps):
-    state, loss, accuracy = train_step(state, batch)
-    logger.log(step, loss=loss, accuracy=accuracy)
+    loss = train_step(model, optimizer, batch)
+    logger.log(step, loss=loss)
     
     if step % 100 == 0:
         logger.print_summary(step)
@@ -271,7 +289,7 @@ early_stopping = EarlyStopping(patience=5)
 
 for epoch in range(max_epochs):
     # Training...
-    val_loss = evaluate(state, val_data)
+    val_loss = evaluate(model, val_data)
     
     if early_stopping.should_stop(val_loss):
         print(f"Early stopping at epoch {epoch}")
@@ -291,6 +309,8 @@ for epoch in range(max_epochs):
 - ✅ Save checkpoints regularly
 - ✅ Validate hyperparameters with smaller experiments first
 
-## Next Steps
+## Next steps
 
-- [Model Checkpointing](./checkpointing) - Save and restore models
+- [Model Checkpointing](/basics/checkpointing) - Save and restore models
+- [Observability](/basics/workflows/observability) - Track experiments with W&B
+- [Training at Scale](/scale) - Scale training across multiple devices

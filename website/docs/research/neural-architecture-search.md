@@ -1,10 +1,24 @@
 ---
 sidebar_position: 5
+title: Neural Architecture Search (DARTS)
+description: "Implement differentiable neural architecture search (DARTS) in JAX and Flax — continuous relaxation of operations, architecture parameters, and bilevel optimization."
+keywords: [neural architecture search, NAS, DARTS, JAX, Flax, differentiable architecture search, bilevel optimization, architecture parameters]
 ---
 
 # Neural Architecture Search
 
 Neural Architecture Search (NAS) automates the design of neural networks. Instead of manually designing layers, we learn the optimal architecture from data.
+
+:::note Prerequisites
+A research-grade guide. Comfortable with [training loops](/basics/workflows/simple-training) and [training best practices](/basics/training-best-practices)? Good. DARTS uses a bilevel optimization much like [meta-learning](/research/meta-learning), so that page is helpful background.
+:::
+
+:::tip What you'll learn
+- Relax a discrete operation choice into a continuous, softmax-weighted mixed operation
+- Treat architecture weights `α` as learnable parameters alongside model weights `w`
+- Solve the DARTS bilevel problem by alternating `α` (on validation) and `w` (on train) updates
+- Discretize the searched cell by taking the `argmax` operation and retraining from scratch
+:::
 
 ## Differentiable Architecture Search (DARTS)
 
@@ -144,6 +158,13 @@ def nas_train_step(model_state, arch_state, train_batch, val_batch):
 - **Memory Usage**: DARTS is memory intensive because you must hold *all* candidate operations in memory during the forward/backward pass.
 - **Proxy Tasks**: Often search is done on a smaller proxy task (e.g., fewer layers, fewer epochs) and the found architecture is transferred to the full task.
 - **Evaluation**: After search, the mixed operations are usually "discretized" by picking the `argmax` operation and retraining from scratch.
+
+## Next steps
+
+- [Meta-Learning](/research/meta-learning) — another bilevel-optimization technique, with the inner/outer loop spelled out in detail.
+- [Custom Training Loops](/research/custom-training-loops) — the explicit `TrainState` patterns the alternating updates rely on.
+- [Knowledge Distillation](/research/knowledge-distillation) — compress the searched architecture into a smaller deployable model.
+- Back to the [Research hub](/research/advanced-techniques).
 
 ## References
 - [DARTS: Differentiable Architecture Search](https://arxiv.org/abs/1806.09055) (Liu et al., 2018)

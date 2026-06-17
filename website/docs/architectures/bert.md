@@ -1,5 +1,8 @@
 ---
 sidebar_position: 2
+title: BERT in JAX & Flax NNX
+description: Build BERT from scratch in JAX and Flax NNX. Learn bidirectional self-attention, masked language modeling, embeddings, transformer layers, and distributed training.
+keywords: [BERT, JAX, Flax NNX, bidirectional transformer, masked language modeling, self-attention, MLM, transformer architecture]
 ---
 
 # BERT: Understanding Bidirectional Transformers
@@ -89,7 +92,7 @@ class BERTEmbeddings(nnx.Module):
         self.norm = nnx.LayerNorm(hidden_size, rngs=rngs)
         self.dropout = nnx.Dropout(0.1, rngs=rngs)
 
-    def __call__(self, x, training: bool = True):
+    def __call__(self, x, train: bool = False):
         B, L = x.shape
         # Create position IDs: [0, 1, 2, ..., L-1]
         positions = jnp.arange(L)[None, :]  # Shape: [1, L]
@@ -98,7 +101,7 @@ class BERTEmbeddings(nnx.Module):
         embeddings = self.token_emb(x) + self.pos_emb(positions)
         
         # Normalize and apply dropout
-        return self.dropout(self.norm(embeddings), deterministic=not training)
+        return self.dropout(self.norm(embeddings), deterministic=not train)
 ```
 
 ---
@@ -258,14 +261,14 @@ class BERTLayer(nnx.Module):
             nnx.Linear(intermediate, hidden_size, rngs=rngs)
         )
 
-    def __call__(self, x, training: bool = True):
+    def __call__(self, x, train: bool = False):
         # Attention block with residual
         attn_out = self.attention(x)
-        x = self.norm1(x + self.dropout(attn_out, deterministic=not training))
+        x = self.norm1(x + self.dropout(attn_out, deterministic=not train))
         
         # FFN block with residual
         ffn_out = self.ffn(x)
-        x = self.norm2(x + self.dropout(ffn_out, deterministic=not training))
+        x = self.norm2(x + self.dropout(ffn_out, deterministic=not train))
         
         return x
 ```
@@ -290,13 +293,13 @@ class BERT(nnx.Module):
         # MLM Head: predict original token
         self.head = nnx.Linear(hidden_size, vocab_size, rngs=rngs)
 
-    def __call__(self, input_ids, training: bool = True):
+    def __call__(self, input_ids, train: bool = False):
         # Embed tokens
-        x = self.embeddings(input_ids, training=training)
+        x = self.embeddings(input_ids, train=train)
         
         # Pass through all transformer layers
         for layer in self.layers:
-            x = layer(x, training=training)
+            x = layer(x, train=train)
         
         # Predict vocabulary distribution
         return self.head(x)
@@ -362,7 +365,7 @@ data_sharding = NamedSharding(mesh, P('batch', None))
 @nnx.jit
 def train_step(model, optimizer, batch):
     def loss_fn(model):
-        logits = model(batch['input_ids'], training=True)
+        logits = model(batch['input_ids'], train=True)
         
         # Cross-entropy loss, but only on masked tokens
         loss = optax.softmax_cross_entropy_with_integer_labels(logits, batch['labels'])
@@ -370,7 +373,7 @@ def train_step(model, optimizer, batch):
         return (loss * mask).sum() / (mask.sum() + 1e-6)
     
     loss, grads = nnx.value_and_grad(loss_fn)(model)
-    optimizer.update(grads)
+    optimizer.update(model, grads)
     return loss
 ```
 

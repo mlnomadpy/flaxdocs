@@ -14,9 +14,8 @@ examples/
 │   └── integration/                - 4 integration tests
 │       └── test_model_definition.py
 │
-├── 📚 basics/                      [5 Examples - Fundamentals]
-│   ├── model_definition.py         ✅ Refactored with shared components
-│   ├── 01_basic_model_definition.py ✅ Original self-contained
+├── 📚 basics/                      [4 Examples - Fundamentals]
+│   ├── model_definition.py         ✅ Uses shared components
 │   ├── save_load_model.py          ✅ Orbax checkpointing
 │   ├── data_loading_tfds.py        ✅ TensorFlow Datasets
 │   └── data_loading_grain.py       ✅ Grain data loading
@@ -33,12 +32,13 @@ examples/
 │   ├── resnet_streaming.py         ✅ Streaming data
 │   └── wandb.py                    ✅ W&B tracking
 │
-├── 🚀 advanced/                    [5 Examples - Cutting Edge]
+├── 🚀 advanced/                    [6 Examples - Cutting Edge]
 │   ├── bert_fineweb.py             ✅ BERT on FineWeb
 │   ├── gpt_training.py             ✅ GPT from scratch
 │   ├── simclr_contrastive.py       ✅ Contrastive learning
 │   ├── maml_metalearning.py        ✅ Meta-learning
-│   └── knowledge_distillation.py   ✅ Teacher-student
+│   ├── knowledge_distillation.py   ✅ Teacher-student
+│   └── dqn_reinforcement_learning.py ✅ Deep Q-Network RL
 │
 ├── 🌐 distributed/                 [4 Examples - Multi-Device]
 │   ├── data_parallel_pmap.py       ✅ pmap parallelism
@@ -46,34 +46,28 @@ examples/
 │   ├── pipeline_parallel.py        ✅ Pipeline parallelism
 │   └── fsdp_sharding.py            ✅ FSDP sharding
 │
-├── 📋 index.py                     [Complete Index - Run to see all]
-├── 📝 MIGRATION_COMPLETE.md        [Migration summary]
+├── 🖼️  imagenet/                   [Standalone App]
+│   └── main.py                     ✅ ResNet ImageNet training
 │
-└── 📦 [Original 19 examples]       [Preserved for backward compatibility]
-    ├── 01_basic_model_definition.py
-    ├── 02_save_load_model.py
-    ├── ... (all originals)
-    └── 19_fsdp_sharding.py
+└── 📋 index.py                     [Complete Index - Run to see all]
 
 STATISTICS
 ==========
-Total Examples: 20 organized (+ 19 originals preserved)
+Total Examples: 20 categorized (+ 1 standalone ImageNet app)
 Categories: 6 (basics → distributed)
 Shared Components: 5 models + 10 utilities
 Tests: 27 (23 unit + 4 integration) - ALL PASSING ✅
-Lines of Code: ~10,000+ organized
 
 QUICK START
 ===========
 View All:    python examples/index.py
-Run Example: python basics/model_definition.py
+Run Example: python examples/basics/model_definition.py
 Run Tests:   pytest examples/tests/ -v
 
 BENEFITS
 ========
 ✅ Organization: Clear category structure
-✅ Reusability: Shared components eliminate duplication
+✅ Reusability: Shared components reduce duplication in core examples
 ✅ Quality: All shared components tested
 ✅ Learning: Progressive difficulty path
-✅ Compatibility: Original examples preserved
 ✅ Extensibility: Easy to add new examples

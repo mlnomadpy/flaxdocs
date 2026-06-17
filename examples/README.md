@@ -1,13 +1,13 @@
 # Flax NNX Complete Training Guides - Modular Edition ✅
 
-**All 19 examples successfully migrated and organized!**
+**20 categorized examples plus a standalone ImageNet app, organized and runnable!**
 
-Comprehensive, runnable Python examples for training deep learning models with Flax NNX. Each guide is organized into categories and uses shared, tested components for consistency and reusability.
+Comprehensive, runnable Python examples for training deep learning models with Flax NNX. Each guide is organized into categories, and the core examples use shared, tested components for consistency and reusability.
 
-## ✅ Migration Complete!
+## ✅ Structure Overview
 
-All 19 examples have been successfully organized into a modular structure:
-- **20 examples** organized into 6 categories
+The examples are organized into a modular structure:
+- **20 examples** organized into 6 categories (plus a standalone `imagenet/main.py` app)
 - **Shared component library** with tested models and utilities
 - **27 passing tests** (23 unit + 4 integration)
 - **Clean, organized directory structure** with no duplicates
@@ -22,7 +22,9 @@ All 19 examples have been successfully organized into a modular structure:
 
 ### 🧩 Shared Components Library
 
-All examples now use battle-tested components from `shared/`:
+The `shared/` package provides battle-tested, reusable components. Today the core
+examples `basics/model_definition.py` and `training/vision_mnist.py` import from it;
+other examples are self-contained but follow the same patterns:
 
 #### Models (`shared/models.py`)
 - `MLP` - Multi-layer perceptron with configurable layers
@@ -57,9 +59,8 @@ examples/
 │   └── integration/                 # 4 integration tests
 │       └── test_model_definition.py
 │
-├── basics/                          # ✅ 5 examples
+├── basics/                          # ✅ 4 examples
 │   ├── model_definition.py          # Uses shared components
-│   ├── 01_basic_model_definition.py # Original version
 │   ├── save_load_model.py
 │   ├── data_loading_tfds.py
 │   └── data_loading_grain.py
@@ -76,12 +77,13 @@ examples/
 │   ├── resnet_streaming.py
 │   └── wandb.py
 │
-├── advanced/                        # ✅ 5 examples
+├── advanced/                        # ✅ 6 examples
 │   ├── bert_fineweb.py
 │   ├── gpt_training.py
 │   ├── simclr_contrastive.py
 │   ├── maml_metalearning.py
-│   └── knowledge_distillation.py
+│   ├── knowledge_distillation.py
+│   └── dqn_reinforcement_learning.py
 │
 ├── distributed/                     # ✅ 4 examples
 │   ├── data_parallel_pmap.py
@@ -89,18 +91,21 @@ examples/
 │   ├── pipeline_parallel.py
 │   └── fsdp_sharding.py
 │
+├── imagenet/                        # ✅ Standalone app
+│   └── main.py
+│
 ├── index.py                         # 📋 Complete example index
 └── requirements.txt                 # Updated with pytest
 ```
 
-**Total: 20 organized examples**
+**Total: 20 categorized examples + 1 standalone ImageNet app**
 
 ## 🚀 Quick Start
 
 ### View All Examples
 
 ```bash
-# See complete index of all 20 examples
+# See complete index of all examples
 python examples/index.py
 ```
 
@@ -124,16 +129,16 @@ pip install -r requirements.txt
 
 ```bash
 # Basics - Model definition using shared components
-python basics/model_definition.py
+python examples/basics/model_definition.py
 
 # Training - Full MNIST CNN training
-python training/vision_mnist.py
+python examples/training/vision_mnist.py
 
 # Advanced - GPT training
-python advanced/gpt_training.py
+python examples/advanced/gpt_training.py
 
-# See all 20 examples with descriptions
-python index.py
+# See all examples with descriptions
+python examples/index.py
 ```
 
 ### Run Tests
@@ -154,10 +159,9 @@ pytest --cov=shared --cov-report=html
 
 ## 📚 Example Categories
 
-### Basics (`basics/`) - 5 Examples ✅
+### Basics (`basics/`) - 4 Examples ✅
 Learn fundamental concepts with shared, tested components:
 - **model_definition.py** - Define models (MLP, CNN) using shared components ✅ 
-- **01_basic_model_definition.py** - Original self-contained version
 - **save_load_model.py** - Checkpoint management with Orbax ✅
 - **data_loading_tfds.py** - TensorFlow Datasets integration ✅
 - **data_loading_grain.py** - Pure Python data loading ✅
@@ -177,13 +181,14 @@ Integrate with the ML ecosystem:
 - **resnet_streaming.py** - ResNet with streaming datasets ✅
 - **wandb.py** - Weights & Biases experiment tracking ✅
 
-### Advanced (`advanced/`) - 5 Examples ✅
+### Advanced (`advanced/`) - 6 Examples ✅
 Cutting-edge techniques:
 - **bert_fineweb.py** - BERT training on FineWeb ✅
 - **gpt_training.py** - GPT from scratch ✅
 - **simclr_contrastive.py** - Contrastive learning (SimCLR) ✅
 - **maml_metalearning.py** - Meta-learning (MAML) ✅
 - **knowledge_distillation.py** - Knowledge distillation ✅
+- **dqn_reinforcement_learning.py** - Deep Q-Network reinforcement learning ✅
 
 ### Distributed (`distributed/`) - 4 Examples ✅
 Scale training across devices:
@@ -192,10 +197,14 @@ Scale training across devices:
 - **pipeline_parallel.py** - Pipeline parallelism ✅
 - **fsdp_sharding.py** - FSDP sharding ✅
 
+### ImageNet (`imagenet/`) - Standalone App ✅
+Full-scale training application (not part of the categorized example set):
+- **main.py** - Standalone ResNet ImageNet training app ✅
+
 ## 💡 Benefits of Modular Design
 
 ### For Learners
-- ✅ **Consistent Patterns**: All examples use the same tested components
+- ✅ **Consistent Patterns**: Core examples share the same tested components, and all follow the same conventions
 - ✅ **Focus on Concepts**: Less boilerplate, more learning
 - ✅ **Tested Code**: Confidence that examples work correctly
 - ✅ **Easy Navigation**: Organized by topic and difficulty
@@ -389,7 +398,6 @@ pytest tests/unit/test_models.py::TestCNN::test_cnn_forward_shape -v
 - [Flax Documentation](https://flax.readthedocs.io/)
 - [JAX Documentation](https://jax.readthedocs.io/)
 - [Flax Examples](https://github.com/google/flax/tree/main/examples)
-- [Original Examples](./01_basic_model_definition.py) (pre-refactor)
 
 ## 🤝 Contributing
 

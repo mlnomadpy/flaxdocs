@@ -1,10 +1,21 @@
 ---
 sidebar_position: 0
+title: Flax NNX Fundamentals
+description: Learn the core Flax NNX concepts for building neural networks in JAX, including modules, parameters, and state management that power every model type.
+keywords: [Flax NNX, JAX neural networks, NNX modules, model fundamentals, parameters, state management, deep learning basics, nnx.Module]
 ---
 
 # Fundamentals
 
 Master the core concepts of Flax NNX - how to build and manage neural network models.
+
+:::tip What you'll learn
+- How `nnx.Module` works as a stateful Python class that holds parameters
+- The role of `nnx.Param` and why parameters are wrapped explicitly
+- How NNX manages trainable parameters, non-trainable variables, and RNG state
+- Why `nnx.Rngs` makes initialization reproducible
+- How these fundamentals carry over to vision, text, and advanced architectures
+:::
 
 ## What You'll Learn
 
@@ -24,14 +35,6 @@ These fundamentals are the building blocks for everything else:
 - Every model type (vision, text, etc.) uses the same module system
 - Understanding state is crucial for proper training and checkpointing
 - These concepts translate directly to advanced architectures
-
-## What's Next?
-
-After mastering the fundamentals, you can explore domain-specific guides:
-
-- **[Computer Vision](../vision/simple-cnn.md)** - CNNs, ResNets, and image classification
-- **[Natural Language Processing](../text/simple-transformer.md)** - Transformers, attention, and text generation
-- **[Training Workflows](../workflows/simple-training.md)** - How to actually train your models
 
 ## Quick Example
 
@@ -59,3 +62,9 @@ output = model(x)  # Shape: (32, 10)
 ```
 
 Simple, explicit, and powerful!
+
+## Next steps
+
+- [Your First Model](/basics/fundamentals/your-first-model) - Build a linear layer and MLP from scratch
+- [Understanding State](/basics/fundamentals/understanding-state) - Learn how NNX tracks parameters, variables, and RNGs
+- [Training Workflows](/basics/workflows) - Train the models you build here

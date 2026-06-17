@@ -1,6 +1,6 @@
 ---
 sidebar_position: 0
-title: Distributed Training with Flax - Scale Across GPUs and TPUs
+title: Distributed Training with JAX & Flax
 description: Learn distributed training with Flax NNX and JAX. Master data parallelism, model parallelism, and sharding strategies for training at scale across multiple devices.
 keywords: [Flax distributed training, JAX parallelism, multi-GPU training, TPU training, data parallelism, model parallelism, sharding]
 ---
@@ -8,6 +8,18 @@ keywords: [Flax distributed training, JAX parallelism, multi-GPU training, TPU t
 # Distributed Training Overview
 
 Scale your Flax NNX models across multiple devices with JAX's powerful parallelism primitives. This guide covers everything from simple data parallelism to advanced sharding strategies for training models at any scale.
+
+:::note Prerequisites
+Distributed training builds on the single-device workflow. Make sure you're comfortable with [Your First Training Loop](/basics/workflows/simple-training) and [Data Loading](/basics/workflows/data-loading-simple) first.
+:::
+
+:::tip What you'll learn
+- How to pick a parallelism strategy from a model-size-vs-device-memory decision guide
+- The trade-offs between data parallelism, SPMD, pipeline, and FSDP (memory, throughput, communication)
+- How to profile a model's parameter count and step time before choosing a strategy
+- Why training needs ~4× model size in memory (params + gradients + optimizer state)
+- How to combine strategies (FSDP + data, pipeline + tensor, 3D parallelism) for the largest models
+:::
 
 ## Quick Decision Guide
 
@@ -460,20 +472,21 @@ with profiler.trace("/tmp/jax-trace"):
 # - Idle time (minimize)
 ```
 
-## Next Steps
+## Next steps
 
-1. **Start simple:** [Data Parallelism Guide](./data-parallelism.md)
-2. **Go modern:** [SPMD Sharding Guide](./spmd-sharding.md)
-3. **Scale up:** [FSDP Guide](./fsdp-fully-sharded.md) or [Pipeline Guide](./pipeline-parallelism.md)
+- **Start simple:** [Data Parallelism](/scale/data-parallelism) — replicate the model, split the batch with `pmap`
+- **Go modern:** [SPMD Sharding](/scale/spmd-sharding) — declarative sharding with `jax.jit` and device meshes
+- **Save memory:** [FSDP](/scale/fsdp-fully-sharded) — shard params, gradients, and optimizer state
+- **Very large models:** [Pipeline Parallelism](/scale/pipeline-parallelism) — split the model into stages
 
 ## Example Code
 
 Check out our complete, runnable examples:
 
-- `examples/16_data_parallel_pmap.py` - Data parallelism with pmap
-- `examples/17_sharding_spmd.py` - SPMD automatic sharding
-- `examples/18_pipeline_parallelism.py` - Pipeline parallelism
-- `examples/19_fsdp_sharding.py` - FSDP fully sharded training
+- `examples/distributed/data_parallel_pmap.py` - Data parallelism with pmap
+- `examples/distributed/sharding_spmd.py` - SPMD automatic sharding
+- `examples/distributed/pipeline_parallel.py` - Pipeline parallelism
+- `examples/distributed/fsdp_sharding.py` - FSDP fully sharded training
 
 Each example is self-contained and includes detailed comments explaining what's happening under the hood.
 

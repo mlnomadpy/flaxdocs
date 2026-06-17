@@ -1,6 +1,6 @@
 ---
 sidebar_position: 2
-title: Data Loading for Neural Networks - Simple Approaches
+title: Data Loading for Neural Networks
 description: Learn to load and prepare data for neural network training with Flax. Master data loading strategies from simple to efficient streaming approaches.
 keywords: [data loading, training data, batch loading, data pipeline, neural network data, dataset preparation, data preprocessing]
 ---
@@ -8,6 +8,18 @@ keywords: [data loading, training data, batch loading, data pipeline, neural net
 # Loading Data Simply
 
 Learn to load and prepare data for training - starting with the simplest approach that actually works.
+
+:::note Prerequisites
+This guide builds on [Your First Training Loop](/basics/workflows/simple-training).
+:::
+
+:::tip What you'll learn
+- When to load data fully into RAM versus batching or streaming
+- How to build a TFDS pipeline with `map`, `shuffle`, `batch`, and `prefetch`
+- The correct order: shuffle before batching, prefetch last
+- Expected data shapes for images, labels, and token sequences
+- How to split data into train/val/test and apply vision augmentation
+:::
 
 ## The Two Questions
 
@@ -312,11 +324,6 @@ def create_pipeline(split='train', batch_size=32):
     return tfds.as_numpy(ds)
 ```
 
-## Next Steps
-
-- [Streaming Large Datasets](./streaming-data.md) - Handle data larger than memory
-- [Simple Training Loop](./simple-training.md) - Put data loading to use
-
 ## Complete Examples
 
 **Organized modular examples:**
@@ -325,3 +332,9 @@ def create_pipeline(split='train', batch_size=32):
 
 **Additional examples:**
 - [`examples/training/vision_mnist.py`](https://github.com/mlnomadpy/flaxdocs/tree/master/examples/training/vision_mnist.py) - Complete training with TFDS data loading
+
+## Next steps
+
+- [Streaming Large Datasets](/basics/workflows/streaming-data) - Handle data larger than memory
+- [Experiment Tracking](/basics/workflows/observability) - Monitor training once data flows
+- [Your First Training Loop](/basics/workflows/simple-training) - Put these pipelines to use

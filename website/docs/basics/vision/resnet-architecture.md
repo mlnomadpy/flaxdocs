@@ -1,10 +1,27 @@
 ---
 sidebar_position: 2
+title: Build ResNet in Flax NNX
+description: Implement ResNet from scratch in Flax NNX with residual blocks and skip connections, plus bottleneck blocks and global average pooling for deep vision models.
+keywords: [ResNet, skip connections, residual block, Flax NNX, deep networks, bottleneck block, global average pooling, image classification]
 ---
 
 # ResNet: Deep Networks with Skip Connections
 
 Learn to build ResNet architectures that can train networks with 50+ layers using skip connections.
+
+> Looking for the theory? For *why* residual networks work (vanishing gradients, the math behind skip connections) and the full family of variants (ResNet-18/34/50, basic vs. bottleneck blocks), see the architecture explainer: [Residual Networks (ResNet) in JAX](/architectures/resnet). This page is the hands-on build.
+
+:::note Prerequisites
+This guide builds on [Simple CNN](/basics/vision/simple-cnn) and [Simple Training Loop](/basics/workflows/simple-training).
+:::
+
+:::tip What you'll learn
+- Implement a `ResNetBlock` whose skip connection adds the input back: `out = F(x) + x`
+- Add a 1x1 projection shortcut when stride or channel count changes the shape
+- Track running BatchNorm statistics as NNX state and pass `train=` correctly
+- Replace flatten with global average pooling via `jnp.mean` over spatial axes
+- Swap the basic block for a bottleneck block (1x1 to 3x3 to 1x1) for ResNet-50+
+:::
 
 ## The Problem with Deep Networks
 
@@ -24,47 +41,77 @@ import jax
 import jax.numpy as jnp
 from flax import nnx
 
-class ResidualBlock(nnx.Module):
-    """A single residual block: out = F(x) + x"""
-    
-    def __init__(self, features: int, *, rngs: nnx.Rngs):
-        # Two conv layers with batch norm
+class ResNetBlock(nnx.Module):
+    """A single residual block: out = F(x) + shortcut(x)
+
+    Handles both same-shape blocks and downsampling blocks. When the
+    stride is > 1 or the channel count changes, a 1x1 projection shortcut
+    brings the skip connection to the right shape so the add still works.
+    """
+
+    def __init__(
+        self,
+        in_channels: int,
+        out_channels: int,
+        stride: int,
+        *,
+        rngs: nnx.Rngs,
+    ):
+        # First conv applies the stride (this is where any downsampling happens)
         self.conv1 = nnx.Conv(
-            in_features=features,
-            out_features=features,
+            in_channels,
+            out_channels,
+            kernel_size=(3, 3),
+            strides=(stride, stride),
+            padding='SAME',
+            rngs=rngs
+        )
+        self.bn1 = nnx.BatchNorm(out_channels, rngs=rngs)
+
+        self.conv2 = nnx.Conv(
+            out_channels,
+            out_channels,
             kernel_size=(3, 3),
             padding='SAME',  # Keep spatial dimensions unchanged
             rngs=rngs
         )
-        self.bn1 = nnx.BatchNorm(num_features=features, rngs=rngs)
-        
-        self.conv2 = nnx.Conv(
-            in_features=features,
-            out_features=features,
-            kernel_size=(3, 3),
-            padding='SAME',
-            rngs=rngs
-        )
-        self.bn2 = nnx.BatchNorm(num_features=features, rngs=rngs)
-    
-    def __call__(self, x: jax.Array, *, train: bool = True) -> jax.Array:
-        # Save input for skip connection
+        self.bn2 = nnx.BatchNorm(out_channels, rngs=rngs)
+
+        # Projection shortcut: only needed when shapes change
+        if stride != 1 or in_channels != out_channels:
+            self.shortcut = nnx.Conv(
+                in_channels,
+                out_channels,
+                kernel_size=(1, 1),
+                strides=(stride, stride),
+                rngs=rngs
+            )
+            self.bn_shortcut = nnx.BatchNorm(out_channels, rngs=rngs)
+        else:
+            self.shortcut = None
+
+    def __call__(self, x, train: bool = False):
         residual = x
-        
-        # First conv block
-        out = self.conv1(x)
-        out = self.bn1(out, use_running_average=not train)
-        out = nnx.relu(out)
-        
+
+        # First conv block (may downsample via stride)
+        x = self.conv1(x)
+        x = self.bn1(x, use_running_average=not train)
+        x = nnx.relu(x)
+
         # Second conv block (no activation yet)
-        out = self.conv2(out)
-        out = self.bn2(out, use_running_average=not train)
-        
+        x = self.conv2(x)
+        x = self.bn2(x, use_running_average=not train)
+
+        # Project the skip connection only when shapes differ
+        if self.shortcut is not None:
+            residual = self.shortcut(residual)
+            residual = self.bn_shortcut(residual, use_running_average=not train)
+
         # Add skip connection, then activate
-        out = out + residual
-        out = nnx.relu(out)
-        
-        return out
+        x = x + residual
+        x = nnx.relu(x)
+
+        return x
 ```
 
 ## Why Skip Connections Work
@@ -105,16 +152,19 @@ class ResNet(nnx.Module):
         )
         self.bn1 = nnx.BatchNorm(num_features=initial_features, rngs=rngs)
         
-        # Stack of residual blocks
+        # Stack of residual blocks. The channel count stays fixed here, so
+        # every block is a same-shape block (stride=1). Bumping the stride or
+        # the channel count on a block automatically enables its projection
+        # shortcut — that's how the deeper variants downsample between stages.
         self.blocks = [
-            ResidualBlock(initial_features, rngs=rngs) 
+            ResNetBlock(initial_features, initial_features, stride=1, rngs=rngs)
             for _ in range(num_blocks)
         ]
         
         # Classification head
         self.fc = nnx.Linear(initial_features, num_classes, rngs=rngs)
     
-    def __call__(self, x: jax.Array, *, train: bool = True) -> jax.Array:
+    def __call__(self, x: jax.Array, train: bool = False) -> jax.Array:
         # Initial processing
         x = self.conv1(x)
         x = self.bn1(x, use_running_average=not train)
@@ -171,7 +221,8 @@ def train_resnet():
     # Create optimizer with weight decay
     optimizer = nnx.Optimizer(
         model,
-        optax.adamw(learning_rate=1e-3, weight_decay=1e-4)
+        optax.adamw(learning_rate=1e-3, weight_decay=1e-4),
+        wrt=nnx.Param
     )
     
     # Training loop
@@ -186,7 +237,7 @@ def train_resnet():
                 return loss
             
             loss, grads = nnx.value_and_grad(loss_fn)(model)
-            optimizer.update(grads)
+            optimizer.update(model, grads)
         
         # Evaluate
         accuracy = evaluate(model)
@@ -211,9 +262,10 @@ def evaluate(model):
 
 ### Pitfall 1: Forgetting `train=` Flag
 
-❌ **Wrong**: Batch norm will use wrong statistics
+❌ **Wrong**: During training this silently runs in eval mode (`train=False` is
+the default), so batch norm uses the wrong statistics
 ```python
-logits = model(images)  # Uses training mode by default!
+logits = model(images)  # Defaults to train=False — eval mode!
 ```
 
 ✅ **Right**: Always specify mode explicitly
@@ -229,10 +281,11 @@ logits = model(images, train=False)  # During evaluation
 out = out + residual  # Error if shapes don't match!
 ```
 
-✅ **Right**: Use projection when changing dimensions
+✅ **Right**: Use a projection shortcut when changing dimensions — exactly what
+the `self.shortcut` 1x1 conv in `ResNetBlock` above does:
 ```python
-if out.shape != residual.shape:
-    residual = self.projection(residual)  # 1x1 conv to match shapes
+if self.shortcut is not None:        # stride != 1 or channels changed
+    residual = self.shortcut(residual)  # 1x1 conv to match shapes
 out = out + residual
 ```
 
@@ -253,6 +306,12 @@ out = nnx.relu(out)  # After skip connection
 ```
 
 ## Variants and Extensions
+
+The block above is the *basic* residual block used in ResNet-18/34. Deeper
+networks (ResNet-50/101/152) swap it for a *bottleneck* block, and full models
+stack blocks into four downsampling stages. For the complete tour of the ResNet
+family and when to use each block, see the explainer:
+[Residual Networks (ResNet) in JAX](/architectures/resnet).
 
 ### Bottleneck Blocks (ResNet-50+)
 
@@ -278,7 +337,7 @@ class BottleneckBlock(nnx.Module):
         self.conv3 = nnx.Conv(bottleneck_features, features, (1, 1), rngs=rngs)
         self.bn3 = nnx.BatchNorm(features, rngs=rngs)
     
-    def __call__(self, x, *, train: bool = True):
+    def __call__(self, x, train: bool = False):
         residual = x
         
         # Reduce
@@ -308,10 +367,12 @@ class BottleneckBlock(nnx.Module):
 - Global average pooling is more efficient than flatten + dense layers
 - Use bottleneck blocks for ResNet-50 and deeper
 
-## Next Steps
+## Next steps
 
-- [Training at Scale](../../scale/) - Train on multiple GPUs
-- [Streaming Data](../workflows/streaming-data.md) - Handle large datasets
+- [Residual Networks (ResNet) in JAX](/architectures/resnet) - The theory and full ResNet family
+- [Contrastive Learning](/research/contrastive-learning) - Reuse the ResNetBlock as a feature encoder
+- [Streaming Data](/basics/workflows/streaming-data) - Train ResNets on datasets larger than memory
+- [Training at Scale](/scale) - Train on multiple GPUs
 
 ## Complete Examples
 

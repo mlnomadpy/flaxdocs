@@ -1,10 +1,24 @@
 ---
 sidebar_position: 5
+title: Streaming Datasets Larger Than Memory
+description: Stream datasets too big for RAM with HuggingFace Datasets and JAX. Learn streaming vs downloading, shuffle buffers, on-the-fly tokenization, and batching.
+keywords: [data streaming, HuggingFace datasets, streaming dataset, shuffle buffer, large datasets, JAX data loading, tokenization, FineWeb]
 ---
 
-# Streaming Large Datasets
+# Streaming Datasets Larger Than Memory
 
 Learn how to interact with datasets larger than memory.
+
+:::note Prerequisites
+This guide builds on [Simple Data Loading](/basics/workflows/data-loading-simple).
+:::
+
+:::tip What you'll learn
+- When to stream versus download a dataset, and the tradeoffs of each
+- Stream HuggingFace datasets with `streaming=True` without downloading
+- Pick a shuffle `buffer_size` (rule of thumb: 10-100x batch size)
+- Tokenize text on-the-fly with `dataset.map` and batch an iterable stream
+:::
 
 ## Why Streaming Matters
 
@@ -157,3 +171,10 @@ def create_batches(dataset, batch_size=32):
 # for batch in create_batches(dataset, batch_size=32):
 #     loss = train_step(model, optimizer, batch)
 ```
+
+## Next: Production Pipeline
+
+You now know what streaming is and how to read data larger than memory. To wire
+this into a full, production-ready training loop - with caching, retry and error
+handling, performance tuning, and guidance on when *not* to stream - continue to
+the [Streaming Data Training Pipeline](/basics/workflows/streaming-data).

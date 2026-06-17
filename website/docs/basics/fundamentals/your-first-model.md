@@ -1,6 +1,6 @@
 ---
 sidebar_position: 1
-title: Your First Flax NNX Model - Build a Neural Network
+title: Your First Flax NNX Model
 description: Learn to build your first neural network with Flax NNX. Step-by-step guide to creating modules, understanding state management, and getting started with JAX.
 keywords: [Flax NNX, first model, neural network tutorial, JAX tutorial, Flax modules, getting started]
 ---
@@ -8,6 +8,18 @@ keywords: [Flax NNX, first model, neural network tutorial, JAX tutorial, Flax mo
 # Your First Model
 
 Learn to build your first neural network in Flax NNX - a simple linear layer that you can understand completely.
+
+:::note Prerequisites
+This guide builds on the [Fundamentals overview](/basics/fundamentals).
+:::
+
+:::tip What you'll learn
+- How to define a module by subclassing `nnx.Module`
+- Why weights are wrapped in `nnx.Param` and accessed with `.value`
+- Why `rngs` is keyword-only and passed in from outside the module
+- How to stack `nnx.Linear` layers with ReLU into an MLP
+- Common mistakes: missing `.value`, zero init, RNGs created inside modules
+:::
 
 ## What is a Module?
 
@@ -153,14 +165,6 @@ self.weight = nnx.Param(
 )
 ```
 
-## Next Steps
-
-You now understand the basics of building models in Flax NNX! Next, learn:
-
-- [Training Your First Model](../workflows/simple-training.md) - Write a complete training loop
-- [Computer Vision Models](../vision/simple-cnn.md) - Build CNNs for image classification
-- [Text Models](../text/simple-transformer.md) - Build transformers for language
-
 ## Complete Examples
 
 **Modular examples with shared components:**
@@ -168,4 +172,10 @@ You now understand the basics of building models in Flax NNX! Next, learn:
 - [`examples/shared/models.py`](https://github.com/mlnomadpy/flaxdocs/tree/master/examples/shared/models.py) - Reusable model architectures (MLP, CNN, Transformer, ResNet)
 
 **Original self-contained version:**
-- [`examples/basics/01_basic_model_definition.py`](https://github.com/mlnomadpy/flaxdocs/tree/master/examples/basics/01_basic_model_definition.py) - Complete standalone example
+- [`examples/basics/model_definition.py`](https://github.com/mlnomadpy/flaxdocs/tree/master/examples/basics/model_definition.py) - Complete standalone example
+
+## Next steps
+
+- [Understanding State](/basics/fundamentals/understanding-state) - How NNX tracks params, variables, and RNGs
+- [Your First Training Loop](/basics/workflows/simple-training) - Train the MLP you just built
+- [Simple CNN](/basics/vision/simple-cnn) - Apply these patterns to image classification

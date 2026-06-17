@@ -1,5 +1,8 @@
 ---
 sidebar_position: 3
+title: GPT in JAX & Flax NNX
+description: Build a GPT language model in JAX and Flax NNX. Learn causal self-attention, next-token prediction, temperature sampling, text generation, and the KV cache.
+keywords: [GPT, JAX, Flax NNX, autoregressive model, causal attention, language model, text generation, KV cache, next-token prediction]
 ---
 
 # GPT: Understanding Autoregressive Language Models
@@ -161,14 +164,14 @@ class GPTLayer(nnx.Module):
             nnx.Linear(intermediate, hidden_size, rngs=rngs)
         )
 
-    def __call__(self, x, training: bool = True):
+    def __call__(self, x, train: bool = False):
         # Attention with residual
         attn_out = self.attention(x)
-        x = self.norm1(x + self.dropout(attn_out, deterministic=not training))
+        x = self.norm1(x + self.dropout(attn_out, deterministic=not train))
         
         # FFN with residual
         ffn_out = self.ffn(x)
-        x = self.norm2(x + self.dropout(ffn_out, deterministic=not training))
+        x = self.norm2(x + self.dropout(ffn_out, deterministic=not train))
         
         return x
 ```
@@ -199,17 +202,17 @@ class GPT(nnx.Module):
         self.norm = nnx.LayerNorm(hidden_size, rngs=rngs)
         self.head = nnx.Linear(hidden_size, vocab_size, rngs=rngs)
 
-    def __call__(self, input_ids, training: bool = True):
+    def __call__(self, input_ids, train: bool = False):
         B, L = input_ids.shape
         positions = jnp.arange(L)[None, :]
         
         # Combine token and position embeddings
         x = self.token_emb(input_ids) + self.pos_emb(positions)
-        x = self.dropout(x, deterministic=not training)
+        x = self.dropout(x, deterministic=not train)
         
         # Pass through transformer layers
         for layer in self.layers:
-            x = layer(x, training=training)
+            x = layer(x, train=train)
         
         # Final norm and project to vocabulary
         x = self.norm(x)
@@ -247,12 +250,12 @@ def train_step(model, optimizer, batch):
         inputs = batch[:, :-1]   # [A, B, C]
         targets = batch[:, 1:]   # [B, C, D]
         
-        logits = model(inputs, training=True)
+        logits = model(inputs, train=True)
         loss = optax.softmax_cross_entropy_with_integer_labels(logits, targets)
         return loss.mean()
     
     loss, grads = nnx.value_and_grad(loss_fn)(model)
-    optimizer.update(grads)
+    optimizer.update(model, grads)
     return loss
 ```
 
@@ -295,7 +298,7 @@ def generate(model, tokenizer, prompt: str, max_tokens: int = 50, temperature: f
     
     for _ in range(max_tokens):
         # Get predictions for the last token
-        logits = model(input_ids, training=False)
+        logits = model(input_ids, train=False)
         next_token_logits = logits[0, -1, :]
         
         # Apply temperature

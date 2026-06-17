@@ -1,10 +1,25 @@
 ---
 sidebar_position: 3
+title: Pipeline Parallelism in JAX
+description: Split large models into stages across devices with pipeline parallelism in Flax NNX. Learn microbatching, pipeline bubbles, GPipe scheduling, and efficiency tuning.
+keywords: [pipeline parallelism, JAX, Flax NNX, model stages, microbatching, pipeline bubbles, GPipe, distributed training, large model training]
 ---
 
 # Pipeline Parallelism
 
 Learn how to split large models across multiple devices using pipeline parallelism with Flax NNX.
+
+:::note Prerequisites
+Read the [Distributed Training Overview](/scale) first. Pipeline parallelism is an advanced strategy for models too large for one device — if your model fits, prefer [Data Parallelism](/scale/data-parallelism) or [FSDP](/scale/fsdp-fully-sharded) instead.
+:::
+
+:::tip What you'll learn
+- How to split a Flax NNX model into sequential stages and place each on a device
+- How microbatching keeps all pipeline stages busy at once
+- Why pipeline "bubbles" waste compute, and the efficiency formula `M / (M + S - 1)`
+- How to run the forward/backward pipeline and accumulate gradients across microbatches
+- When pipeline fails: non-sequential DAGs, stage load imbalance, and too few devices
+:::
 
 ## Overview
 
@@ -318,7 +333,7 @@ def pipeline_backward(stages, activations, microbatches):
 optimizers = {}
 for stage_id, stage in stages.items():
     optimizer = optax.adam(learning_rate=1e-3)
-    optimizers[stage_id] = nnx.Optimizer(stage, optimizer)
+    optimizers[stage_id] = nnx.Optimizer(stage, optimizer, wrt=nnx.Param)
 
 # Training
 num_microbatches = 8  # More microbatches = higher efficiency
@@ -336,7 +351,7 @@ for epoch in range(num_epochs):
         
         # Update each stage
         for stage_id in stages.keys():
-            optimizers[stage_id].update(gradients[stage_id])
+            optimizers[stage_id].update(stages[stage_id], gradients[stage_id])
 ```
 
 ## Advanced: GPipe Schedule
@@ -469,7 +484,7 @@ output = merge(out1, out2)
 
 ## Example: Complete Script
 
-See `examples/18_pipeline_parallelism.py` in the repository for a complete implementation with:
+See `examples/distributed/pipeline_parallel.py` in the repository for a complete implementation with:
 
 - ✅ Model stage definition
 - ✅ Device placement
@@ -491,8 +506,9 @@ See `examples/18_pipeline_parallelism.py` in the repository for a complete imple
 | **Tensor Parallel** | 1/N of layers | Every layer | 100% | High |
 | **FSDP** | 1/N of params | All-gather/reduce | 100% | Medium |
 
-## Next Steps
+## Next steps
 
-- **Need more memory savings?** → Try [FSDP](./fsdp-fully-sharded.md)
-- **Simple parallelism?** → Start with [Data Parallelism](./data-parallelism.md)
-- **Flexible sharding?** → Learn [SPMD](./spmd-sharding.md)
+- **Need more memory savings?** [FSDP](/scale/fsdp-fully-sharded) — often combined with pipeline for the largest models
+- **Flexible sharding?** [SPMD](/scale/spmd-sharding) — express pipeline and tensor parallelism via device meshes
+- **Simpler parallelism?** [Data Parallelism](/scale/data-parallelism) — use it per-stage to boost throughput
+- **Back to:** [Distributed Training Overview](/scale)

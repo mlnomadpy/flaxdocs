@@ -285,7 +285,7 @@ def maml_train_step(model: MAMLRegressor, optimizer: nnx.Optimizer,
     loss, grads = grad_fn(model)
     
     # Meta-update (outer loop)
-    optimizer.update(grads)
+    optimizer.update(model, grads)
     
     return {'loss': loss}
 
@@ -324,7 +324,7 @@ def train_maml(
     print("\nInitializing model...")
     rng = jax.random.PRNGKey(0)
     model = MAMLRegressor(hidden_dim=40, rngs=nnx.Rngs(rng))
-    optimizer = nnx.Optimizer(model, optax.adam(meta_lr))
+    optimizer = nnx.Optimizer(model, optax.adam(meta_lr), wrt=nnx.Param)
     
     print(f"✓ Model initialized")
     print(f"  Meta batch size: {meta_batch_size} tasks")

@@ -1,10 +1,24 @@
 ---
 sidebar_position: 0
+title: NLP with Transformers in Flax NNX
+description: Build transformer models for NLP with Flax NNX, from self-attention and causal masking to GPT-style text generation, tokenization, and language modeling.
+keywords: [NLP, transformers, Flax NNX, self-attention, GPT, language models, text generation, tokenization, attention mechanism]
 ---
 
 # Natural Language Processing
 
 Learn to build transformer models for text - from basic attention to full GPT-style language models.
+
+:::note Prerequisites
+This guide builds on [Your First Model](/basics/fundamentals/your-first-model) and [Simple Training Loop](/basics/workflows/simple-training).
+:::
+
+:::tip What you'll learn
+- How self-attention lets each token attend to every other token for context
+- Why causal masking blocks attention to future tokens during generation
+- How GPT, BERT, and T5 differ (decoder-only, encoder-only, encoder-decoder)
+- Generate text autoregressively, one token at a time
+:::
 
 ## What You'll Build
 
@@ -94,12 +108,14 @@ Generate text one token at a time, feeding outputs back as inputs.
 
 This section focuses on GPT-style models, which are the most versatile.
 
-## What's Next?
+## Next steps
 
-After mastering transformers, explore advanced NLP architectures and techniques in the research section.
+- [Simple Transformer](/basics/text/simple-transformer) - Build attention and a GPT model from scratch
+- [GPT in JAX](/architectures/gpt) - The decoder-only architecture in depth
+- [BERT in JAX](/architectures/bert) - The encoder-only architecture for understanding
 
 ## Complete Examples
 
-- [`examples/06_language_model_training.py`](https://github.com/mlnomadpy/flaxdocs/tree/master/examples/06_language_model_training.py) - Simple language model
-- [`examples/11_bert_fineweb_mteb.py`](https://github.com/mlnomadpy/flaxdocs/tree/master/examples/11_bert_fineweb_mteb.py) - BERT training
-- [`examples/12_gpt_fineweb_training.py`](https://github.com/mlnomadpy/flaxdocs/tree/master/examples/12_gpt_fineweb_training.py) - GPT from scratch
+- [`examples/training/language_model.py`](https://github.com/mlnomadpy/flaxdocs/tree/master/examples/training/language_model.py) - Simple language model
+- [`examples/advanced/bert_fineweb.py`](https://github.com/mlnomadpy/flaxdocs/tree/master/examples/advanced/bert_fineweb.py) - BERT training
+- [`examples/advanced/gpt_training.py`](https://github.com/mlnomadpy/flaxdocs/tree/master/examples/advanced/gpt_training.py) - GPT from scratch

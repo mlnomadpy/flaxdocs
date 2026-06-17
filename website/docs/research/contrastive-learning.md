@@ -1,13 +1,41 @@
 ---
 sidebar_position: 1
+title: SimCLR Contrastive Learning in JAX
+description: "Build SimCLR contrastive learning from scratch in JAX and Flax NNX — NT-Xent loss math, augmentation pipeline, and runnable code with linear-probe eval."
+keywords:
+  - contrastive learning
+  - SimCLR
+  - JAX
+  - Flax
+  - NNX
+  - NT-Xent loss
+  - self-supervised learning
+  - representation learning
+  - linear probing
+  - SimCLRv2
+  - MoCo
+  - BYOL
+image: img/docusaurus-social-card.jpg
 ---
 
 # Contrastive Learning with SimCLR
 
-Learn self-supervised representation learning through contrastive methods. SimCLR enables training powerful visual representations without labeled data by contrasting augmented views of images.
+**Train powerful image representations without a single label.** This is a complete, from-scratch implementation of SimCLR in JAX and Flax NNX — covering the augmentation pipeline, the NT-Xent contrastive loss (with full math and gradient analysis), the training loop, and linear-probe evaluation. Every snippet is runnable, and the page ends with a working MNIST example you can launch in one command.
+
+:::note Prerequisites
+A research-grade guide. Comfortable with [training loops](/basics/workflows/simple-training) and [training best practices](/basics/training-best-practices)? Good. The encoder here uses ResNet-style blocks, so the [ResNet architecture](/basics/vision/resnet-architecture) page also helps.
+:::
+
+:::tip What you'll learn
+- How contrastive learning hits **85–95% of supervised accuracy with zero labels**
+- The **NT-Xent loss** derived step by step, then implemented in ~15 lines of JAX
+- Why temperature, batch size, and augmentation make or break training
+- How SimCLR connects to **mutual information, alignment, and uniformity**
+- When to reach for **MoCo** or **BYOL** instead
+:::
 
 :::info Example Code
-See the full implementation: [`examples/13_contrastive_learning_simclr.py`](https://github.com/yourusername/flaxdocs/blob/master/examples/13_contrastive_learning_simclr.py)
+See the full implementation: [`examples/advanced/simclr_contrastive.py`](https://github.com/mlnomadpy/flaxdocs/tree/master/examples/advanced/simclr_contrastive.py)
 :::
 
 ## Why Contrastive Learning?
@@ -195,7 +223,7 @@ def train_step(model: ContrastiveEncoder, optimizer: nnx.Optimizer,
     # Compute gradients and update
     grad_fn = nnx.value_and_grad(loss_fn)
     loss, grads = grad_fn(model)
-    optimizer.update(grads)
+    optimizer.update(model, grads)
     
     return {'loss': loss}
 ```
@@ -224,7 +252,7 @@ class LinearClassifier(nnx.Module):
 
 # Train only the classifier
 model = LinearClassifier(pretrained_encoder, num_classes=10, rngs=nnx.Rngs(0))
-optimizer = nnx.Optimizer(model, optax.adam(1e-3))
+optimizer = nnx.Optimizer(model, optax.adam(1e-3), wrt=nnx.Param)
 
 # Training step only updates classifier weights
 @nnx.jit
@@ -237,7 +265,7 @@ def train_classifier_step(model, optimizer, batch):
     
     grad_fn = nnx.value_and_grad(loss_fn, has_aux=True)
     (loss, logits), grads = grad_fn(model)
-    optimizer.update(grads)
+    optimizer.update(model, grads)
     
     accuracy = jnp.mean(jnp.argmax(logits, -1) == batch['label'])
     return {'loss': loss, 'accuracy': accuracy}
@@ -355,7 +383,7 @@ schedule = optax.warmup_cosine_decay_schedule(
     decay_steps=num_epochs * steps_per_epoch,
     end_value=1e-5
 )
-optimizer = nnx.Optimizer(model, optax.adam(schedule))
+optimizer = nnx.Optimizer(model, optax.adam(schedule), wrt=nnx.Param)
 ```
 
 ## Mathematical Insights
@@ -443,8 +471,7 @@ NT-Xent loss balances both: align positives, separate all pairs uniformly.
 Train a contrastive model on MNIST:
 
 ```bash
-cd examples
-python 13_contrastive_learning_simclr.py
+python examples/advanced/simclr_contrastive.py
 ```
 
 Expected output:
@@ -460,12 +487,12 @@ Training linear classifier on frozen features...
 Test Accuracy: 0.9123
 ```
 
-## Next Steps
+## Next steps
 
-- Try different augmentation strategies
-- Experiment with batch sizes and temperature
-- Apply to your own datasets
-- Explore variants like MoCo or BYOL
+- [Knowledge Distillation](/research/knowledge-distillation) — another way to transfer learned representations into smaller models.
+- [ResNet architecture](/basics/vision/resnet-architecture) — go deeper on the encoder backbone used here.
+- [Custom Training Loops](/research/custom-training-loops) — add EMA and gradient clipping to stabilize long pre-training runs.
+- Back to the [Research hub](/research/advanced-techniques).
 
 ## Complete Example
 

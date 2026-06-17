@@ -16,12 +16,6 @@ EXAMPLES = {
                 "concepts": ["nnx.Module", "shared.models", "model inspection"]
             },
             {
-                "name": "Model Definition (Original)",
-                "file": "basics/01_basic_model_definition.py",
-                "description": "Original self-contained model definition examples",
-                "concepts": ["MLP", "CNN", "ResNet blocks", "Transformers"]
-            },
-            {
                 "name": "Save and Load Models",
                 "file": "basics/save_load_model.py",
                 "description": "Checkpoint management with Orbax",
@@ -124,6 +118,12 @@ EXAMPLES = {
                 "file": "advanced/knowledge_distillation.py",
                 "description": "Transfer knowledge from teacher to student",
                 "concepts": ["distillation", "teacher-student", "compression"]
+            },
+            {
+                "name": "DQN Reinforcement Learning",
+                "file": "advanced/dqn_reinforcement_learning.py",
+                "description": "Deep Q-Network reinforcement learning",
+                "concepts": ["dqn", "reinforcement learning", "replay buffer"]
             }
         ]
     },
@@ -153,6 +153,17 @@ EXAMPLES = {
                 "file": "distributed/fsdp_sharding.py",
                 "description": "Fully Sharded Data Parallelism",
                 "concepts": ["fsdp", "sharding", "large models"]
+            }
+        ]
+    },
+    "ImageNet": {
+        "description": "Standalone ImageNet training application",
+        "examples": [
+            {
+                "name": "ImageNet Training",
+                "file": "imagenet/main.py",
+                "description": "Standalone ResNet ImageNet training app",
+                "concepts": ["imagenet", "resnet", "large-scale training"]
             }
         ]
     }

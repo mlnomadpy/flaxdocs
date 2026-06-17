@@ -255,7 +255,7 @@ def train_with_comprehensive_logging():
     logger.log_model_info(model)
     
     # Initialize optimizer
-    optimizer = nnx.Optimizer(model, optax.adam(config["learning_rate"]))
+    optimizer = nnx.Optimizer(model, optax.adam(config["learning_rate"]), wrt=nnx.Param)
     
     # Training loop (simulated)
     print("\nTraining...")

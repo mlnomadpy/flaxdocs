@@ -1,5 +1,8 @@
 ---
 sidebar_position: 1
+title: Residual Networks (ResNet) in JAX
+description: Understand why residual networks train deeper. Learn skip connections, the vanishing gradient problem, basic and bottleneck blocks, and ResNet variants in Flax NNX.
+keywords: [residual networks, ResNet, skip connections, vanishing gradients, residual learning, bottleneck block, deep networks, JAX, Flax NNX]
 ---
 
 # ResNet: Understanding Residual Networks
@@ -70,7 +73,7 @@ from flax import nnx
 import jax.numpy as jnp
 from typing import Optional
 
-class BasicBlock(nnx.Module):
+class ResNetBlock(nnx.Module):
     """The building block for ResNet-18 and ResNet-34."""
     expansion = 1  # Output channels = input channels
     
@@ -88,20 +91,22 @@ class BasicBlock(nnx.Module):
         # Skip connection might need to match dimensions
         self.downsample = downsample
 
-    def __call__(self, x, training: bool = True):
+    def __call__(self, x, train: bool = False):
         identity = x
         
         # Main path: Conv -> BN -> ReLU -> Conv -> BN
-        out = nnx.relu(self.bn1(self.conv1(x), use_running_average=not training))
-        out = self.bn2(self.conv2(out), use_running_average=not training)
+        out = nnx.relu(self.bn1(self.conv1(x), use_running_average=not train))
+        out = self.bn2(self.conv2(out), use_running_average=not train)
         
         # Match dimensions if needed (when stride > 1 or channels change)
         if self.downsample is not None:
-            identity = self.downsample(x, training=training)
+            identity = self.downsample(x, train=train)
         
         # The magic: add skip connection, then ReLU
         return nnx.relu(out + identity)
 ```
+
+> Want to actually build and train this block on real images? See the hands-on tutorial: [Build ResNet in Flax NNX](/basics/vision/resnet-architecture).
 
 ### What's `downsample`?
 
@@ -180,15 +185,15 @@ class Bottleneck(nnx.Module):
         
         self.downsample = downsample
 
-    def __call__(self, x, training: bool = True):
+    def __call__(self, x, train: bool = False):
         identity = x
         
-        out = nnx.relu(self.bn1(self.conv1(x), use_running_average=not training))
-        out = nnx.relu(self.bn2(self.conv2(out), use_running_average=not training))
-        out = self.bn3(self.conv3(out), use_running_average=not training)
+        out = nnx.relu(self.bn1(self.conv1(x), use_running_average=not train))
+        out = nnx.relu(self.bn2(self.conv2(out), use_running_average=not train))
+        out = self.bn3(self.conv3(out), use_running_average=not train)
         
         if self.downsample is not None:
-            identity = self.downsample(x, training=training)
+            identity = self.downsample(x, train=train)
         
         return nnx.relu(out + identity)
 ```
@@ -260,15 +265,15 @@ class ResNet(nnx.Module):
         
         return layers
 
-    def __call__(self, x, training: bool = True):
+    def __call__(self, x, train: bool = False):
         # Stem
-        x = nnx.relu(self.bn1(self.conv1(x), use_running_average=not training))
+        x = nnx.relu(self.bn1(self.conv1(x), use_running_average=not train))
         x = nnx.max_pool(x, window_shape=(3, 3), strides=(2, 2), padding=((1, 1), (1, 1)))
         
         # Four stages
         for stage in [self.layer1, self.layer2, self.layer3, self.layer4]:
             for block in stage:
-                x = block(x, training=training)
+                x = block(x, train=train)
         
         # Global average pool and classify
         x = jnp.mean(x, axis=(1, 2))  # [B, C]
@@ -280,15 +285,15 @@ class DownsampleBlock(nnx.Module):
         self.conv = nnx.Conv(in_ch, out_ch, (1, 1), strides=stride, use_bias=False, rngs=rngs)
         self.bn = nnx.BatchNorm(out_ch, rngs=rngs)
     
-    def __call__(self, x, training=True):
-        return self.bn(self.conv(x), use_running_average=not training)
+    def __call__(self, x, train: bool = False):
+        return self.bn(self.conv(x), use_running_average=not train)
 ```
 
 ### Creating Different Variants
 
 ```python
 def resnet18(num_classes=1000, rngs=None):
-    return ResNet(BasicBlock, [2, 2, 2, 2], num_classes, rngs=rngs)
+    return ResNet(ResNetBlock, [2, 2, 2, 2], num_classes, rngs=rngs)
 
 def resnet50(num_classes=1000, rngs=None):
     return ResNet(Bottleneck, [3, 4, 6, 3], num_classes, rngs=rngs)
@@ -299,29 +304,13 @@ def resnet101(num_classes=1000, rngs=None):
 
 ---
 
-## 5. Training
+## 5. Building & Training One
 
-```python
-import optax
-from jax.sharding import Mesh, NamedSharding, PartitionSpec as P
+This page covers the *concepts* and *variants*. For a complete, copy-pasteable
+walkthrough — a runnable `ResNetBlock`, a small ResNet model, and an end-to-end
+training loop on real images — head to the hands-on tutorial:
 
-# Distributed training setup
-devices = jax.devices()
-mesh = Mesh(np.array(devices), ('batch',))
-data_sharding = NamedSharding(mesh, P('batch', None, None, None))
-
-@nnx.jit
-def train_step(model, optimizer, images, labels):
-    def loss_fn(model):
-        logits = model(images, training=True)
-        loss = optax.softmax_cross_entropy_with_integer_labels(logits, labels).mean()
-        acc = jnp.mean(jnp.argmax(logits, axis=1) == labels)
-        return loss, acc
-    
-    (loss, acc), grads = nnx.value_and_grad(loss_fn, has_aux=True)(model)
-    optimizer.update(grads)
-    return loss, acc
-```
+➡️ **[Build ResNet in Flax NNX](/basics/vision/resnet-architecture)**
 
 ---
 

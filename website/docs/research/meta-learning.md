@@ -1,13 +1,28 @@
 ---
 sidebar_position: 2
+title: MAML Meta-Learning in JAX & Flax NNX
+description: "Implement MAML meta-learning in Flax NNX — inner-loop task adaptation, outer-loop meta-updates, bilevel optimization, and few-shot adaptation with runnable code."
+keywords: [meta-learning, MAML, JAX, Flax NNX, few-shot learning, bilevel optimization, task adaptation, first-order MAML]
 ---
 
 # Meta-Learning with MAML
 
 Learn Model-Agnostic Meta-Learning (MAML) - a powerful technique for few-shot learning that learns good parameter initializations for rapid adaptation to new tasks.
 
+:::note Prerequisites
+A research-grade, math-heavy guide. Comfortable with [training loops](/basics/workflows/simple-training) and [training best practices](/basics/training-best-practices)? Good. MAML differentiates *through* an inner training loop, so a firm grasp of gradients and bilevel optimization will help.
+:::
+
+:::tip What you'll learn
+- Frame few-shot learning as bilevel optimization: an inner adaptation loop and an outer meta-update
+- Implement the inner loop as manual SGD so gradients flow through it
+- Compute meta-gradients through task adaptation with `nnx.value_and_grad`
+- Use first-order MAML (`jax.lax.stop_gradient`) to skip the expensive Hessian term
+- Verify that loss drops sharply after just 1–5 adaptation steps on new tasks
+:::
+
 :::info Example Code
-See the full implementation: [`examples/14_meta_learning_maml.py`](https://github.com/yourusername/flaxdocs/blob/master/examples/14_meta_learning_maml.py)
+See the full implementation: [`examples/advanced/maml_metalearning.py`](https://github.com/mlnomadpy/flaxdocs/tree/master/examples/advanced/maml_metalearning.py)
 :::
 
 ## The Few-Shot Learning Challenge
@@ -243,7 +258,7 @@ def maml_train_step(model: MAMLRegressor, optimizer: nnx.Optimizer,
     loss, grads = grad_fn(model)
     
     # Meta-update (outer loop)
-    optimizer.update(grads)
+    optimizer.update(model, grads)
     
     return {'loss': loss}
 ```
@@ -329,7 +344,7 @@ def train_maml(
     
     # Initialize model
     model = MAMLRegressor(hidden_dim=40, rngs=nnx.Rngs(0))
-    optimizer = nnx.Optimizer(model, optax.adam(meta_lr))
+    optimizer = nnx.Optimizer(model, optax.adam(meta_lr), wrt=nnx.Param)
     
     # Meta-training
     for iteration in range(num_iterations):
@@ -571,8 +586,7 @@ Meta-train on task distribution → Adapt to new task
 Train MAML on sine wave regression:
 
 ```bash
-cd examples
-python 14_meta_learning_maml.py
+python examples/advanced/maml_metalearning.py
 ```
 
 Expected output:
@@ -591,12 +605,12 @@ Task 2 | Before: 1.9876 → After 1 step: 0.0987
 
 The dramatic improvement after just one step demonstrates MAML's power!
 
-## Next Steps
+## Next steps
 
-- Apply to classification tasks (Omniglot, Mini-ImageNet)
-- Try Reptile for simpler implementation
-- Experiment with different architectures
-- Explore task-conditional models
+- [Custom Training Loops](/research/custom-training-loops) — the explicit-state patterns that make the inner/outer loop tractable.
+- [Curriculum Learning](/research/curriculum-learning) — another way to shape *what* the model trains on over time.
+- [Experiment Reproducibility](/research/experiment-reproducibility) — pin task sampling so meta-runs are repeatable.
+- Back to the [Research hub](/research/advanced-techniques).
 
 ## Complete Example
 
