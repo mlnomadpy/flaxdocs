@@ -562,19 +562,28 @@ obs, state, reward, done, info = env.step(key_step, state, action, env_params)
 gymnax enables fully JIT-compiled episode rollouts using `jax.lax.scan`:
 
 ```python
-from flax import linen as nn
+from flax import nnx
 
-class MLP(nn.Module):
+class PolicyMLP(nnx.Module):
     """Simple policy network."""
-    num_hidden_units: int
-    num_output_units: int
+    def __init__(self, in_features: int, num_hidden: int,
+                 num_actions: int, *, rngs: nnx.Rngs):
+        self.fc1 = nnx.Linear(in_features, num_hidden, rngs=rngs)
+        self.fc2 = nnx.Linear(num_hidden, num_actions, rngs=rngs)
 
-    @nn.compact
-    def __call__(self, x, key):
-        x = nn.Dense(self.num_hidden_units)(x)
-        x = nn.relu(x)
-        x = nn.Dense(self.num_output_units)(x)
-        return x
+    def __call__(self, x):
+        x = nnx.relu(self.fc1(x))
+        return self.fc2(x)
+
+# Split the NNX model into a static graph definition + its parameters, so the
+# params can be carried through jax.lax.scan as a plain pytree.
+policy = PolicyMLP(in_features=4, num_hidden=64, num_actions=2, rngs=nnx.Rngs(0))
+graphdef, policy_params = nnx.split(policy)
+
+def policy_fn(params, obs, key):
+    """Stateless policy call, rebuilt from (graphdef, params) inside the scan."""
+    model = nnx.merge(graphdef, params)
+    return model(obs)
 
 def gymnax_rollout(key, policy_fn, policy_params, steps_in_episode, env_name="CartPole-v1"):
     """JIT-compiled episode rollout with gymnax."""

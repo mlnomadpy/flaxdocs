@@ -160,10 +160,10 @@ class BERTModel(nnx.Module):
         self.embeddings = BERTEmbedding(vocab_size, max_len, d_model, dropout, rngs)
         
         # Transformer layers
-        self.layers = [
+        self.layers = nnx.List([
             BERTLayer(d_model, num_heads, d_ff, dropout, rngs)
             for _ in range(num_layers)
-        ]
+        ])
         
         # MLM head
         self.mlm_dense = nnx.Linear(d_model, d_model, rngs=rngs)

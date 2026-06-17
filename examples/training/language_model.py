@@ -158,10 +158,10 @@ class TransformerLM(nnx.Module):
         self.position_embedding = nnx.Embed(max_seq_len, d_model, rngs=rngs)
         
         # Transformer blocks
-        self.blocks = [
+        self.blocks = nnx.List([
             TransformerBlock(d_model, num_heads, d_ff, dropout, rngs)
             for _ in range(num_layers)
-        ]
+        ])
         
         # Output projection
         self.output_proj = nnx.Linear(d_model, vocab_size, rngs=rngs)
