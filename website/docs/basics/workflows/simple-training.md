@@ -45,17 +45,22 @@ import optax
 
 # Create a simple model
 class SimpleMLP(nnx.Module):
-    def __init__(self, *, rngs: nnx.Rngs):
-        self.layer1 = nnx.Linear(784, 256, rngs=rngs)
-        self.layer2 = nnx.Linear(256, 10, rngs=rngs)
+    """The same MLP you built in Your First Model."""
+    def __init__(self, in_features: int, hidden_features: int,
+                 out_features: int, *, rngs: nnx.Rngs):
+        self.layer1 = nnx.Linear(in_features, hidden_features, rngs=rngs)
+        self.layer2 = nnx.Linear(hidden_features, hidden_features, rngs=rngs)
+        self.layer3 = nnx.Linear(hidden_features, out_features, rngs=rngs)
     
     def __call__(self, x):
         x = self.layer1(x)
         x = nnx.relu(x)
-        return self.layer2(x)
+        x = self.layer2(x)
+        x = nnx.relu(x)
+        return self.layer3(x)
 
 # Initialize model
-model = SimpleMLP(rngs=nnx.Rngs(params=0))
+model = SimpleMLP(784, 256, 10, rngs=nnx.Rngs(params=0))
 
 # Create optimizer
 optimizer = nnx.Optimizer(model, optax.adam(learning_rate=1e-3), wrt=nnx.Param)
@@ -203,7 +208,7 @@ from flax import nnx
 import optax
 
 # Model
-class MNISTModel(nnx.Module):
+class SimpleCNN(nnx.Module):
     def __init__(self, *, rngs: nnx.Rngs):
         self.conv1 = nnx.Conv(1, 32, (3, 3), rngs=rngs)
         self.conv2 = nnx.Conv(32, 64, (3, 3), rngs=rngs)
@@ -253,7 +258,7 @@ def evaluate(model, loader):
 # Main training loop
 def main():
     # Setup
-    model = MNISTModel(rngs=nnx.Rngs(params=0))
+    model = SimpleCNN(rngs=nnx.Rngs(params=0))
     optimizer = nnx.Optimizer(model, optax.adam(3e-4), wrt=nnx.Param)
     
     # Load data (simplified - see data loading guide)
