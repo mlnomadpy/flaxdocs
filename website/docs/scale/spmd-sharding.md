@@ -1,10 +1,25 @@
 ---
 sidebar_position: 2
+title: SPMD Sharding with jax.jit
+description: Master SPMD sharding in JAX with device meshes, PartitionSpec, and NamedSharding. Mix data, tensor, and FSDP-style parallelism with automatic jax.jit collectives.
+keywords: [SPMD, jax.jit, sharding, device mesh, PartitionSpec, NamedSharding, tensor parallelism, distributed training, Flax NNX]
 ---
 
 # SPMD: Automatic Sharding with jax.jit
 
 Learn how to use JAX's modern automatic sharding API for flexible, efficient distributed training with Flax NNX.
+
+:::note Prerequisites
+Read the [Distributed Training Overview](/scale) first, and ideally [Data Parallelism](/scale/data-parallelism) — SPMD generalizes the same gradient-sync idea into a declarative sharding API.
+:::
+
+:::tip What you'll learn
+- How to build a device `Mesh` with named axes (e.g. `('data', 'model')`)
+- How to describe tensor sharding with `PartitionSpec` and `NamedSharding`
+- How to shard model parameters and let `jax.jit` insert collectives automatically
+- Four sharding strategies: data parallel, tensor parallel, 2D, and FSDP-style
+- How to inspect and constrain sharding with `visualize_array_sharding` and `with_sharding_constraint`
+:::
 
 ## Overview
 
@@ -243,7 +258,7 @@ def create_train_step(mesh, shardings):
         (loss, metrics), grads = grad_fn(state.model)
         
         # Update (compiler handles synchronization)
-        state.update(grads)
+        state.update(state.model, grads)
         
         return state, loss, metrics
     
@@ -255,7 +270,7 @@ def create_train_step(mesh, shardings):
 ```python
 # Create optimizer
 optimizer = optax.adam(learning_rate=1e-3)
-state = nnx.Optimizer(model, optimizer)
+state = nnx.Optimizer(model, optimizer, wrt=nnx.Param)
 
 # Create training step
 train_step = create_train_step(mesh, shardings)
@@ -561,8 +576,9 @@ with jax.profiler.trace("/tmp/jax-trace"):
 **SPMD sharding implementation:**
 - [`examples/distributed/sharding_spmd.py`](https://github.com/mlnomadpy/flaxdocs/tree/master/examples/distributed/sharding_spmd.py) - Complete example with device mesh creation, parameter sharding strategies, automatic propagation, and memory analysis
 
-## Next Steps
+## Next steps
 
-- **Save Memory?** → Try [FSDP for large models](./fsdp-fully-sharded.md)
-- **Sequential Models?** → Learn [Pipeline Parallelism](./pipeline-parallelism.md)
-- **Simple Approach?** → Start with [Data Parallelism](./data-parallelism.md)
+- **Save memory?** [FSDP](/scale/fsdp-fully-sharded) — the FSDP-style sharding above, fully developed for billion-parameter models
+- **Sequential models?** [Pipeline Parallelism](/scale/pipeline-parallelism) — split the model into stages across devices
+- **Simpler approach?** [Data Parallelism](/scale/data-parallelism) — the `pmap` baseline SPMD builds on
+- **Back to:** [Distributed Training Overview](/scale)

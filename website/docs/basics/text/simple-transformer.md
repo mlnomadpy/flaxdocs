@@ -1,6 +1,6 @@
 ---
 sidebar_position: 1
-title: Text Generation with Transformers - Build GPT-style Models
+title: Text Generation with Transformers
 description: Learn to build transformer models for text generation with Flax NNX. Master self-attention, positional encoding, and GPT-style architectures for NLP.
 keywords: [transformer, GPT, text generation, NLP, self-attention, language model, Flax transformer, natural language processing]
 ---
@@ -8,6 +8,18 @@ keywords: [transformer, GPT, text generation, NLP, self-attention, language mode
 # Text Generation with Transformers
 
 Learn to build transformer models for text generation, from simple attention mechanisms to full GPT-style architectures.
+
+:::note Prerequisites
+This guide builds on [Simple Training Loop](/basics/workflows/simple-training) and [Your First Model](/basics/fundamentals/your-first-model).
+:::
+
+:::tip What you'll learn
+- Implement single-head self-attention with Q/K/V projections and scaled scores
+- Split attention into multiple heads from a single fused QKV projection
+- Assemble a pre-norm `TransformerBlock` with residual connections and a GELU MLP
+- Build a full GPT model with token and position embeddings and a causal mask
+- Generate text autoregressively with temperature sampling
+:::
 
 ## Why Transformers for Text?
 
@@ -338,7 +350,8 @@ def train_language_model():
     # Create optimizer
     optimizer = nnx.Optimizer(
         model,
-        optax.adamw(learning_rate=3e-4, weight_decay=0.1)
+        optax.adamw(learning_rate=3e-4, weight_decay=0.1),
+        wrt=nnx.Param
     )
     
     # Training loop
@@ -361,7 +374,7 @@ def train_language_model():
                 return loss
             
             loss, grads = nnx.value_and_grad(loss_fn)(model)
-            optimizer.update(grads)
+            optimizer.update(model, grads)
         
         print(f"Epoch {epoch}: Loss = {loss:.4f}")
 ```
@@ -446,9 +459,11 @@ positions = jnp.minimum(jnp.arange(seq_len), model.max_seq_len - 1)
 - **Transformer blocks** combine attention + MLP with residual connections
 - **Pre-norm** is more stable than post-norm
 
-## Next Steps
+## Next steps
 
-Now that you understand transformers, you can explore more advanced NLP topics or apply these concepts to real projects.
+- [GPT in JAX](/architectures/gpt) - Scale this decoder-only model into a full GPT
+- [BERT in JAX](/architectures/bert) - Apply attention to an encoder-only model
+- [Streaming Data](/basics/workflows/streaming-data) - Train on text datasets larger than memory
 
 ## Complete Examples
 

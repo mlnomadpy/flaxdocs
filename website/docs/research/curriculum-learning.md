@@ -1,10 +1,25 @@
 ---
 sidebar_position: 7
+title: Curriculum Learning in JAX & Flax
+description: "Implement curriculum learning in JAX — difficulty scoring, linear/root/geometric pacing functions, dynamic data sampling, and self-paced learning with runnable code."
+keywords: [curriculum learning, JAX, Flax, self-paced learning, pacing function, difficulty scoring, teacher-student, dynamic sampling]
 ---
 
 # Curriculum Learning
 
 Humans learn better when concepts are introduced in a specific order: simple addition before multiplication, multiplication before calculus. **Curriculum Learning** applies this principle to machine learning: instead of sampling batches randomly ($U(D)$), we sample from a distribution $P_t(D)$ that changes over time to present easy examples first, then gradually harder ones.
+
+:::note Prerequisites
+A research-grade guide. Comfortable with [training loops](/basics/workflows/simple-training) and [training best practices](/basics/training-best-practices)? Good. Curriculum learning reshapes the data sampling around your existing training step rather than the model itself.
+:::
+
+:::tip What you'll learn
+- Separate a curriculum into a difficulty scorer `S(x)` and a pacing function `λ(t)`
+- Compare linear, root, and geometric pacing schedules and what each prioritizes
+- Implement a `CurriculumScheduler` that unlocks a growing slice of a difficulty-sorted dataset
+- Implement Self-Paced Learning with a loss-thresholded selection mask in the training step
+- Use a teacher model to score difficulty as a proxy for student error
+:::
 
 ## The Theory of Curriculum
 
@@ -164,6 +179,13 @@ Another variation involves a "Teacher" model helping the main model:
 3. Student trains using curriculum derived from Teacher's scores.
 
 This is robust because the Teacher's "difficulty" acts as a proxy for the Student's expected error.
+
+## Next steps
+
+- [Knowledge Distillation](/research/knowledge-distillation) — the teacher-student setup that also powers difficulty scoring here.
+- [Custom Training Loops](/research/custom-training-loops) — where the self-paced selection mask plugs into the step.
+- [Meta-Learning](/research/meta-learning) — another approach to learning *how* to learn across tasks.
+- Back to the [Research hub](/research/advanced-techniques).
 
 ## References
 - [Curriculum Learning](https://icml.cc/Conferences/2009/papers/592.pdf) (Bengio et al., 2009)

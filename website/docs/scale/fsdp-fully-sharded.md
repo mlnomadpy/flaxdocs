@@ -1,10 +1,25 @@
 ---
 sidebar_position: 4
+title: FSDP Sharding in JAX with Flax NNX
+description: Train billion-parameter models with FSDP in JAX and Flax NNX. Shard parameters, gradients, and optimizer states to cut per-device memory with all-gather.
+keywords: [FSDP, fully sharded data parallel, JAX, Flax NNX, model sharding, large model training, all-gather, reduce-scatter, memory optimization]
 ---
 
 # FSDP: Fully Sharded Data Parallel
 
 Learn how to train very large models using Fully Sharded Data Parallel (FSDP) to minimize memory usage per device.
+
+:::note Prerequisites
+Read the [Distributed Training Overview](/scale) first. FSDP extends [Data Parallelism](/scale/data-parallelism) and is built on the [SPMD sharding](/scale/spmd-sharding) API, so be comfortable with device meshes and `NamedSharding` before diving in.
+:::
+
+:::tip What you'll learn
+- How FSDP shards parameters, gradients, and optimizer state to cut per-device memory by N×
+- The all-gather → compute → reduce-scatter cycle that runs each layer
+- How to shard params with `NamedSharding(mesh, P('fsdp'))` and let `jax.jit` insert collectives
+- When FSDP beats plain data parallelism on memory (10B+ models, 8+ devices, fast interconnect)
+- The communication cost trade-off: FSDP moves ~2P per layer vs. data parallelism's 1× all-reduce
+:::
 
 ## Overview
 
@@ -228,7 +243,7 @@ def create_fsdp_train_step(mesh):
         (loss, metrics), grads = grad_fn(state.model)
         
         # Update (parameters remain sharded)
-        state.update(grads)
+        state.update(state.model, grads)
         
         return state, loss, metrics
     
@@ -240,7 +255,7 @@ def create_fsdp_train_step(mesh):
 ```python
 # Create optimizer
 optimizer = optax.adam(learning_rate=1e-4)
-state = nnx.Optimizer(model, optimizer)
+state = nnx.Optimizer(model, optimizer, wrt=nnx.Param)
 
 # Create training step
 train_step = create_fsdp_train_step(mesh)
@@ -552,7 +567,7 @@ with profiler.trace("/tmp/jax-trace"):
 
 ## Example: Complete Script
 
-See `examples/19_fsdp_sharding.py` in the repository for a complete implementation with:
+See `examples/distributed/fsdp_sharding.py` in the repository for a complete implementation with:
 
 - ✅ FSDP mesh creation
 - ✅ Parameter sharding strategies
@@ -606,8 +621,9 @@ See `examples/19_fsdp_sharding.py` in the repository for a complete implementati
 **FSDP (Fully Sharded Data Parallel) implementation:**
 - [`examples/distributed/fsdp_sharding.py`](https://github.com/mlnomadpy/flaxdocs/tree/master/examples/distributed/fsdp_sharding.py) - Complete FSDP training with parameter sharding, all-gather/reduce-scatter, and memory optimization for large models
 
-## Next Steps
+## Next steps
 
-- **Simpler approach?** → Start with [Data Parallelism](./data-parallelism.md)
-- **Need even more memory?** → Combine with [Pipeline Parallelism](./pipeline-parallelism.md)
-- **Flexible sharding?** → Learn [SPMD](./spmd-sharding.md)
+- **Need even more memory?** [Pipeline Parallelism](/scale/pipeline-parallelism) — combine with FSDP for the largest models
+- **Flexible sharding?** [SPMD](/scale/spmd-sharding) — the mesh and `NamedSharding` API underneath FSDP
+- **Simpler approach?** [Data Parallelism](/scale/data-parallelism) — the baseline FSDP extends
+- **Back to:** [Distributed Training Overview](/scale)

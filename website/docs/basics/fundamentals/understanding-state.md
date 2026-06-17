@@ -1,10 +1,25 @@
 ---
 sidebar_position: 2
+title: Understanding State in Flax NNX
+description: Learn how Flax NNX manages state - trainable Params, non-trainable Variables, and RNG streams - plus extracting and updating state for correct training.
+keywords: [Flax NNX state, nnx.Param, nnx.Variable, nnx.Rngs, batch norm state, RNG state, nnx.state, model parameters]
 ---
 
 # Understanding State in NNX
 
 Learn how Flax NNX manages different types of state in your neural networks - the key to proper training.
+
+:::note Prerequisites
+This guide builds on [Your First Model](/basics/fundamentals/your-first-model).
+:::
+
+:::tip What you'll learn
+- The three kinds of state: `nnx.Param`, `nnx.Variable`, and `nnx.Rngs`
+- How batch-norm running statistics live in `nnx.Variable` and update manually
+- Why separate RNG streams (params vs dropout) keep training reproducible
+- How `nnx.state()` and `nnx.update()` extract and restore model state
+- Why models need an explicit `train=` flag for dropout and batch norm
+:::
 
 ## The Three Types of State
 
@@ -192,8 +207,8 @@ predictions = model(test_data, train=False)
 model.weight.value = model.weight.value - 0.01 * grads
 
 # Right - use an optimizer
-optimizer = nnx.Optimizer(model, optax.adam(0.001))
-optimizer.update(grads)
+optimizer = nnx.Optimizer(model, optax.adam(0.001), wrt=nnx.Param)
+optimizer.update(model, grads)
 ```
 
 ❌ **Not extracting state for checkpointing**
@@ -214,7 +229,8 @@ state = nnx.state(model)
 - Always pass `train=` flag to models that behave differently during training vs inference
 - Use `nnx.state()` and `nnx.update()` to extract and restore state
 
-## Next Steps
+## Next steps
 
-- [Simple Training Loop](../workflows/simple-training.md) - Put it all together
-- [Checkpointing](../../basics/checkpointing.md) - Save and load models
+- [Your First Training Loop](/basics/workflows/simple-training) - Put parameters and gradients to work
+- [Checkpointing](/basics/checkpointing) - Save and restore `nnx.state()` to disk
+- [Training Workflows](/basics/workflows) - The full path from data to a trained model

@@ -1,6 +1,6 @@
 ---
 sidebar_position: 1
-title: Data Parallelism with JAX pmap - Multi-GPU Training
+title: Data Parallelism with JAX pmap
 description: Scale your Flax NNX training across multiple GPUs and TPUs using JAX pmap. Learn data parallelism strategies for distributed neural network training.
 keywords: [data parallelism, pmap, multi-GPU training, distributed training, JAX parallelism, Flax distributed, GPU scaling]
 ---
@@ -8,6 +8,18 @@ keywords: [data parallelism, pmap, multi-GPU training, distributed training, JAX
 # Data Parallelism with pmap
 
 Learn how to scale training across multiple devices using JAX's `pmap` for data parallelism with Flax NNX.
+
+:::note Prerequisites
+Start with the [Distributed Training Overview](/scale) to see where data parallelism fits. This is the simplest strategy and the foundation for [SPMD](/scale/spmd-sharding) and [FSDP](/scale/fsdp-fully-sharded).
+:::
+
+:::tip What you'll learn
+- How to replicate a Flax NNX model and optimizer across devices by broadcasting state
+- How to write a `jax.pmap` train step with `axis_name='devices'`
+- Why `jax.lax.pmean` (all-reduce) is required to synchronize gradients across devices
+- How to shard a batch into `(num_devices, per_device_batch, ...)` for pmap
+- Common pitfalls: batch size divisibility, forgetting `pmean`, and host-device transfers
+:::
 
 ## Overview
 
@@ -113,7 +125,7 @@ model = CNNModel(num_classes=10, rngs=rngs)
 
 # Create optimizer
 optimizer = optax.adam(learning_rate=1e-3)
-state = nnx.Optimizer(model, optimizer)
+state = nnx.Optimizer(model, optimizer, wrt=nnx.Param)
 
 # Replicate state across devices
 graphdef, state_arrays = nnx.split(state)
@@ -168,7 +180,7 @@ def train_step(state: nnx.Optimizer, batch: Dict):
     metrics = jax.tree.map(lambda x: jax.lax.pmean(x, axis_name='devices'), metrics)
     
     # Update parameters (identical on all devices after pmean)
-    state.update(grads)
+    state.update(state.model, grads)
     
     return state, loss, metrics
 ```
@@ -356,7 +368,7 @@ def train_step_mixed_precision(state, batch):
     # Gradients computed in float32, sync in float32
     grads = jax.lax.pmean(grads, axis_name='devices')
     
-    state.update(grads)
+    state.update(state.model, grads)
     return state, loss
 ```
 
@@ -386,7 +398,7 @@ def train_step_dynamic(state, batch, mask):
     grads = jax.lax.pmean(grads, axis_name='devices')
     loss = jax.lax.pmean(loss, axis_name='devices')
     
-    state.update(grads)
+    state.update(state.model, grads)
     return state, loss
 ```
 
@@ -487,8 +499,9 @@ state = train_step(state, batch)  # Works!
 **Data parallelism with pmap:**
 - [`examples/distributed/data_parallel_pmap.py`](https://github.com/mlnomadpy/flaxdocs/tree/master/examples/distributed/data_parallel_pmap.py) - Complete training script with model replication, data sharding, gradient synchronization, and multi-device evaluation
 
-## Next Steps
+## Next steps
 
-- **Larger Models?** → Try [FSDP for memory-efficient training](./fsdp-fully-sharded.md)
-- **Complex Sharding?** → Learn about [SPMD with automatic sharding](./spmd-sharding.md)
-- **Sequential Models?** → Explore [Pipeline Parallelism](./pipeline-parallelism.md)
+- **Go modern:** [SPMD Sharding](/scale/spmd-sharding) — the recommended `jax.jit` API that supersedes `pmap`
+- **Larger models?** [FSDP](/scale/fsdp-fully-sharded) — shard params, gradients, and optimizer state to save memory
+- **Sequential models?** [Pipeline Parallelism](/scale/pipeline-parallelism) — split the model into stages
+- **Back to:** [Distributed Training Overview](/scale)

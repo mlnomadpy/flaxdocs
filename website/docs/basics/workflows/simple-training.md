@@ -1,13 +1,25 @@
 ---
 sidebar_position: 1
 title: Your First Training Loop with Flax NNX
-description: Learn to write a complete neural network training loop from scratch with Flax NNX. Step-by-step guide covering gradient computation, parameter updates, and validation.
+description: Write a complete neural network training loop from scratch with Flax NNX. Step-by-step guide to gradient computation, parameter updates, and validation.
 keywords: [Flax training loop, neural network training, gradient descent, parameter updates, training from scratch, Flax NNX tutorial]
 ---
 
 # Your First Training Loop
 
 Learn to write a complete training loop from scratch - no magic, just clear, understandable code.
+
+:::note Prerequisites
+This guide builds on [Your First Model](/basics/fundamentals/your-first-model) and [Understanding State](/basics/fundamentals/understanding-state).
+:::
+
+:::tip What you'll learn
+- The five-step structure every training loop follows
+- How `nnx.value_and_grad` computes loss and gradients in one pass
+- How `optimizer.update(model, grads)` applies parameter updates
+- How to add a validation loop and compute accuracy
+- Why `@nnx.jit` gives a large speedup after the first compiled call
+:::
 
 ## The Training Loop Structure
 
@@ -46,7 +58,7 @@ class SimpleMLP(nnx.Module):
 model = SimpleMLP(rngs=nnx.Rngs(params=0))
 
 # Create optimizer
-optimizer = nnx.Optimizer(model, optax.adam(learning_rate=1e-3))
+optimizer = nnx.Optimizer(model, optax.adam(learning_rate=1e-3), wrt=nnx.Param)
 ```
 
 ## Step 2: Define Loss Function
@@ -77,7 +89,7 @@ def train_step(model, optimizer, batch):
     loss, grads = nnx.value_and_grad(compute_loss)(model, batch)
     
     # Update parameters
-    optimizer.update(grads)
+    optimizer.update(model, grads)
     
     return loss
 ```
@@ -171,7 +183,7 @@ JAX can compile your training step for massive speedup:
 def train_step_fast(model, optimizer, batch):
     """JIT-compiled training step"""
     loss, grads = nnx.value_and_grad(compute_loss)(model, batch)
-    optimizer.update(grads)
+    optimizer.update(model, grads)
     return loss
 
 # Use the same way as before - but much faster!
@@ -222,7 +234,7 @@ def compute_loss(model, batch):
 @nnx.jit
 def train_step(model, optimizer, batch):
     loss, grads = nnx.value_and_grad(compute_loss)(model, batch)
-    optimizer.update(grads)
+    optimizer.update(model, grads)
     return loss
 
 # Evaluation
@@ -242,7 +254,7 @@ def evaluate(model, loader):
 def main():
     # Setup
     model = MNISTModel(rngs=nnx.Rngs(params=0))
-    optimizer = nnx.Optimizer(model, optax.adam(3e-4))
+    optimizer = nnx.Optimizer(model, optax.adam(3e-4), wrt=nnx.Param)
     
     # Load data (simplified - see data loading guide)
     train_loader = load_mnist_train()
@@ -275,7 +287,7 @@ loss, grads = nnx.value_and_grad(compute_loss)(model, batch)
 ✅ **Right**: Always update after computing gradients
 ```python
 loss, grads = nnx.value_and_grad(compute_loss)(model, batch)
-optimizer.update(grads)  # This updates model parameters
+optimizer.update(model, grads)  # This updates model parameters
 ```
 
 ### Mistake 2: Computing Gradients During Evaluation
@@ -328,12 +340,6 @@ for epoch in range(10):
 - **Number of epochs**: Until validation stops improving
 - **Optimizer**: Adam is usually a good default
 
-## Next Steps
-
-- [Data Loading](./data-loading-simple.md) - Efficient data pipelines
-- [Checkpointing](../../basics/checkpointing.md) - Save your trained models
-- [Experiment Tracking](./observability.md) - Monitor training progress
-
 ## Complete Examples
 
 **Modular training with shared components:**
@@ -341,4 +347,10 @@ for epoch in range(10):
 - [`examples/shared/training_utils.py`](https://github.com/mlnomadpy/flaxdocs/tree/master/examples/shared/training_utils.py) - Reusable JIT-compiled train/eval steps, loss functions, metrics
 
 **Original standalone version:**
-- [`examples/basics/05_vision_training_mnist.py`](https://github.com/mlnomadpy/flaxdocs/tree/master/examples/05_vision_training_mnist.py) - Complete self-contained example
+- [`examples/training/vision_mnist.py`](https://github.com/mlnomadpy/flaxdocs/tree/master/examples/training/vision_mnist.py) - Complete self-contained example
+
+## Next steps
+
+- [Data Loading](/basics/workflows/data-loading-simple) - Build efficient input pipelines
+- [Experiment Tracking](/basics/workflows/observability) - Monitor loss, gradients, and metrics
+- [Checkpointing](/basics/checkpointing) - Save and resume your trained models

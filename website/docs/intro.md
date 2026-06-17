@@ -1,8 +1,8 @@
 ---
 sidebar_position: 1
 slug: /
-title: Learn Flax NNX Training - Neural Networks with JAX
-description: Comprehensive guide to training neural networks with Flax NNX and JAX. Learn distributed training, model optimization, and production-ready ML workflows from basics to advanced.
+title: Train Neural Networks with Flax & JAX
+description: Comprehensive guide to training neural networks with Flax NNX and JAX. Learn distributed training, model optimization, and production-ready ML workflows.
 keywords: [Flax, JAX, NNX, neural networks, machine learning, deep learning, training, distributed training, TPU, GPU, tutorial, guide]
 image: /img/docusaurus-social-card.jpg
 ---
@@ -106,7 +106,7 @@ Advanced patterns for cutting-edge research:
 
 ### If you need specific examples:
 - See the [`/examples`](https://github.com/mlnomadpy/flaxdocs/tree/master/examples) directory
-- **20 complete, organized examples** covering all topics:
+- **21 complete, organized examples** covering all topics:
   - **Basics** (5 examples): Model definition, checkpointing, data loading
   - **Training** (2 examples): Vision and language model training
   - **Export** (1 example): Model deployment formats
@@ -130,7 +130,7 @@ Advanced patterns for cutting-edge research:
 
 All documentation includes conceptual explanations with code snippets. For complete runnable examples, see the [`/examples`](https://github.com/mlnomadpy/flaxdocs/tree/master/examples) directory in the repository:
 
-- **20 organized examples** in modular structure:
+- **21 organized examples** in modular structure:
   - `basics/` - Model definition, checkpointing, data loading
   - `training/` - End-to-end vision and language model training
   - `export/` - Model deployment (SafeTensors, ONNX)

@@ -1,10 +1,24 @@
 ---
 sidebar_position: 2
+title: Custom Training Loops in JAX & Flax
+description: "Build custom training loops in Flax — extend TrainState with batch stats and EMA, add label smoothing, L2 regularization, and gradient clipping in a JIT step."
+keywords: [custom training loops, JAX, Flax, TrainState, gradient clipping, EMA, batch norm, label smoothing]
 ---
 
 # Custom Training Loops
 
 In research, standard training loops often aren't enough. You might need to track complex metrics, manage multiple optimizers, or implement non-standard update rules. Flax's design philosophy is to expose the training state explicitly, giving you full control.
+
+:::note Prerequisites
+A research-grade guide and the foundation for most of this section. Comfortable with [training loops](/basics/workflows/simple-training) and [training best practices](/basics/training-best-practices)? Good — this page assumes you have written a basic step before and now want full control over it.
+:::
+
+:::tip What you'll learn
+- Extend `TrainState` with `batch_stats`, an explicit `dropout_rng`, `metrics`, and `ema_params`
+- Maintain an exponential moving average of parameters for stable evaluation
+- Build an advanced JIT-compiled step with label smoothing and manual L2 regularization
+- Clip gradients by global norm and track the gradient scale as a metric
+:::
 
 ## Why Custom Loops?
 
@@ -155,3 +169,10 @@ def advanced_train_step(state, batch, dropout_rng):
 - **Pure Functions**: Ensure your step function is pure (no side effects). Return the new state explicitly.
 - **Metric Collection**: Return a dictionary of scalar metrics. This makes logging to tools like TensorBoard or Weights & Biases trivial.
 - **Debugging**: If you hit `NaNs`, use `jax.debug.print` inside the JIT-compiled function or temporarily disable JIT with `jax.disable_jit()` context manager.
+
+## Next steps
+
+- [Knowledge Distillation](/research/knowledge-distillation) — apply a custom step with a combined hard/soft loss.
+- [Adversarial Training](/research/adversarial-training) — extend the step to generate attacks on the fly.
+- [Experiment Reproducibility](/research/experiment-reproducibility) — keep these custom runs deterministic.
+- Back to the [Research hub](/research/advanced-techniques).

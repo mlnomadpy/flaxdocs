@@ -1,13 +1,28 @@
 ---
 sidebar_position: 3
+title: Knowledge Distillation in JAX & Flax
+description: "Implement knowledge distillation in Flax NNX — teacher-student training, temperature-scaled soft targets, KL distillation loss, and model compression."
+keywords: [knowledge distillation, JAX, Flax NNX, teacher-student, soft targets, temperature scaling, model compression, dark knowledge]
 ---
 
 # Knowledge Distillation
 
 Learn to transfer knowledge from large "teacher" models to smaller "student" models, achieving better performance with fewer parameters and faster inference.
 
+:::note Prerequisites
+A research-grade guide. Comfortable with [training loops](/basics/workflows/simple-training) and [training best practices](/basics/training-best-practices)? Good. Distillation pairs naturally with large architectures you might want to compress, like [BERT](/architectures/bert) or [GPT](/architectures/gpt).
+:::
+
+:::tip What you'll learn
+- Why temperature-scaled soft targets carry "dark knowledge" beyond hard labels
+- Implement the combined distillation loss: hard cross-entropy plus KL soft loss with the `τ²` scaling factor
+- Freeze the teacher with `jax.lax.stop_gradient` and update only the student
+- Compare distilled vs. baseline students to measure the accuracy a teacher recovers
+- Extend to ensemble, self-, and online distillation
+:::
+
 :::info Example Code
-See the full implementation: [`examples/15_knowledge_distillation.py`](https://github.com/yourusername/flaxdocs/blob/master/examples/15_knowledge_distillation.py)
+See the full implementation: [`examples/advanced/knowledge_distillation.py`](https://github.com/mlnomadpy/flaxdocs/tree/master/examples/advanced/knowledge_distillation.py)
 :::
 
 ## The Motivation
@@ -316,7 +331,7 @@ def train_student_step(
     # Compute gradients and update student
     grad_fn = nnx.value_and_grad(loss_fn, has_aux=True)
     (loss, (logits, hard_loss, soft_loss)), grads = grad_fn(student)
-    optimizer.update(grads)
+    optimizer.update(student, grads)
     
     accuracy = jnp.mean(jnp.argmax(logits, -1) == batch['label'])
     
@@ -345,7 +360,7 @@ def train_teacher(num_epochs=10, learning_rate=1e-3):
     
     # Initialize teacher
     teacher = TeacherCNN(num_classes=10, rngs=nnx.Rngs(0))
-    optimizer = nnx.Optimizer(teacher, optax.adam(learning_rate))
+    optimizer = nnx.Optimizer(teacher, optax.adam(learning_rate), wrt=nnx.Param)
     
     # Standard supervised training
     for epoch in range(num_epochs):
@@ -378,7 +393,7 @@ def train_student_with_distillation(
     
     # Initialize student
     student = StudentCNN(num_classes=10, rngs=nnx.Rngs(42))
-    optimizer = nnx.Optimizer(student, optax.adam(learning_rate))
+    optimizer = nnx.Optimizer(student, optax.adam(learning_rate), wrt=nnx.Param)
     
     # Distillation training
     for epoch in range(num_epochs):
@@ -407,7 +422,7 @@ def train_student_baseline(num_epochs=10):
     """Train student WITHOUT distillation (baseline)."""
     
     student = StudentCNN(num_classes=10, rngs=nnx.Rngs(42))
-    optimizer = nnx.Optimizer(student, optax.adam(1e-3))
+    optimizer = nnx.Optimizer(student, optax.adam(1e-3), wrt=nnx.Param)
     
     # Standard supervised training (no teacher)
     for epoch in range(num_epochs):
@@ -687,8 +702,7 @@ Equivalently, maximizes mutual information between student and teacher predictio
 Train teacher, then distill to student:
 
 ```bash
-cd examples
-python 15_knowledge_distillation.py
+python examples/advanced/knowledge_distillation.py
 ```
 
 Expected output:
@@ -714,13 +728,12 @@ SUMMARY:
   Compression: 15x smaller, 1.30% loss vs teacher
 ```
 
-## Next Steps
+## Next steps
 
-- Try different temperature values
-- Experiment with alpha (hard/soft balance)
-- Apply to larger models (ResNet, Transformers)
-- Explore self-distillation
-- Combine with pruning and quantization
+- [Contrastive Learning](/research/contrastive-learning) — pre-train a strong teacher encoder without labels.
+- [ResNet](/architectures/resnet) — a common teacher backbone to compress.
+- [Custom Training Loops](/research/custom-training-loops) — the train-step patterns behind the distillation step.
+- Back to the [Research hub](/research/advanced-techniques).
 
 ## Complete Example
 

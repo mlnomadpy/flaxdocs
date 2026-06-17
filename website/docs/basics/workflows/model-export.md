@@ -1,10 +1,25 @@
 ---
 sidebar_position: 1
+title: Export & Deploy Flax NNX Models
+description: Export trained Flax NNX models for deployment with SafeTensors, ONNX, and HuggingFace Hub, plus serving patterns for FastAPI and ONNX Runtime.
+keywords: [model export, SafeTensors, ONNX, HuggingFace Hub, model deployment, Flax NNX, ONNX Runtime, FastAPI serving]
 ---
 
 # Model Export and Deployment
 
 Learn how to export your trained Flax NNX models to standard formats for deployment in production environments, edge devices, and integration with other frameworks.
+
+:::note Prerequisites
+This guide builds on [Your First Training Loop](/basics/workflows/simple-training) and [Checkpointing](/basics/checkpointing).
+:::
+
+:::tip What you'll learn
+- Why SafeTensors is the safe, fast default for saving model weights
+- How to convert `nnx.state` into a tensor dict and save/load it
+- How to export to ONNX via the JAX to TensorFlow to ONNX path
+- How to upload and download models on the HuggingFace Hub with model cards
+- Deployment patterns: FastAPI REST serving and ONNX Runtime inference
+:::
 
 ## Why Export Models?
 
@@ -296,7 +311,7 @@ Share models with the community and load pre-trained weights.
 
 ### Uploading Models
 
-```python
+````python
 from huggingface_hub import HfApi, create_repo
 from flax import nnx
 import jax.numpy as jnp
@@ -373,7 +388,7 @@ api.upload_file(
 )
 
 print(f"Model uploaded to https://huggingface.co/{repo_id}")
-```
+````
 
 ### Downloading Models
 
@@ -609,15 +624,14 @@ def flexible_predict(x):
     return model(x)
 ```
 
-## Next Steps
-
-You can now export models for deployment! Learn:
-- [Stream large datasets during training](./streaming-data.md)
-- [Track experiments with W&B](./observability.md)
-- [Build advanced architectures](../../research/advanced-techniques.md)
-
 ## Reference Code
 
 **Complete modular examples:**
 - [`examples/export/model_formats.py`](https://github.com/mlnomadpy/flaxdocs/tree/master/examples/export/model_formats.py) - SafeTensors and ONNX export patterns
 - [`examples/integrations/huggingface.py`](https://github.com/mlnomadpy/flaxdocs/tree/master/examples/integrations/huggingface.py) - HuggingFace Hub model upload and sharing
+
+## Next steps
+
+- [Checkpointing](/basics/checkpointing) - Save and restore full training state
+- [Experiment Tracking](/basics/workflows/observability) - Version exported models as artifacts
+- [Advanced Techniques](/research/advanced-techniques) - Build more sophisticated architectures

@@ -1,13 +1,28 @@
 ---
 sidebar_position: 10
+title: DQN Reinforcement Learning in JAX
+description: "Build Deep Q-Networks (DQN) in Flax NNX — Bellman updates, experience replay, target networks, epsilon-greedy, dueling DQN, and JAX-native gymnax training."
+keywords: [reinforcement learning, DQN, JAX, Flax NNX, experience replay, target network, epsilon-greedy, dueling DQN, gymnax]
 ---
 
 # Reinforcement Learning with DQN
 
 Learn how to implement Deep Q-Networks (DQN) for reinforcement learning using Flax NNX. This guide covers the foundational concepts of RL and provides a complete implementation for training agents to solve control tasks.
 
+:::note Prerequisites
+A research-grade guide. Comfortable with [training loops](/basics/workflows/simple-training) and [training best practices](/basics/training-best-practices)? Good. RL replaces a fixed dataset with an agent-environment loop, so expect a different mental model from supervised training.
+:::
+
+:::tip What you'll learn
+- Derive the DQN objective from the Bellman optimality equation as a TD regression target
+- Build a Q-network and a Dueling DQN that splits value and advantage streams
+- Implement experience replay and epsilon-greedy exploration to stabilize learning
+- Use a soft-updated target network to keep TD targets from chasing the online network
+- Train JAX-native with gymnax — JIT the full rollout and run parallel environments via `vmap`
+:::
+
 :::info Example Code
-See the full implementation: [`examples/advanced/dqn_reinforcement_learning.py`](https://github.com/mlnomadpy/flaxdocs/blob/main/examples/advanced/dqn_reinforcement_learning.py)
+See the full implementation: [`examples/advanced/dqn_reinforcement_learning.py`](https://github.com/mlnomadpy/flaxdocs/tree/master/examples/advanced/dqn_reinforcement_learning.py)
 :::
 
 ## What is Reinforcement Learning?
@@ -815,8 +830,7 @@ tau = 0.001                 # Slower target updates
 Train DQN on CartPole:
 
 ```bash
-cd examples
-python advanced/dqn_reinforcement_learning.py
+python examples/advanced/dqn_reinforcement_learning.py
 ```
 
 Expected output:
@@ -864,10 +878,17 @@ DQN is for discrete actions. For continuous:
 - **QMIX**: Coordinated multi-agent learning
 - **MAPPO**: Multi-agent PPO
 
+## Next steps
+
+- [Custom Training Loops](/research/custom-training-loops) — the explicit-state patterns behind the agent's update step.
+- [Experiment Reproducibility](/research/experiment-reproducibility) — control PRNG keys so rollouts and replay sampling are repeatable.
+- [Curriculum Learning](/research/curriculum-learning) — stage environments from easy to hard.
+- Back to the [Research hub](/research/advanced-techniques).
+
 ## Complete Example
 
 **Full DQN implementation with all components:**
-- [`examples/advanced/dqn_reinforcement_learning.py`](https://github.com/mlnomadpy/flaxdocs/blob/main/examples/advanced/dqn_reinforcement_learning.py)
+- [`examples/advanced/dqn_reinforcement_learning.py`](https://github.com/mlnomadpy/flaxdocs/tree/master/examples/advanced/dqn_reinforcement_learning.py)
 
 ## References
 

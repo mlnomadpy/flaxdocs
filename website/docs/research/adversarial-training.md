@@ -1,10 +1,24 @@
 ---
 sidebar_position: 6
+title: Adversarial Training with FGSM in JAX
+description: "Build robust models with adversarial training in JAX and Flax — FGSM attacks, the min-max robust optimization objective, and a combined clean/adversarial train step."
+keywords: [adversarial training, FGSM, JAX, Flax, robust optimization, adversarial examples, PGD, min-max optimization]
 ---
 
 # Adversarial Training
 
 Deep neural networks are known to be vulnerable to **adversarial examples**: small, imperceptible perturbations to the input that cause the model to make incorrect predictions with high confidence. Adversarial training is the process of training the model on these perturbed examples to improve robustness.
+
+:::note Prerequisites
+A research-grade guide. Comfortable with [training loops](/basics/workflows/simple-training) and [training best practices](/basics/training-best-practices)? Good. Attacks here are demonstrated on an image classifier, so the [simple CNN](/basics/vision/simple-cnn) page is useful background.
+:::
+
+:::tip What you'll learn
+- Frame robustness as a min-max robust optimization objective over worst-case perturbations
+- Apply FGSM to generate adversarial examples by differentiating the loss w.r.t. the input
+- Build a combined train step that mixes clean and adversarial losses (e.g. 50/50)
+- Understand the robustness vs. clean-accuracy trade-off and where iterative PGD attacks fit
+:::
 
 ## The Goal: Robust Optimization
 
@@ -130,6 +144,13 @@ def adversarial_train_step(state, batch, epsilon=0.1):
 - **Performance Trade-off**: Robust models often have slightly lower accuracy on clean data compared to standard models. This is a known trade-off.
 - **Computational Cost**: Generating attacks requires an extra forward and backward pass per step, effectively doubling training time.
 - **Iterative Attacks**: FGSM is a "single-step" attack. Stronger attacks like **PGD (Projected Gradient Descent)** take multiple small steps to find a better perturbation, resulting in even more robust models at higher training cost.
+
+## Next steps
+
+- [Custom Training Loops](/research/custom-training-loops) — extend the robust step with gradient clipping and EMA.
+- [Experiment Reproducibility](/research/experiment-reproducibility) — pin seeds so robustness numbers are comparable across runs.
+- [Simple CNN](/basics/vision/simple-cnn) — the classifier the FGSM attack targets here.
+- Back to the [Research hub](/research/advanced-techniques).
 
 ## References
 - [Explaining and Harnessing Adversarial Examples](https://arxiv.org/abs/1412.6572) (Goodfellow et al., 2014) - The FGSM paper.
