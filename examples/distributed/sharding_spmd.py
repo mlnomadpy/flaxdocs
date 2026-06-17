@@ -320,7 +320,7 @@ def create_sharded_train_step(mesh: Mesh, sharding_specs):
         (loss, metrics), grads = grad_fn(state.model)
         
         # Update parameters
-        state.update(grads)
+        state.update(state.model, grads)
         
         return state, loss, metrics
     
@@ -389,7 +389,7 @@ def train_with_sharding():
     
     # Create optimizer
     optimizer = optax.adam(learning_rate)
-    state = nnx.Optimizer(model, optimizer)
+    state = nnx.Optimizer(model, optimizer, wrt=nnx.Param)
     
     # Shard parameters
     print("\nApplying parameter sharding...")

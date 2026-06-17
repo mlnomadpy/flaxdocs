@@ -89,7 +89,7 @@ class CNNClassifier(nnx.Module):
 def create_train_state(model, learning_rate: float, momentum: float):
     """Create optimizer state for the model."""
     optimizer = optax.sgd(learning_rate=learning_rate, momentum=momentum)
-    opt_state = nnx.Optimizer(model, optimizer)
+    opt_state = nnx.Optimizer(model, optimizer, wrt=nnx.Param)
     return opt_state
 
 
@@ -147,7 +147,7 @@ def train_step_pmap(state: nnx.Optimizer, batch: Dict):
     metrics = jax.tree.map(lambda x: jax.lax.pmean(x, axis_name='devices'), metrics)
     
     # Update parameters (identical update on all devices)
-    state.update(grads)
+    state.update(state.model, grads)
     
     return state, loss, metrics
 

@@ -269,8 +269,8 @@ def train_step(model: TransformerLM, optimizer: nnx.Optimizer,
     (loss, logits), grads = grad_fn(model)
     
     # Update parameters
-    optimizer.update(grads)
-    
+    optimizer.update(model, grads)
+
     # Compute metrics
     accuracy = compute_accuracy(logits, y)
     
@@ -398,7 +398,7 @@ That makes calamity of so long life.
     # ========================================================================
     # Initialize Optimizer
     # ========================================================================
-    optimizer = nnx.Optimizer(model, optax.adam(config['learning_rate']))
+    optimizer = nnx.Optimizer(model, optax.adam(config['learning_rate']), wrt=nnx.Param)
     
     # ========================================================================
     # Training Loop

@@ -252,7 +252,7 @@ def train_teacher_step(teacher: TeacherCNN, optimizer: nnx.Optimizer,
     
     grad_fn = nnx.value_and_grad(loss_fn, has_aux=True)
     (loss, logits), grads = grad_fn(teacher)
-    optimizer.update(grads)
+    optimizer.update(teacher, grads)
     
     accuracy = jnp.mean(jnp.argmax(logits, -1) == batch['label'])
     return {'loss': loss, 'accuracy': accuracy}
@@ -285,7 +285,7 @@ def train_student_step(student: StudentCNN, teacher: TeacherCNN,
     
     grad_fn = nnx.value_and_grad(loss_fn, has_aux=True)
     (loss, (logits, hard_loss, soft_loss)), grads = grad_fn(student)
-    optimizer.update(grads)
+    optimizer.update(student, grads)
     
     accuracy = jnp.mean(jnp.argmax(logits, -1) == batch['label'])
     return {
@@ -323,7 +323,7 @@ def train_teacher(num_epochs: int = 10, batch_size: int = 128,
     print("\nInitializing teacher model...")
     rng = jax.random.PRNGKey(0)
     teacher = TeacherCNN(num_classes=10, rngs=nnx.Rngs(rng))
-    optimizer = nnx.Optimizer(teacher, optax.adam(learning_rate))
+    optimizer = nnx.Optimizer(teacher, optax.adam(learning_rate), wrt=nnx.Param)
     
     n_params = sum(x.size for x in jax.tree_util.tree_leaves(nnx.state(teacher)))
     print(f"✓ Teacher model initialized with {n_params:,} parameters")
@@ -394,7 +394,7 @@ def train_student_with_distillation(
     print("\nInitializing student model...")
     rng = jax.random.PRNGKey(42)
     student = StudentCNN(num_classes=10, rngs=nnx.Rngs(rng))
-    optimizer = nnx.Optimizer(student, optax.adam(learning_rate))
+    optimizer = nnx.Optimizer(student, optax.adam(learning_rate), wrt=nnx.Param)
     
     n_params = sum(x.size for x in jax.tree_util.tree_leaves(nnx.state(student)))
     teacher_params = sum(x.size for x in jax.tree_util.tree_leaves(nnx.state(teacher)))
@@ -463,7 +463,7 @@ def train_student_baseline(num_epochs: int = 10, batch_size: int = 128,
     print("\nInitializing student model...")
     rng = jax.random.PRNGKey(42)
     student = StudentCNN(num_classes=10, rngs=nnx.Rngs(rng))
-    optimizer = nnx.Optimizer(student, optax.adam(learning_rate))
+    optimizer = nnx.Optimizer(student, optax.adam(learning_rate), wrt=nnx.Param)
     
     n_params = sum(x.size for x in jax.tree_util.tree_leaves(nnx.state(student)))
     print(f"✓ Student model initialized with {n_params:,} parameters")

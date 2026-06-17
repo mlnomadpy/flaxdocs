@@ -455,10 +455,10 @@ def main():
     
     # Create optimizers for each stage
     optimizer = optax.adam(learning_rate)
-    opt_state1 = nnx.Optimizer(model.stage1, optimizer)
-    opt_state2 = nnx.Optimizer(model.stage2, optimizer)
-    opt_state3 = nnx.Optimizer(model.stage3, optimizer)
-    opt_state4 = nnx.Optimizer(model.stage4, optimizer)
+    opt_state1 = nnx.Optimizer(model.stage1, optimizer, wrt=nnx.Param)
+    opt_state2 = nnx.Optimizer(model.stage2, optimizer, wrt=nnx.Param)
+    opt_state3 = nnx.Optimizer(model.stage3, optimizer, wrt=nnx.Param)
+    opt_state4 = nnx.Optimizer(model.stage4, optimizer, wrt=nnx.Param)
     
     # Generate synthetic data
     print("\n" + "="*70)
@@ -501,10 +501,10 @@ def main():
             loss, acc, grads = train_with_pipeline(model, batch, num_microbatches)
             
             # Update stages
-            opt_state1.update(grads['stage1'])
-            opt_state2.update(grads['stage2'])
-            opt_state3.update(grads['stage3'])
-            opt_state4.update(grads['stage4'])
+            opt_state1.update(model.stage1, grads['stage1'])
+            opt_state2.update(model.stage2, grads['stage2'])
+            opt_state3.update(model.stage3, grads['stage3'])
+            opt_state4.update(model.stage4, grads['stage4'])
             
             epoch_loss += loss
             epoch_acc += acc
