@@ -3,4 +3,4 @@ User-agent: *
 Allow: /
 
 # Sitemap location
-Sitemap: https://mlnomadpy.github.io/flaxdocs/sitemap.xml
+Sitemap: https://tahabouhsine.com/flaxdocs/sitemap.xml
