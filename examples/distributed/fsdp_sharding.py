@@ -54,10 +54,12 @@ class LargeTransformer(nnx.Module):
         # Large embedding layer (often a memory bottleneck)
         self.embedding = nnx.Embed(vocab_size, d_model, rngs=rngs)
         
-        # Multiple transformer layers
-        self.layers = []
+        # Multiple transformer layers. Wrap each layer's sublayers in nnx.Dict
+        # and the stack in nnx.List so they register as pytree children
+        # (required since Flax 0.12).
+        layers = []
         for _ in range(num_layers):
-            layer = {
+            layer = nnx.Dict({
                 'attn_q': nnx.Linear(d_model, d_model, rngs=rngs),
                 'attn_k': nnx.Linear(d_model, d_model, rngs=rngs),
                 'attn_v': nnx.Linear(d_model, d_model, rngs=rngs),
@@ -66,8 +68,9 @@ class LargeTransformer(nnx.Module):
                 'ff2': nnx.Linear(d_ff, d_model, rngs=rngs),
                 'ln1': nnx.LayerNorm(d_model, rngs=rngs),
                 'ln2': nnx.LayerNorm(d_model, rngs=rngs),
-            }
-            self.layers.append(layer)
+            })
+            layers.append(layer)
+        self.layers = nnx.List(layers)
         
         # Output layers
         self.ln_final = nnx.LayerNorm(d_model, rngs=rngs)

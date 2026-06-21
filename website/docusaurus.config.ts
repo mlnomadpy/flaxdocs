@@ -18,7 +18,7 @@ const config: Config = {
   },
 
   // Set the production url of your site here
-  url: 'https://mlnomadpy.github.io',
+  url: 'https://tahabouhsine.com',
   // Set the /<baseUrl>/ pathname under which your site is served
   // For GitHub pages deployment, it is often '/<projectName>/'
   baseUrl: '/flaxdocs/',
@@ -52,7 +52,7 @@ const config: Config = {
         '@type': 'WebSite',
         name: 'Flax Training Docs',
         description: 'Comprehensive guide to training neural networks with Flax NNX and JAX',
-        url: 'https://mlnomadpy.github.io/flaxdocs/',
+        url: 'https://tahabouhsine.com/flaxdocs/',
       }),
     },
     {
@@ -64,8 +64,8 @@ const config: Config = {
         '@context': 'https://schema.org/',
         '@type': 'Organization',
         name: 'Flax Training Docs',
-        url: 'https://mlnomadpy.github.io/flaxdocs/',
-        logo: 'https://mlnomadpy.github.io/flaxdocs/img/logo.svg',
+        url: 'https://tahabouhsine.com/flaxdocs/',
+        logo: 'https://tahabouhsine.com/flaxdocs/img/logo.svg',
         description: 'Educational resource for learning Flax NNX and JAX neural network training',
         sameAs: [
           'https://github.com/mlnomadpy/flaxdocs',

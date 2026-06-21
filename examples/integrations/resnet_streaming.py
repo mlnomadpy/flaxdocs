@@ -20,6 +20,8 @@ from pathlib import Path
 # Add parent directory to path for shared imports
 sys.path.insert(0, str(Path(__file__).parent.parent))
 
+from shared.models import ResNetBlock
+
 try:
     from datasets import load_dataset
     import datasets
@@ -35,52 +37,9 @@ except ImportError:
 # 1. RESNET BUILDING BLOCKS
 # ============================================================================
 
-class ResNetBlock(nnx.Module):
-    """Basic ResNet block with skip connection."""
-    
-    def __init__(self, channels: int, stride: int = 1, rngs: nnx.Rngs = None):
-        self.conv1 = nnx.Conv(
-            channels, channels, kernel_size=(3, 3),
-            strides=(stride, stride), padding='SAME', rngs=rngs
-        )
-        self.bn1 = nnx.BatchNorm(channels, rngs=rngs)
-        
-        self.conv2 = nnx.Conv(
-            channels, channels, kernel_size=(3, 3),
-            strides=(1, 1), padding='SAME', rngs=rngs
-        )
-        self.bn2 = nnx.BatchNorm(channels, rngs=rngs)
-        
-        # Skip connection (if stride != 1, downsample)
-        self.downsample = None
-        if stride != 1:
-            self.downsample = nnx.Conv(
-                channels, channels, kernel_size=(1, 1),
-                strides=(stride, stride), rngs=rngs
-            )
-            self.bn_downsample = nnx.BatchNorm(channels, rngs=rngs)
-    
-    def __call__(self, x, train: bool = False):
-        identity = x
-        
-        # First conv block
-        out = self.conv1(x)
-        out = self.bn1(out, use_running_average=not train)
-        out = nnx.relu(out)
-        
-        # Second conv block
-        out = self.conv2(out)
-        out = self.bn2(out, use_running_average=not train)
-        
-        # Skip connection
-        if self.downsample is not None:
-            identity = self.downsample(x)
-            identity = self.bn_downsample(identity, use_running_average=not train)
-        
-        out = out + identity
-        out = nnx.relu(out)
-        
-        return out
+# ResNetBlock is imported from shared/models.py. Its signature is
+# ResNetBlock(in_channels, out_channels, stride, rngs); it adds a 1x1
+# projection shortcut automatically when the channel count or stride changes.
 
 
 class ResNet(nnx.Module):
@@ -95,13 +54,19 @@ class ResNet(nnx.Module):
         )
         self.bn1 = nnx.BatchNorm(channels[0], rngs=rngs)
         
-        # ResNet layers
-        self.layers = []
+        # ResNet layers. Track the running channel count so each block knows
+        # its in/out channels (the shared ResNetBlock projects the shortcut
+        # when channels change between stages). Wrap in nnx.List so the blocks
+        # register as proper pytree children (required since Flax 0.12).
+        layers = []
+        in_ch = channels[0]
         for i, (num_block, channel) in enumerate(zip(num_blocks, channels)):
             stride = 1 if i == 0 else 2
             for j in range(num_block):
                 block_stride = stride if j == 0 else 1
-                self.layers.append(ResNetBlock(channel, block_stride, rngs))
+                layers.append(ResNetBlock(in_ch, channel, block_stride, rngs))
+                in_ch = channel
+        self.layers = nnx.List(layers)
         
         # Global average pooling and classifier
         self.fc = nnx.Linear(channels[-1], num_classes, rngs=rngs)

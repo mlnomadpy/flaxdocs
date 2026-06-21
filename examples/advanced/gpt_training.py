@@ -139,10 +139,10 @@ class GPTModel(nnx.Module):
         self.position_embedding = nnx.Embed(max_len, d_model, rngs=rngs)
         
         # Transformer blocks
-        self.blocks = [
+        self.blocks = nnx.List([
             GPTBlock(d_model, num_heads, d_ff, dropout, max_len, rngs)
             for _ in range(num_layers)
-        ]
+        ])
         
         # Final layer norm
         self.ln_f = nnx.LayerNorm(d_model, rngs=rngs)
