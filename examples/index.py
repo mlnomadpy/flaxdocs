@@ -166,6 +166,74 @@ EXAMPLES = {
                 "concepts": ["imagenet", "resnet", "large-scale training"]
             }
         ]
+    },
+    "Generative": {
+        "description": "Generative models — learn to sample data, not just classify it",
+        "examples": [
+            {
+                "name": "Autoencoder (+ Denoising)",
+                "file": "generative/autoencoder.py",
+                "description": "Compress and reconstruct images through a bottleneck",
+                "concepts": ["nnx.ConvTranspose", "ConvEncoder/ConvDecoder", "reconstruction loss"]
+            },
+            {
+                "name": "Variational Autoencoder (VAE)",
+                "file": "generative/vae.py",
+                "description": "Probabilistic latent + reparameterization; sample new digits",
+                "concepts": ["reparameterization", "ELBO", "nnx.Rngs noise stream"]
+            },
+            {
+                "name": "DCGAN",
+                "file": "generative/dcgan.py",
+                "description": "Generator vs discriminator with two optimizers + spectral norm",
+                "concepts": ["adversarial training", "nnx.SpectralNorm", "two optimizers"]
+            },
+            {
+                "name": "Diffusion Model (DDPM)",
+                "file": "generative/ddpm.py",
+                "description": "Iterative denoising with a small time-conditioned U-Net",
+                "concepts": ["diffusion", "nnx.Embed timestep", "nnx.GroupNorm", "sampling loop"]
+            }
+        ]
+    },
+    "Sequence": {
+        "description": "Sequence models — recurrence and order",
+        "examples": [
+            {
+                "name": "Recurrent Networks (RNN/LSTM/GRU)",
+                "file": "sequence/rnn_cells.py",
+                "description": "The nnx.RNN API family + manual nnx.scan on a parity task",
+                "concepts": ["nnx.RNN", "nnx.LSTMCell/GRUCell", "nnx.Bidirectional", "nnx.scan"]
+            }
+        ]
+    },
+    "Scientific": {
+        "description": "Graphs, scientific ML, and structured data",
+        "examples": [
+            {
+                "name": "Graph Neural Network (GCN)",
+                "file": "scientific/gcn_karate.py",
+                "description": "Semi-supervised node classification on Zachary's Karate Club",
+                "concepts": ["message passing", "normalized adjacency", "nnx.Einsum"]
+            },
+            {
+                "name": "Physics-Informed NN (PINN)",
+                "file": "scientific/pinn_oscillator.py",
+                "description": "Solve an ODE by differentiating the model output w.r.t. its input",
+                "concepts": ["jax.grad on input", "residual loss", "scientific ML"]
+            }
+        ]
+    },
+    "Adaptation": {
+        "description": "Fine-tuning and adaptation of existing models",
+        "examples": [
+            {
+                "name": "LoRA Fine-Tuning",
+                "file": "adaptation/lora_finetuning.py",
+                "description": "Freeze a model, train only low-rank adapters",
+                "concepts": ["nnx.LoRALinear", "nnx.Optimizer(wrt=nnx.LoRAParam)", "nnx.DiffState"]
+            }
+        ]
     }
 }
 

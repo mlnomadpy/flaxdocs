@@ -374,3 +374,50 @@ class ResNetBlock(nnx.Module):
         x = nnx.relu(x)
         
         return x
+
+
+# ============================================================================
+# GENERATIVE BUILDING BLOCKS (shared by autoencoder / VAE / GAN / diffusion / U-Net)
+# ============================================================================
+
+class ConvEncoder(nnx.Module):
+    """Downsampling conv stack: (B, H, W, in_ch) -> (B, H/4, W/4, base*2).
+
+    Two stride-2 conv blocks. For a 28x28 input the spatial output is 7x7.
+    """
+
+    def __init__(self, in_channels: int = 1, base: int = 16, *, rngs: nnx.Rngs):
+        self.conv1 = nnx.Conv(in_channels, base, kernel_size=(3, 3),
+                              strides=(2, 2), padding='SAME', rngs=rngs)      # H -> H/2
+        self.conv2 = nnx.Conv(base, base * 2, kernel_size=(3, 3),
+                              strides=(2, 2), padding='SAME', rngs=rngs)      # H/2 -> H/4
+
+    def __call__(self, x, train: bool = False):
+        x = nnx.relu(self.conv1(x))
+        x = nnx.relu(self.conv2(x))
+        return x
+
+
+class ConvDecoder(nnx.Module):
+    """Upsampling ConvTranspose stack mirroring ConvEncoder.
+
+    Maps a latent vector -> (B, out_h, out_w, out_channels) LOGITS (no final
+    activation, so callers can use sigmoid-BCE for images). For out_h=out_w=28
+    the latent is projected to 7x7 then upsampled 7 -> 14 -> 28.
+    """
+
+    def __init__(self, latent_dim: int, base: int = 16, out_channels: int = 1,
+                 start_hw: int = 7, *, rngs: nnx.Rngs):
+        self.base = base
+        self.start_hw = start_hw
+        self.fc = nnx.Linear(latent_dim, base * 2 * start_hw * start_hw, rngs=rngs)
+        self.deconv1 = nnx.ConvTranspose(base * 2, base, kernel_size=(3, 3),
+                                         strides=(2, 2), padding='SAME', rngs=rngs)  # 7 -> 14
+        self.deconv2 = nnx.ConvTranspose(base, out_channels, kernel_size=(3, 3),
+                                         strides=(2, 2), padding='SAME', rngs=rngs)  # 14 -> 28
+
+    def __call__(self, z, train: bool = False):
+        h = nnx.relu(self.fc(z))
+        h = h.reshape(z.shape[0], self.start_hw, self.start_hw, self.base * 2)
+        h = nnx.relu(self.deconv1(h))
+        return self.deconv2(h)   # logits

@@ -93,6 +93,16 @@ Advanced patterns for cutting-edge research:
 
 [Explore Research Topics →](/research/advanced-techniques)
 
+### 🧩 Applications
+
+Small, self-contained implementations across model families and domains:
+- **Generative**: autoencoders, VAEs, GANs, and diffusion models
+- **Sequence**: recurrent networks (RNN/LSTM/GRU) and time series
+- **Scientific**: graph neural networks and physics-informed networks (PINNs)
+- **Adaptation**: parameter-efficient fine-tuning with LoRA
+
+[Explore Applications →](/applications)
+
 ## How to Use This Documentation
 
 ### If you're brand new:

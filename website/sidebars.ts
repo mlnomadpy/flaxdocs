@@ -81,6 +81,50 @@ const sidebars: SidebarsConfig = {
     },
     {
       type: 'category',
+      label: '🧩 Applications',
+      collapsed: false,
+      items: [
+        'applications/index',
+        {
+          type: 'category',
+          label: '🎨 Generative Models',
+          items: [
+            'applications/generative/index',
+            'applications/generative/autoencoder',
+            'applications/generative/vae',
+            'applications/generative/gan',
+            'applications/generative/diffusion',
+          ],
+        },
+        {
+          type: 'category',
+          label: '🔁 Sequence Models & Time Series',
+          items: [
+            'applications/sequence/index',
+            'applications/sequence/recurrent-networks',
+          ],
+        },
+        {
+          type: 'category',
+          label: '🔬 Graphs, Scientific & Structured',
+          items: [
+            'applications/scientific/index',
+            'applications/scientific/graph-neural-networks',
+            'applications/scientific/pinn',
+          ],
+        },
+        {
+          type: 'category',
+          label: '🧬 Multimodal & Adaptation',
+          items: [
+            'applications/adaptation/index',
+            'applications/adaptation/lora-finetuning',
+          ],
+        },
+      ],
+    },
+    {
+      type: 'category',
       label: '📈 Scale',
       items: [
         'scale/index',

@@ -293,3 +293,18 @@ def create_optimizer(
     
     # Use wrt parameter for newer Flax versions
     return nnx.Optimizer(model, tx, wrt=nnx.Param)
+
+
+# ============================================================================
+# GENERATIVE LOSSES (shared by autoencoder / VAE / diffusion)
+# ============================================================================
+
+def bce_loss(logits: jax.Array, targets: jax.Array) -> jax.Array:
+    """Mean per-example sigmoid binary cross-entropy (summed over pixels)."""
+    per_pixel = optax.sigmoid_binary_cross_entropy(logits, targets)
+    return per_pixel.reshape(per_pixel.shape[0], -1).sum(axis=-1).mean()
+
+
+def kl_divergence(mu: jax.Array, logvar: jax.Array) -> jax.Array:
+    """KL(N(mu, sigma^2) || N(0, I)), averaged over the batch (closed form)."""
+    return (-0.5 * jnp.sum(1.0 + logvar - mu ** 2 - jnp.exp(logvar), axis=-1)).mean()

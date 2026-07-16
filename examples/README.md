@@ -94,11 +94,27 @@ examples/
 ├── imagenet/                        # ✅ Standalone app
 │   └── main.py
 │
+├── generative/                      # ✅ 4 examples (autoencoder, VAE, DCGAN, DDPM)
+│   ├── autoencoder.py
+│   ├── vae.py
+│   ├── dcgan.py
+│   └── ddpm.py
+│
+├── sequence/                        # ✅ 1 example (RNN/LSTM/GRU)
+│   └── rnn_cells.py
+│
+├── scientific/                      # ✅ 2 examples (GCN, PINN)
+│   ├── gcn_karate.py
+│   └── pinn_oscillator.py
+│
+├── adaptation/                      # ✅ 1 example (LoRA)
+│   └── lora_finetuning.py
+│
 ├── index.py                         # 📋 Complete example index
 └── requirements.txt                 # Updated with pytest
 ```
 
-**Total: 20 categorized examples + 1 standalone ImageNet app**
+**Total: 28 categorized examples + 1 standalone ImageNet app**
 
 ## 🚀 Quick Start
 
