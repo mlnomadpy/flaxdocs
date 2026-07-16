@@ -146,8 +146,14 @@ def main():
         print(f"epoch {epoch + 1}/{epochs}  ELBO loss {total / steps:.2f}  "
               f"(recon {float(recon):.2f}  kl {float(kl):.2f})")
 
-    samples = model.sample(8, seed=0)
+    samples = model.sample(64, seed=0)
     print(f"generated samples: {samples.shape}")
+
+    # Save a sample grid artifact (picked up by the Kaggle runner from results/).
+    from shared.training_utils import save_image_grid
+    out = os.path.join(os.environ.get("OUTDIR", "results"), "vae_samples.png")
+    save_image_grid(samples, out, nrow=8, title="VAE samples")
+    print(f"saved sample grid -> {out}")
 
 
 if __name__ == "__main__":
