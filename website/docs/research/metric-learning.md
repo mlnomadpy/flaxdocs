@@ -239,6 +239,12 @@ Done. The embedding pulls same-class inputs together and pushes different-class 
 
 The **triplet loss falls** (0.68 → 0.21), the mean same-class distance `d+` stays below the mean different-class distance `d-`, and **verification accuracy rises** toward 0.99. The loss plateaus near the margin because batch-hard mining keeps surfacing the toughest remaining triplets — that residual is expected, not a bug.
 
+The script also saves a 2D PCA projection of the embeddings, comparing random initialization to the trained model:
+
+![2D PCA of the learned embeddings, before vs after training: at random init the ten classes are fully intermingled, while after triplet-loss training each class collapses into its own region of the embedding space.](./metric_embedding.png)
+
+*Each point is one input, colored by its true class. At random initialization (left) the classes are thoroughly mixed; after training (right) same-class points cluster together and different classes occupy distinct regions — visual proof that the network learned a metric where distance encodes class identity.*
+
 ## Common Pitfalls
 
 **1. Forgetting to normalize embeddings**

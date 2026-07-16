@@ -213,6 +213,10 @@ step  199 | masked loss 0.0007 | full-graph acc 0.971
 Final full-graph accuracy: 0.971 (33/34 nodes)
 ```
 
+![2D PCA scatter of the trained GCN's 16-dimensional hidden-layer node embeddings, with nodes colored by predicted faction, graph edges drawn lightly, the two labeled seed nodes shown as stars, and the single misclassified node ringed in red](./gcn_communities.png)
+
+*The trained GCN's hidden-layer embeddings, projected to 2D with PCA and colored by predicted community. The two factions form cleanly separated clusters anchored by the two labeled seed nodes (stars at opposite corners) — visual proof that message passing diffused just two labels across all 78 edges to recover the real split, with only boundary node 8 (red ring) misassigned.*
+
 Starting from ~53% (random guessing on a balanced 2-class problem), the model
 crosses 90% within 20 steps and stabilizes at 33/34 correct. The single
 persistent error is a node on the boundary between the two communities — exactly

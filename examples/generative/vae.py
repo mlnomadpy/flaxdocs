@@ -155,6 +155,16 @@ def main():
     save_image_grid(samples, out, nrow=8, title="VAE samples")
     print(f"saved sample grid -> {out}")
 
+    # Reconstruction grid: 8 originals (top row) over their reconstructions (bottom).
+    originals = data[:8]
+    recon_logits, _, _ = model(originals)
+    recon = nnx.sigmoid(recon_logits)
+    pair = jnp.concatenate([originals, recon], axis=0)
+    recon_out = os.path.join(os.environ.get("OUTDIR", "results"), "vae_reconstructions.png")
+    save_image_grid(pair, recon_out, nrow=8,
+                    title="VAE: originals (top) / reconstructions (bottom)")
+    print(f"saved reconstruction grid -> {recon_out}")
+
 
 if __name__ == "__main__":
     main()

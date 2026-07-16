@@ -163,6 +163,50 @@ def make_two_moons(n: int = 1024, noise: float = 0.1, seed: int = 0):
     return x
 
 
+# ==== VISUALIZATION ====
+
+def plot_samples(real, samples, path):
+    """Side-by-side scatter of real two-moons vs. samples from the trained flow.
+
+    matplotlib is imported lazily (Agg backend) so importing this module stays
+    cheap and the plot renders without a display. If the flow has learned the
+    density, both panels trace the same two crescents.
+    """
+    import matplotlib
+    matplotlib.use("Agg")
+    import matplotlib.pyplot as plt
+
+    import numpy as np
+    real = np.asarray(real)
+    samples = np.asarray(samples)
+
+    fig, axes = plt.subplots(1, 2, figsize=(10, 5))
+    for ax, pts, title, color in (
+        (axes[0], real, "Real data (two moons)", "#1f77b4"),
+        (axes[1], samples, "Samples from trained flow", "#d62728"),
+    ):
+        ax.scatter(pts[:, 0], pts[:, 1], s=8, alpha=0.6, color=color, edgecolors="none")
+        ax.set_title(title)
+        ax.set_xlabel("$x_1$")
+        ax.set_ylabel("$x_2$")
+        ax.set_aspect("equal", adjustable="box")
+        ax.grid(True, alpha=0.2)
+
+    # Share the same axis limits so the two distributions are directly comparable.
+    lo = min(real.min(), samples.min()) - 0.3
+    hi = max(real.max(), samples.max()) + 0.3
+    for ax in axes:
+        ax.set_xlim(lo, hi)
+        ax.set_ylim(lo, hi)
+
+    fig.suptitle("RealNVP normalizing flow: learned density matches the data")
+    fig.tight_layout()
+    os.makedirs(os.path.dirname(path) or ".", exist_ok=True)
+    fig.savefig(path, dpi=120, bbox_inches="tight")
+    plt.close(fig)
+    print(f"saved visualization to {path}")
+
+
 # ==== MAIN ====
 
 def main():
@@ -187,9 +231,12 @@ def main():
             steps += 1
         print(f"epoch {epoch + 1}/{epochs}  nll {total / steps:.4f}")
 
-    samples = model.sample(256, seed=0)
+    samples = model.sample(n, seed=0)
     z, _ = model.forward(data[:256])
     print(f"samples: {samples.shape}  latent: {z.shape}")
+
+    out_path = os.path.join(os.environ.get("OUTDIR", "results"), "flows_samples.png")
+    plot_samples(data, samples, out_path)
 
 
 if __name__ == "__main__":

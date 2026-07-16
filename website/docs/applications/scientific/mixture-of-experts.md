@@ -234,7 +234,16 @@ Final expert utilization (fraction of routing slots):
 ```
 
 The utilization histogram is the diagnostic to watch: each expert handles roughly
-$1/E = 0.25$ of the routing slots. If you drop `AUX_COEF` to `0.0`, the same run
+$1/E = 0.25$ of the routing slots. The script saves this histogram as a bar chart
+at the end of training:
+
+![Bar chart of MoE expert utilization after training: four bars, one per expert, all sitting close to the dashed uniform 1/E = 0.25 target line](./moe_utilization.png)
+
+*Each bar is the fraction of the batch's $B\cdot k$ routing slots sent to that
+expert; the dashed line marks the uniform $1/E = 0.25$ target. All four bars land
+right on the line — the load-balancing loss did its job, and no expert went dead.*
+
+If you drop `AUX_COEF` to `0.0`, the same run
 tends to concentrate mass on one or two experts (utilization like
 `e0:0.5 e1:0.4 e2:0.05 e3:0.05`) — capacity you paid for but never use.
 

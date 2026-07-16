@@ -183,6 +183,65 @@ def make_dataset(n: int = 128, size: int = 32, max_shapes: int = 3,
     return image[..., None], mask[..., None]                  # (n,H,W,1) each
 
 
+# ==== VISUALIZATION ====
+
+def save_prediction_grid(model, images, masks, path: str, n_show: int = 4,
+                         threshold: float = 0.5):
+    """Save an INPUT | GROUND-TRUTH | PREDICTED comparison grid as a PNG.
+
+    One row per example, three columns. The predicted column shows the raw
+    sigmoid probability as a heatmap with the thresholded boundary overlaid, so
+    a reader can see the U-Net reconstructs the mask per-pixel. matplotlib is
+    imported lazily so importing this module never requires it.
+    """
+    import os
+    import numpy as np
+    import matplotlib
+    matplotlib.use("Agg")
+    import matplotlib.pyplot as plt
+
+    n_show = int(min(n_show, images.shape[0]))
+    logits = model(images[:n_show], train=False)          # (n, H, W, 1)
+    probs = np.asarray(jax.nn.sigmoid(logits))[..., 0]    # (n, H, W)
+    imgs = np.asarray(images[:n_show])[..., 0]
+    gts = np.asarray(masks[:n_show])[..., 0]
+
+    # Per-example IoU for the caption / titles.
+    preds_bin = (probs > threshold).astype(np.float32)
+    inter = (preds_bin * gts).sum(axis=(1, 2))
+    union = preds_bin.sum(axis=(1, 2)) + gts.sum(axis=(1, 2)) - inter
+    ious = (inter + 1e-6) / (union + 1e-6)
+
+    col_titles = ["Input image", "Ground-truth mask", "Predicted P(foreground)"]
+    fig, axes = plt.subplots(n_show, 3, figsize=(6.6, 2.2 * n_show))
+    axes = np.array(axes).reshape(n_show, 3)
+    for r in range(n_show):
+        axes[r, 0].imshow(imgs[r], cmap="gray", vmin=0.0, vmax=1.0)
+        axes[r, 1].imshow(gts[r], cmap="gray", vmin=0.0, vmax=1.0)
+        im = axes[r, 2].imshow(probs[r], cmap="magma", vmin=0.0, vmax=1.0)
+        # Overlay the thresholded prediction boundary in cyan.
+        axes[r, 2].contour(preds_bin[r], levels=[0.5], colors="cyan",
+                           linewidths=1.2)
+        axes[r, 2].set_ylabel(f"IoU {ious[r]:.2f}", fontsize=9)
+        for c in range(3):
+            axes[r, c].set_xticks([])
+            axes[r, c].set_yticks([])
+        if r == 0:
+            for c in range(3):
+                axes[r, c].set_title(col_titles[c], fontsize=10)
+
+    fig.suptitle(
+        f"U-Net segmentation on held-out shapes — mean IoU {ious.mean():.2f}",
+        fontsize=12)
+    fig.tight_layout(rect=(0, 0, 1, 0.97))
+    d = os.path.dirname(path)
+    if d:
+        os.makedirs(d, exist_ok=True)
+    fig.savefig(path, dpi=110, bbox_inches="tight")
+    plt.close(fig)
+    return path
+
+
 # ==== MAIN ====
 
 def main():
@@ -229,6 +288,14 @@ def main():
 
     print("\nDone. The decoder's nnx.ConvTranspose layers upsample the mask "
           "back to full resolution; skips restore fine boundaries.")
+
+    # Visualize predictions on a FRESH (held-out) synthetic batch so the grid
+    # demonstrates generalization, not memorization of the training set.
+    test_images, test_masks = make_dataset(n=8, size=size, seed=12345)
+    out_dir = os.environ.get("OUTDIR", "results")
+    out_path = os.path.join(out_dir, "unet_masks.png")
+    save_prediction_grid(model, test_images, test_masks, out_path, n_show=4)
+    print(f"Saved prediction grid to {out_path}")
     print("=" * 60)
 
 

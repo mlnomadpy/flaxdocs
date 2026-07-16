@@ -155,6 +155,16 @@ def main():
         print(f"  epoch {epoch:2d}/{epochs} | steps {step:4d} | "
               f"BCE {epoch_loss / max(nb, 1):8.2f}")
 
+    # Reconstruction grid: 8 originals (top row) over their reconstructions (bottom).
+    from shared.training_utils import save_image_grid
+    originals = images[:8]
+    recon = nnx.sigmoid(model(originals))
+    pair = jnp.concatenate([originals, recon], axis=0)
+    recon_out = os.path.join(os.environ.get("OUTDIR", "results"), "ae_reconstructions.png")
+    save_image_grid(pair, recon_out, nrow=8,
+                    title="Autoencoder: originals (top) / reconstructions (bottom)")
+    print(f"saved reconstruction grid -> {recon_out}")
+
     print("Done. The decoder's nnx.ConvTranspose layers upsample 7->14->28.")
 
 

@@ -165,6 +165,50 @@ def _util_bar(util) -> str:
     return "  ".join(f"e{i}:{float(u):.2f}" for i, u in enumerate(util))
 
 
+def save_utilization_plot(util, n_experts: int, k: int, path: str):
+    """Bar chart of expert utilization (matplotlib imported lazily; Agg backend).
+
+    Each bar is the fraction of a batch's B*k routing slots that landed on that
+    expert. A dashed line marks the uniform 1/E target: with the load-balancing
+    aux loss the bars sit close to it (no dead experts) -- exactly what the aux
+    loss buys. Values are clipped/normalized for display only. Returns `path`.
+    """
+    import os
+    import numpy as np
+    import matplotlib
+    matplotlib.use("Agg")
+    import matplotlib.pyplot as plt
+
+    frac = np.asarray(util, dtype=float)
+    ids = np.arange(n_experts)
+    uniform = 1.0 / n_experts
+
+    fig, ax = plt.subplots(figsize=(7, 4.2))
+    bars = ax.bar(ids, frac, color="#4C72B0", edgecolor="white", width=0.7, zorder=3)
+    ax.axhline(uniform, ls="--", color="#C44E52", lw=1.8, zorder=4,
+               label=f"uniform target 1/E = {uniform:.2f}")
+
+    for b, v in zip(bars, frac):
+        ax.text(b.get_x() + b.get_width() / 2, v + 0.006, f"{v:.2f}",
+                ha="center", va="bottom", fontsize=10)
+
+    ax.set_xlabel("expert id")
+    ax.set_ylabel("routing fraction (share of B·k slots)")
+    ax.set_title(f"MoE expert utilization after training (top-{k}-of-{n_experts})")
+    ax.set_xticks(ids)
+    ax.set_ylim(0, max(float(frac.max()) * 1.25, uniform * 1.6))
+    ax.grid(axis="y", ls=":", alpha=0.5, zorder=0)
+    ax.legend(loc="upper right", frameon=False)
+    fig.tight_layout()
+
+    d = os.path.dirname(path)
+    if d:
+        os.makedirs(d, exist_ok=True)
+    fig.savefig(path, dpi=110, bbox_inches="tight")
+    plt.close(fig)
+    return path
+
+
 def main():
     epochs = int(os.environ.get("EPOCHS", 300))
     batch_size = int(os.environ.get("BATCH", 512))
@@ -189,6 +233,10 @@ def main():
     _, _, util = model(data["x"])
     print("\nFinal expert utilization (fraction of routing slots):")
     print("  " + _util_bar(util))
+
+    out_path = os.path.join(os.environ.get("OUTDIR", "results"), "moe_utilization.png")
+    save_utilization_plot(util, n_experts, k, out_path)
+    print(f"\nSaved expert-utilization plot to {out_path}")
 
 
 if __name__ == "__main__":
