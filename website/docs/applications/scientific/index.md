@@ -20,9 +20,12 @@ stage.
 - **[Physics-Informed Neural Networks (PINN)](/applications/scientific/pinn)** —
   solve a differential equation by baking it into the loss, differentiating the
   network's *output with respect to its input* via `jax.grad`. No dataset needed.
-
-More guides in this track (Neural ODEs, tabular deep learning, and mixture of
-experts) are on the way.
+- **[Neural ODEs](/applications/scientific/neural-ode)** — continuous-depth models;
+  learn the *dynamics* and integrate them through a differentiable ODE solver.
+- **[Tabular Deep Learning](/applications/scientific/tabular)** — MLPs with
+  categorical embeddings for structured/tabular data (classification and regression).
+- **[Mixture of Experts (MoE)](/applications/scientific/mixture-of-experts)** —
+  sparse conditional computation with top-k routing and a load-balancing loss.
 
 ## Prerequisites
 

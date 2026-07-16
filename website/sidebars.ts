@@ -94,6 +94,7 @@ const sidebars: SidebarsConfig = {
             'applications/generative/vae',
             'applications/generative/gan',
             'applications/generative/diffusion',
+            'applications/generative/normalizing-flows',
           ],
         },
         {
@@ -102,6 +103,9 @@ const sidebars: SidebarsConfig = {
           items: [
             'applications/sequence/index',
             'applications/sequence/recurrent-networks',
+            'applications/sequence/seq2seq',
+            'applications/sequence/time-series',
+            'applications/sequence/word2vec',
           ],
         },
         {
@@ -111,6 +115,18 @@ const sidebars: SidebarsConfig = {
             'applications/scientific/index',
             'applications/scientific/graph-neural-networks',
             'applications/scientific/pinn',
+            'applications/scientific/neural-ode',
+            'applications/scientific/tabular',
+            'applications/scientific/mixture-of-experts',
+          ],
+        },
+        {
+          type: 'category',
+          label: '🖼️ Advanced Vision',
+          items: [
+            'applications/vision/index',
+            'applications/vision/vision-transformer',
+            'applications/vision/unet-segmentation',
           ],
         },
         {
@@ -119,6 +135,7 @@ const sidebars: SidebarsConfig = {
           items: [
             'applications/adaptation/index',
             'applications/adaptation/lora-finetuning',
+            'applications/adaptation/clip',
           ],
         },
       ],
@@ -148,6 +165,9 @@ const sidebars: SidebarsConfig = {
         'research/knowledge-distillation',
         'research/meta-learning',
         'research/reinforcement-learning',
+        'research/metric-learning',
+        'research/interpretability',
+        'research/uncertainty',
       ],
     },
   ],

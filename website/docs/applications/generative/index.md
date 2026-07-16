@@ -25,6 +25,9 @@ model that distribution.
   two optimizers and spectral normalization.
 - **[Diffusion Models (DDPM)](/applications/generative/diffusion)** — generate by
   iteratively denoising pure noise; a small U-Net predicts the noise at each step.
+- **[Normalizing Flows](/applications/generative/normalizing-flows)** — an
+  *invertible* network that gives you the exact likelihood via the change-of-variables
+  formula (RealNVP coupling layers).
 
 ## Suggested order
 

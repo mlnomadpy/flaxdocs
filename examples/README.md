@@ -94,27 +94,40 @@ examples/
 ├── imagenet/                        # ✅ Standalone app
 │   └── main.py
 │
-├── generative/                      # ✅ 4 examples (autoencoder, VAE, DCGAN, DDPM)
+├── generative/                      # ✅ 5 examples (autoencoder, VAE, DCGAN, DDPM, flows)
 │   ├── autoencoder.py
 │   ├── vae.py
 │   ├── dcgan.py
-│   └── ddpm.py
+│   ├── ddpm.py
+│   └── normalizing_flows.py
 │
-├── sequence/                        # ✅ 1 example (RNN/LSTM/GRU)
-│   └── rnn_cells.py
+├── sequence/                        # ✅ 4 examples (RNN, seq2seq, time-series, word2vec)
+│   ├── rnn_cells.py
+│   ├── seq2seq_attention.py
+│   ├── time_series.py
+│   └── word2vec.py
 │
-├── scientific/                      # ✅ 2 examples (GCN, PINN)
+├── scientific/                      # ✅ 5 examples (GCN, PINN, Neural ODE, tabular, MoE)
 │   ├── gcn_karate.py
-│   └── pinn_oscillator.py
+│   ├── pinn_oscillator.py
+│   ├── neural_ode.py
+│   ├── tabular_dnn.py
+│   └── moe.py
 │
-├── adaptation/                      # ✅ 1 example (LoRA)
-│   └── lora_finetuning.py
+├── vision/                          # ✅ 2 examples (ViT, U-Net segmentation)
+│   ├── vit.py
+│   └── unet_segmentation.py
+│
+├── adaptation/                      # ✅ 2 examples (LoRA, CLIP)
+│   ├── lora_finetuning.py
+│   └── clip_toy.py
 │
 ├── index.py                         # 📋 Complete example index
 └── requirements.txt                 # Updated with pytest
 ```
 
-**Total: 28 categorized examples + 1 standalone ImageNet app**
+**Total: 41 categorized examples + 1 standalone ImageNet app** (advanced/ also gains
+metric-learning, interpretability, and uncertainty)
 
 ## 🚀 Quick Start
 

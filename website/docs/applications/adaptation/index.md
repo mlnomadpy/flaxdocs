@@ -17,8 +17,8 @@ models across different modalities (like images and text).
   model and train only tiny low-rank adapters (`nnx.LoRALinear`), updating well
   under 1% of the parameters. Uses `nnx.Optimizer(wrt=nnx.LoRAParam)` to scope
   training to just the adapters.
-
-A cross-modal (CLIP-style image-text) guide is on the way.
+- **[CLIP (toy)](/applications/adaptation/clip)** — align an image encoder and a
+  text encoder in a shared embedding space with a symmetric contrastive loss.
 
 ## Prerequisites
 

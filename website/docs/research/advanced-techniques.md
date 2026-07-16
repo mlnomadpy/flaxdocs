@@ -23,6 +23,7 @@ Learn powerful representations and shrink models without losing accuracy.
 
 - **[Contrastive Learning](/research/contrastive-learning)** — SimCLR self-supervised representation learning: the NT-Xent loss, augmentation pipeline, and linear-probe evaluation, all without labels.
 - **[Knowledge Distillation](/research/knowledge-distillation)** — Train small, fast student models from large teachers using temperature-scaled soft targets.
+- **[Metric Learning](/research/metric-learning)** — Learn embeddings where same-class inputs cluster, using Siamese networks and triplet loss with mining.
 
 ## Learning paradigms
 
@@ -38,6 +39,8 @@ Make models trustworthy and results reproducible.
 
 - **[Adversarial Training](/research/adversarial-training)** — Build robustness against adversarial examples using FGSM and the min-max robust optimization objective.
 - **[Experiment Reproducibility](/research/experiment-reproducibility)** — Deterministic, reproducible runs via explicit PRNG keys, config management, and XLA determinism.
+- **[Interpretability & Saliency](/research/interpretability)** — Explain predictions with vanilla-gradient saliency, Integrated Gradients, and Grad-CAM.
+- **[Uncertainty Estimation](/research/uncertainty)** — Quantify what the model doesn't know with MC-dropout and deep ensembles.
 
 ## Search and control
 

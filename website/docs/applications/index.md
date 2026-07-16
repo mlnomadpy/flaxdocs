@@ -28,7 +28,12 @@ sequence-to-sequence and forecasting.
 
 ### 🔬 [Graphs, Scientific & Structured](/applications/scientific)
 Beyond grids and sequences: graph neural networks, physics-informed networks
-(PINNs) that differentiate *through the model*, and structured/tabular data.
+(PINNs) that differentiate *through the model*, Neural ODEs, tabular data, and
+mixture-of-experts.
+
+### 🖼️ [Advanced Vision](/applications/vision)
+Vision beyond CNNs: the Vision Transformer (attention on image patches) and the
+U-Net for dense per-pixel segmentation.
 
 ### 🧬 [Multimodal & Adaptation](/applications/adaptation)
 Adapt and combine models: parameter-efficient fine-tuning with LoRA
