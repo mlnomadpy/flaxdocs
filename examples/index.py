@@ -124,6 +124,24 @@ EXAMPLES = {
                 "file": "advanced/dqn_reinforcement_learning.py",
                 "description": "Deep Q-Network reinforcement learning",
                 "concepts": ["dqn", "reinforcement learning", "replay buffer"]
+            },
+            {
+                "name": "Metric Learning (Siamese/Triplet)",
+                "file": "advanced/metric_learning.py",
+                "description": "Learn an embedding where same-class inputs cluster (triplet loss)",
+                "concepts": ["metric learning", "triplet loss", "siamese", "mining"]
+            },
+            {
+                "name": "Interpretability & Saliency",
+                "file": "advanced/interpretability.py",
+                "description": "Saliency, Integrated Gradients, and Grad-CAM via jax.grad on inputs",
+                "concepts": ["saliency", "integrated gradients", "grad-cam", "attribution"]
+            },
+            {
+                "name": "Uncertainty Estimation",
+                "file": "advanced/uncertainty.py",
+                "description": "MC-dropout and deep ensembles for predictive uncertainty",
+                "concepts": ["mc-dropout", "deep ensembles", "nnx.vmap", "calibration"]
             }
         ]
     },
@@ -164,6 +182,139 @@ EXAMPLES = {
                 "file": "imagenet/main.py",
                 "description": "Standalone ResNet ImageNet training app",
                 "concepts": ["imagenet", "resnet", "large-scale training"]
+            }
+        ]
+    },
+    "Generative": {
+        "description": "Generative models — learn to sample data, not just classify it",
+        "examples": [
+            {
+                "name": "Autoencoder (+ Denoising)",
+                "file": "generative/autoencoder.py",
+                "description": "Compress and reconstruct images through a bottleneck",
+                "concepts": ["nnx.ConvTranspose", "ConvEncoder/ConvDecoder", "reconstruction loss"]
+            },
+            {
+                "name": "Variational Autoencoder (VAE)",
+                "file": "generative/vae.py",
+                "description": "Probabilistic latent + reparameterization; sample new digits",
+                "concepts": ["reparameterization", "ELBO", "nnx.Rngs noise stream"]
+            },
+            {
+                "name": "DCGAN",
+                "file": "generative/dcgan.py",
+                "description": "Generator vs discriminator with two optimizers + spectral norm",
+                "concepts": ["adversarial training", "nnx.SpectralNorm", "two optimizers"]
+            },
+            {
+                "name": "Diffusion Model (DDPM)",
+                "file": "generative/ddpm.py",
+                "description": "Iterative denoising with a small time-conditioned U-Net",
+                "concepts": ["diffusion", "nnx.Embed timestep", "nnx.GroupNorm", "sampling loop"]
+            },
+            {
+                "name": "Normalizing Flows (RealNVP)",
+                "file": "generative/normalizing_flows.py",
+                "description": "Invertible network with exact likelihood via change of variables",
+                "concepts": ["RealNVP", "affine coupling", "log-det Jacobian"]
+            }
+        ]
+    },
+    "Sequence": {
+        "description": "Sequence models — recurrence and order",
+        "examples": [
+            {
+                "name": "Recurrent Networks (RNN/LSTM/GRU)",
+                "file": "sequence/rnn_cells.py",
+                "description": "The nnx.RNN API family + manual nnx.scan on a parity task",
+                "concepts": ["nnx.RNN", "nnx.LSTMCell/GRUCell", "nnx.Bidirectional", "nnx.scan"]
+            },
+            {
+                "name": "Seq2Seq with Attention",
+                "file": "sequence/seq2seq_attention.py",
+                "description": "Encoder-decoder with cross-attention on a copy/reverse task",
+                "concepts": ["seq2seq", "cross-attention", "nnx.MultiHeadAttention", "teacher forcing"]
+            },
+            {
+                "name": "Time-Series Forecasting",
+                "file": "sequence/time_series.py",
+                "description": "LSTM multi-step forecasting on synthetic sinusoids",
+                "concepts": ["forecasting", "sliding windows", "nnx.LSTMCell"]
+            },
+            {
+                "name": "Word2Vec (skip-gram)",
+                "file": "sequence/word2vec.py",
+                "description": "Learn word embeddings with skip-gram + negative sampling",
+                "concepts": ["nnx.Embed", "negative sampling", "embeddings"]
+            }
+        ]
+    },
+    "Scientific": {
+        "description": "Graphs, scientific ML, and structured data",
+        "examples": [
+            {
+                "name": "Graph Neural Network (GCN)",
+                "file": "scientific/gcn_karate.py",
+                "description": "Semi-supervised node classification on Zachary's Karate Club",
+                "concepts": ["message passing", "normalized adjacency", "nnx.Einsum"]
+            },
+            {
+                "name": "Physics-Informed NN (PINN)",
+                "file": "scientific/pinn_oscillator.py",
+                "description": "Solve an ODE by differentiating the model output w.r.t. its input",
+                "concepts": ["jax.grad on input", "residual loss", "scientific ML"]
+            },
+            {
+                "name": "Neural ODE",
+                "file": "scientific/neural_ode.py",
+                "description": "Continuous-depth model integrated through a differentiable RK4 solver",
+                "concepts": ["neural ODE", "jax.lax.scan solver", "continuous depth"]
+            },
+            {
+                "name": "Tabular Deep Learning",
+                "file": "scientific/tabular_dnn.py",
+                "description": "MLP with categorical embeddings for structured data",
+                "concepts": ["nnx.Embed categoricals", "tabular", "regression/classification"]
+            },
+            {
+                "name": "Mixture of Experts (MoE)",
+                "file": "scientific/moe.py",
+                "description": "Sparse top-k expert routing with a load-balancing loss",
+                "concepts": ["MoE", "top-k gating", "load balancing", "nnx.Einsum"]
+            }
+        ]
+    },
+    "Vision": {
+        "description": "Vision beyond CNNs — attention and dense prediction",
+        "examples": [
+            {
+                "name": "Vision Transformer (ViT)",
+                "file": "vision/vit.py",
+                "description": "Patch embedding + transformer encoder for image classification",
+                "concepts": ["ViT", "patch embedding", "nnx.MultiHeadAttention", "CLS token"]
+            },
+            {
+                "name": "U-Net Segmentation",
+                "file": "vision/unet_segmentation.py",
+                "description": "Encoder-decoder with skip connections for per-pixel masks",
+                "concepts": ["U-Net", "nnx.ConvTranspose", "skip connections", "segmentation"]
+            }
+        ]
+    },
+    "Adaptation": {
+        "description": "Fine-tuning and adaptation of existing models",
+        "examples": [
+            {
+                "name": "LoRA Fine-Tuning",
+                "file": "adaptation/lora_finetuning.py",
+                "description": "Freeze a model, train only low-rank adapters",
+                "concepts": ["nnx.LoRALinear", "nnx.Optimizer(wrt=nnx.LoRAParam)", "nnx.DiffState"]
+            },
+            {
+                "name": "CLIP (toy)",
+                "file": "adaptation/clip_toy.py",
+                "description": "Align image and text encoders with a symmetric contrastive loss",
+                "concepts": ["CLIP", "cross-modal", "contrastive", "dual encoders"]
             }
         ]
     }

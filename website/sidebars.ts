@@ -81,6 +81,67 @@ const sidebars: SidebarsConfig = {
     },
     {
       type: 'category',
+      label: '🧩 Applications',
+      collapsed: false,
+      items: [
+        'applications/index',
+        {
+          type: 'category',
+          label: '🎨 Generative Models',
+          items: [
+            'applications/generative/index',
+            'applications/generative/autoencoder',
+            'applications/generative/vae',
+            'applications/generative/gan',
+            'applications/generative/diffusion',
+            'applications/generative/normalizing-flows',
+          ],
+        },
+        {
+          type: 'category',
+          label: '🔁 Sequence Models & Time Series',
+          items: [
+            'applications/sequence/index',
+            'applications/sequence/recurrent-networks',
+            'applications/sequence/seq2seq',
+            'applications/sequence/time-series',
+            'applications/sequence/word2vec',
+          ],
+        },
+        {
+          type: 'category',
+          label: '🔬 Graphs, Scientific & Structured',
+          items: [
+            'applications/scientific/index',
+            'applications/scientific/graph-neural-networks',
+            'applications/scientific/pinn',
+            'applications/scientific/neural-ode',
+            'applications/scientific/tabular',
+            'applications/scientific/mixture-of-experts',
+          ],
+        },
+        {
+          type: 'category',
+          label: '🖼️ Advanced Vision',
+          items: [
+            'applications/vision/index',
+            'applications/vision/vision-transformer',
+            'applications/vision/unet-segmentation',
+          ],
+        },
+        {
+          type: 'category',
+          label: '🧬 Multimodal & Adaptation',
+          items: [
+            'applications/adaptation/index',
+            'applications/adaptation/lora-finetuning',
+            'applications/adaptation/clip',
+          ],
+        },
+      ],
+    },
+    {
+      type: 'category',
       label: '📈 Scale',
       items: [
         'scale/index',
@@ -104,6 +165,9 @@ const sidebars: SidebarsConfig = {
         'research/knowledge-distillation',
         'research/meta-learning',
         'research/reinforcement-learning',
+        'research/metric-learning',
+        'research/interpretability',
+        'research/uncertainty',
       ],
     },
   ],
