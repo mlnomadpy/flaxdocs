@@ -175,6 +175,13 @@ def main():
             g_loss, _ = g_step(gen, disc, opt_g, sample_z(kg, batch, z_dim))
         print(f"epoch {epoch}: d_loss={float(d_loss):.4f}  g_loss={float(g_loss):.4f}")
 
+    # Save a sample grid artifact (picked up by the Kaggle runner from results/).
+    fake = gen(sample_z(jax.random.PRNGKey(7), 64, z_dim))
+    from shared.training_utils import save_image_grid
+    out = os.path.join(os.environ.get("OUTDIR", "results"), "gan_samples.png")
+    save_image_grid(fake, out, nrow=8, title="DCGAN samples")
+    print(f"saved sample grid -> {out}")
+
 
 if __name__ == "__main__":
     main()

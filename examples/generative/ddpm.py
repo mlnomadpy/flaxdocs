@@ -270,9 +270,16 @@ def main():
 
     # Generate a handful of samples from pure noise.
     key, gkey = jax.random.split(key)
-    samples = generate(model, schedule, 4, gkey)
+    n_samples = int(os.environ.get("N_SAMPLES", "16"))
+    samples = generate(model, schedule, n_samples, gkey)
     print(f"\n  generated samples: {samples.shape} "
           f"range=[{float(samples.min()):.2f}, {float(samples.max()):.2f}]")
+
+    # Save a sample grid artifact (picked up by the Kaggle runner from results/).
+    from shared.training_utils import save_image_grid
+    out = os.path.join(os.environ.get("OUTDIR", "results"), "diffusion_samples.png")
+    save_image_grid(samples, out, nrow=8, title="Diffusion (DDPM) samples")
+    print(f"saved sample grid -> {out}")
     print("=" * 60)
 
 
