@@ -251,6 +251,13 @@ epoch 8/8  nll 2.3750
 samples: (256, 2)  latent: (256, 2)
 ```
 
+At the end of training the script draws fresh samples with `model.sample` and
+plots them next to the real data:
+
+![Real two-moons data beside samples drawn from the trained RealNVP flow, both tracing the same two crescents](./flows_samples.png)
+
+*Left: the real two-moons data. Right: points obtained by drawing $z \sim \mathcal{N}(0, I)$ and pushing them through `inverse`. The samples reproduce the same two crescents — visual proof that the flow learned the true density, not just a low number.*
+
 Two invariants make this model trustworthy, and the example verifies both:
 
 - **Exact invertibility** — `inverse(forward(x))` reconstructs `x` to

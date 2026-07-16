@@ -280,6 +280,19 @@ def main():
     out = os.path.join(os.environ.get("OUTDIR", "results"), "diffusion_samples.png")
     save_image_grid(samples, out, nrow=8, title="Diffusion (DDPM) samples")
     print(f"saved sample grid -> {out}")
+
+    # Forward diffusion: one clean digit progressively corrupted to pure noise.
+    # This process is deterministic given the schedule, so it always renders clearly.
+    steps_show = [0, schedule.T // 4, schedule.T // 2, 3 * schedule.T // 4, schedule.T - 1]
+    clean = x0[:1]
+    fwd = []
+    for t in steps_show:
+        eps = jax.random.normal(jax.random.fold_in(gkey, t + 1), clean.shape)
+        fwd.append(schedule.q_sample(clean, jnp.array([t]), eps)[0])
+    fwd_out = os.path.join(os.environ.get("OUTDIR", "results"), "diffusion_forward.png")
+    save_image_grid(jnp.stack(fwd), fwd_out, nrow=5,
+                    title=f"Forward diffusion: t=0 (clean) -> t={schedule.T - 1} (noise)")
+    print(f"saved forward-process grid -> {fwd_out}")
     print("=" * 60)
 
 

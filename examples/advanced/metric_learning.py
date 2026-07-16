@@ -204,7 +204,59 @@ def train_step(model, optimizer, batch, margin: float = 0.2):
 
 
 # ============================================================================
-# 6. MAIN
+# 6. VISUALIZATION (2D PCA of embeddings, before vs after training)
+# ============================================================================
+
+def save_embedding_scatter(z_before, z_after, labels, n_classes, path):
+    """Project embeddings to 2D with PCA and scatter them colored by class.
+
+    Two panels: BEFORE training (random init, classes overlap) vs AFTER
+    training (classes form separated clusters). matplotlib is imported lazily
+    with the Agg backend so importing this module stays cheap.
+    """
+    import matplotlib
+    matplotlib.use("Agg")
+    import matplotlib.pyplot as plt
+
+    def pca2(z):
+        """Project rows of z onto their top-2 principal components (numpy SVD)."""
+        z = np.asarray(z, dtype=np.float64)
+        z = z - z.mean(axis=0, keepdims=True)
+        _, _, vt = np.linalg.svd(z, full_matrices=False)
+        return z @ vt[:2].T
+
+    labels = np.asarray(labels)
+    panels = [
+        (pca2(z_before), "Before training (random init)"),
+        (pca2(z_after), "After training (triplet loss)"),
+    ]
+
+    fig, axes = plt.subplots(1, 2, figsize=(12, 5.5))
+    cmap = plt.get_cmap("tab10")
+    for ax, (proj, title) in zip(axes, panels):
+        for c in range(n_classes):
+            m = labels == c
+            ax.scatter(proj[m, 0], proj[m, 1], s=16, alpha=0.75,
+                       color=cmap(c % 10), edgecolors="none", label=f"class {c}")
+        ax.set_title(title, fontsize=12)
+        ax.set_xlabel("PC 1")
+        ax.set_ylabel("PC 2")
+        ax.set_xticks([])
+        ax.set_yticks([])
+
+    axes[1].legend(loc="center left", bbox_to_anchor=(1.02, 0.5),
+                   fontsize=8, framealpha=0.9, title="class")
+    fig.suptitle("Metric learning: learned embeddings separate the classes "
+                 "(2D PCA)", fontsize=13, y=1.0)
+    fig.tight_layout()
+    os.makedirs(os.path.dirname(path) or ".", exist_ok=True)
+    fig.savefig(path, dpi=130, bbox_inches="tight")
+    plt.close(fig)
+    print(f"Saved embedding visualization to {path}")
+
+
+# ============================================================================
+# 7. MAIN
 # ============================================================================
 
 def main():
@@ -240,6 +292,15 @@ def main():
     n_params = sum(x.size for x in jax.tree_util.tree_leaves(nnx.state(model, nnx.Param)))
     print(f"  model: EmbeddingNet with {n_params} parameters\n")
 
+    # Fixed balanced subset (up to 40 per class) used for the before/after
+    # embedding visualization, so every class is represented and legible.
+    viz_idx = np.concatenate([class_to_idx[int(c)][:40]
+                              for c in range(n_classes)])
+    viz_x = jnp.asarray(X[viz_idx])
+    viz_y = Y[viz_idx]
+    # Embeddings at random init (before any training) for the "before" panel.
+    z_before = np.asarray(model.embed(viz_x))
+
     # Fixed balanced batch used to report the verification metric each epoch.
     eval_rng = np.random.default_rng(123)
     eval_batch = make_pk_batch(X, Y, class_to_idx, P, min(K + 4, 12), eval_rng)
@@ -264,6 +325,12 @@ def main():
 
     print("\nDone. The embedding pulls same-class inputs together and pushes "
           "different-class inputs apart (d+ < d-).")
+
+    # Visualize the learned embedding space: random init vs after training.
+    z_after = np.asarray(model.embed(viz_x))
+    out_path = os.path.join(os.environ.get("OUTDIR", "results"),
+                            "metric_embedding.png")
+    save_embedding_scatter(z_before, z_after, viz_y, n_classes, out_path)
 
 
 if __name__ == "__main__":

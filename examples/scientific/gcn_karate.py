@@ -222,6 +222,97 @@ def train_step(model: GCN, optimizer: nnx.Optimizer, batch):
 
 
 # ============================================================================
+# VISUALIZATION: 2D embedding scatter colored by predicted community
+# ============================================================================
+
+def save_community_plot(model: GCN, batch, final_acc: float, path: str):
+    """Scatter the trained GCN's node embeddings, colored by predicted community.
+
+    We PCA the 16-d hidden layer (the representation *before* the class head)
+    down to 2D, draw the graph edges lightly in that space, color each node by
+    its predicted faction, ring the misclassified node(s) in red, and mark the
+    two labeled seed nodes (0 and 33) as large stars. If the GCN worked, the two
+    communities appear as clearly separated clusters.
+
+    matplotlib is imported lazily (headless Agg backend) so that merely
+    importing this module stays cheap and never needs a display.
+    """
+    import matplotlib
+    matplotlib.use("Agg")
+    import matplotlib.pyplot as plt
+    import numpy as np
+
+    a_hat, features, node_ids = batch["a_hat"], batch["features"], batch["node_ids"]
+
+    # 16-d hidden embeddings (output of the first GCN layer + ReLU) and logits.
+    hidden = nnx.relu(model.gcn1(a_hat, features))          # (N, hidden)
+    logits = model.gcn2(a_hat, hidden)                      # (N, num_classes)
+    preds = np.asarray(jnp.argmax(logits, axis=-1))
+    true = np.asarray(batch["labels"])
+    correct = int((preds == true).sum())
+
+    # PCA of the hidden layer to 2D via the top-2 right singular vectors.
+    h = np.asarray(hidden)
+    h = h - h.mean(axis=0, keepdims=True)
+    _, _, vt = np.linalg.svd(h, full_matrices=False)
+    coords = h @ vt[:2].T                                   # (N, 2)
+
+    colors = np.array(["#1f77b4", "#ff7f0e"])              # community 0 / 1
+    names = {0: "Mr. Hi", 1: "Officer"}
+    anchors = set(ANCHOR_NODES)
+
+    fig, ax = plt.subplots(figsize=(8, 6.5))
+
+    # Light graph edges in the embedding space (show structure holds clusters).
+    for (i, j) in EDGES:
+        ax.plot([coords[i, 0], coords[j, 0]], [coords[i, 1], coords[j, 1]],
+                color="0.85", lw=0.6, zorder=1)
+
+    # Non-anchor nodes, colored by predicted community.
+    for cls in (0, 1):
+        mask = np.array([(preds[n] == cls) and (n not in anchors)
+                         for n in range(NUM_NODES)])
+        ax.scatter(coords[mask, 0], coords[mask, 1], c=colors[cls], s=150,
+                   edgecolors="white", linewidths=1.0, zorder=2,
+                   label=f"predicted community {cls} ({names[cls]})")
+
+    # Red rings on any misclassified node (vs. the held-out ground truth).
+    mis = preds != true
+    if mis.any():
+        ax.scatter(coords[mis, 0], coords[mis, 1], s=300, facecolors="none",
+                   edgecolors="#d62728", linewidths=2.0, zorder=3,
+                   label=f"misclassified ({int(mis.sum())})")
+
+    # The two labeled seed nodes as large stars.
+    for a in ANCHOR_NODES:
+        ax.scatter(coords[a, 0], coords[a, 1], marker="*", s=700,
+                   c=colors[preds[a]], edgecolors="black", linewidths=1.5, zorder=4)
+    ax.scatter([], [], marker="*", s=300, c="0.6", edgecolors="black",
+               label="labeled seed node (0, 33)")
+
+    # Node-id labels for readability.
+    for n in range(NUM_NODES):
+        ax.annotate(str(n), (coords[n, 0], coords[n, 1]), fontsize=6,
+                    ha="center", va="center", zorder=5,
+                    color="white" if n in anchors else "black")
+
+    ax.set_title(
+        "Karate Club GCN: learned node embeddings (PCA of 16-d hidden layer)\n"
+        f"final accuracy {final_acc * 100:.1f}%  "
+        f"({correct}/{NUM_NODES} nodes) from only 2 labeled seeds")
+    ax.set_xlabel("PCA component 1")
+    ax.set_ylabel("PCA component 2")
+    ax.legend(loc="best", fontsize=8, framealpha=0.9)
+    ax.grid(True, alpha=0.2)
+    fig.tight_layout()
+
+    os.makedirs(os.path.dirname(path) or ".", exist_ok=True)
+    fig.savefig(path, dpi=130)
+    plt.close(fig)
+    print(f"saved community embedding plot -> {path}")
+
+
+# ============================================================================
 # MAIN
 # ============================================================================
 
@@ -246,6 +337,10 @@ def main():
     final_acc = float(compute_accuracy(logits, batch["labels"]))
     print(f"\nFinal full-graph accuracy: {final_acc:.3f} "
           f"({int(final_acc * NUM_NODES)}/{NUM_NODES} nodes)")
+
+    out_path = os.path.join(os.environ.get("OUTDIR", "results"),
+                            "gcn_communities.png")
+    save_community_plot(model, batch, final_acc, out_path)
 
 
 if __name__ == "__main__":

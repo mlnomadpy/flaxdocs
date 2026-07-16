@@ -198,6 +198,10 @@ endpoint error |y_pred(T) - y_true(T)| = 0.0055
 
 The learned field reproduces the spiral to a final MSE of about $5\times10^{-6}$, and the predicted endpoint lands within $\sim 0.006$ of the true one — all without ever being told the generating matrix $A$.
 
+![Phase-plane overlay of the true decaying spiral and the trajectory integrated from the learned Neural ODE, starting from y0](./neural_ode_trajectory.png)
+
+*In the $y_1$–$y_2$ phase plane the learned trajectory (dashed red) sits directly on top of the true spiral (solid blue) as both curl inward from the start point — visual proof that the MLP has recovered the hidden dynamics $dy/dt = Ay$ from the trajectory alone.*
+
 Scale the run with environment variables: `EPOCHS` (optimization steps) and `BATCH` (number of points sampled along the trajectory).
 
 ## Common Pitfalls

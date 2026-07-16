@@ -230,6 +230,14 @@ epoch 0: d_loss=1.2278  g_loss=0.6531
 epoch 1: d_loss=1.0854  g_loss=0.6295
 ```
 
+After training on **real MNIST** (`SYNTHETIC=0`, 20 epochs), the generator turns
+random noise into recognizable digits:
+
+![DCGAN samples generated from random noise after 20 epochs on MNIST](./gan_samples.png)
+
+*Each tile is `G(z)` for a fresh random `z` — the generator never saw these; it
+learned the manifold of digit shapes from the adversarial signal alone.*
+
 Do **not** expect the losses to fall monotonically — that is the wrong mental
 model for a GAN. Because $G$ and $D$ optimize *opposing* objectives, the losses
 oscillate: when the generator improves, the discriminator's job gets harder (its

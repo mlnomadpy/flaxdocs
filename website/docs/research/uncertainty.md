@@ -218,6 +218,12 @@ Aleatoric captures data noise; epistemic captures model ignorance.
 
 The headline numbers are the `in-cluster` vs `away` **epistemic** uncertainty. For both methods, epistemic uncertainty is markedly larger away from the training clusters (in the middle gap and the extrapolation tails) than inside them — exactly the behavior we want. The ensemble's negative NLL means it fits the data likelihood tightly, while its epistemic variance still fans out where there is no data.
 
+The script also saves the figure that makes this concrete — the iconic uncertainty band:
+
+![Predictive mean and ±2σ epistemic band for MC-Dropout and a deep ensemble on a 1D regression task with a gap](./uncertainty_band.png)
+
+*Each panel shows the training scatter (grey), the true function (dashed), the predictive mean (solid), and a shaded ±2σ **epistemic** band. The band collapses to near-zero width over the two shaded training clusters and balloons in the central gap and the extrapolation tails — the model "knows what it doesn't know," which is exactly the behavior that makes uncertainty estimates trustworthy.*
+
 ## Common Pitfalls
 
 - ❌ Calling the model with `train=False` for MC-Dropout — dropout is disabled, every pass is identical, epistemic variance collapses to zero.

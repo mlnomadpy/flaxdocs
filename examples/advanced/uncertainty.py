@@ -223,6 +223,75 @@ def _region_uncertainty(x_grid, epistemic):
     return float(e[in_cluster].mean()), float(e[out_region].mean())
 
 
+# ============================================================================
+# 7b. VISUALIZATION: the iconic uncertainty band
+# ============================================================================
+# One panel per method. Each shows the training scatter, the true function,
+# the predictive MEAN as a line, and a shaded +/-2 sigma band. sigma is the
+# EPISTEMIC (model-disagreement) standard deviation -- the confidence band on
+# the learned function -- which collapses to near-zero over the two data
+# clusters and BALLOONS in the middle gap and the extrapolation tails. That
+# narrow-on-data / wide-in-the-gap shape is the whole point of estimating
+# uncertainty. matplotlib is imported lazily so importing this module stays
+# cheap.
+
+
+def save_uncertainty_plot(x_train, y_train, x_grid, mc, ens, path):
+    import numpy as np
+    import matplotlib
+
+    matplotlib.use("Agg")
+    import matplotlib.pyplot as plt
+
+    xs = np.asarray(x_grid).ravel()
+    xt = np.asarray(x_train).ravel()
+    yt = np.asarray(y_train).ravel()
+    truth = np.asarray(true_fn(x_grid)).ravel()
+
+    fig, axes = plt.subplots(1, 2, figsize=(13, 5), sharex=True, sharey=True)
+    specs = [
+        ("MC-Dropout (T stochastic passes)", mc, "#1f77b4"),
+        ("Deep Ensemble (nnx.vmap members)", ens, "#d62728"),
+    ]
+
+    for ax, (title, pred, color) in zip(axes, specs):
+        mean = np.asarray(pred["mean"]).ravel()
+        # Band = +/-2 * epistemic std (confidence on the learned function).
+        sigma = np.sqrt(np.asarray(pred["epistemic"]).ravel())
+
+        # Shade the two training clusters so "in-cluster vs gap" is obvious.
+        for lo, hi in [(-4, -2), (2, 4)]:
+            ax.axvspan(lo, hi, color="0.9", zorder=0)
+
+        # +/-2 sigma epistemic band -- narrow on data, wide in the gap/tails.
+        ax.fill_between(
+            xs, mean - 2 * sigma, mean + 2 * sigma,
+            color=color, alpha=0.25,
+            label=r"mean $\pm 2\sigma$ (epistemic)",
+        )
+        ax.plot(xs, truth, "k--", lw=1.5, alpha=0.7, label="true function")
+        ax.plot(xs, mean, color=color, lw=2.2, label="predictive mean")
+        ax.scatter(xt, yt, s=14, color="0.25", alpha=0.6,
+                   zorder=5, label="training data")
+
+        ax.set_title(title)
+        ax.set_xlabel("x")
+        ax.set_ylabel("y")
+        ax.set_ylim(-3.0, 3.0)
+        ax.set_xlim(-7.0, 7.0)
+        ax.legend(loc="upper center", fontsize=8, framealpha=0.9, ncol=2)
+
+    fig.suptitle(
+        "Predictive uncertainty grows in the gap and the extrapolation tails",
+        fontsize=13, fontweight="bold",
+    )
+    fig.tight_layout(rect=(0, 0, 1, 0.96))
+    os.makedirs(os.path.dirname(path) or ".", exist_ok=True)
+    fig.savefig(path, dpi=110, bbox_inches="tight")
+    plt.close(fig)
+    print(f"Saved uncertainty band plot -> {path}")
+
+
 def main():
     steps = int(os.environ.get("EPOCHS", 500))
     batch_size = int(os.environ.get("BATCH", 64))
@@ -270,6 +339,10 @@ def main():
     ens = ensemble_predict(models, x_grid)
     ens_in, ens_out = _region_uncertainty(x_grid, ens["epistemic"])
     print(f"  Ensemble epistemic:   in-cluster {ens_in:.5f} | away {ens_out:.5f}")
+
+    # ---- Visualization: the iconic uncertainty band ------------------------
+    out_path = os.path.join(os.environ.get("OUTDIR", "results"), "uncertainty_band.png")
+    save_uncertainty_plot(x_train, y_train, x_grid, mc, ens, out_path)
 
     print("\n" + "=" * 70)
     print("Uncertainty grows away from the training data for BOTH methods.")

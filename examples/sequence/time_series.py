@@ -138,6 +138,68 @@ def eval_mse(model, x, y):
 
 
 # ============================================================================
+# VISUALIZATION
+# ============================================================================
+
+def plot_forecast(history, forecast, truth, path: str):
+    """Plot one held-out window: input history, then forecast vs. ground truth.
+
+    The solid line is the ``L`` observed lookback values the model reads. Past
+    the forecast origin (dashed vertical line) two lines are overlaid: the
+    model's ``H``-step forecast and the true continuation. If the forecast
+    tracks the truth, the model has genuinely learned the series' structure.
+
+    Args:
+        history: ``(L,)`` observed input window (standardized units).
+        forecast: ``(H,)`` model prediction for the next ``H`` steps.
+        truth: ``(H,)`` ground-truth continuation.
+        path: Destination PNG path.
+    """
+    import matplotlib
+    matplotlib.use("Agg")
+    import matplotlib.pyplot as plt
+    import numpy as np
+
+    history = np.asarray(history)
+    forecast = np.asarray(forecast)
+    truth = np.asarray(truth)
+
+    L, H = history.shape[0], forecast.shape[0]
+    hist_t = np.arange(L)
+    fut_t = np.arange(L, L + H)
+    # Prepend the last observed point so the forecast/truth lines connect to
+    # the history without a visual gap at the origin.
+    bridge_t = np.arange(L - 1, L + H)
+    fc_line = np.concatenate([history[-1:], forecast])
+    tr_line = np.concatenate([history[-1:], truth])
+
+    fig, ax = plt.subplots(figsize=(10, 4.5))
+    ax.plot(hist_t, history, color="#333333", lw=2,
+            label=f"Input history (L={L})")
+    ax.plot(bridge_t, tr_line, color="#2ca02c", lw=2.2, marker="o", ms=4,
+            label="Ground truth")
+    ax.plot(bridge_t, fc_line, color="#d62728", lw=2.2, marker="x", ms=6,
+            ls="--", label="LSTM forecast")
+    ax.axvline(L - 0.5, color="#888888", ls=":", lw=1.5)
+    ax.text(L - 0.5, ax.get_ylim()[1], " forecast origin",
+            va="top", ha="left", color="#555555", fontsize=9)
+
+    mse = float(np.mean((forecast - truth) ** 2))
+    ax.set_title(f"Multi-step forecast on a held-out window "
+                 f"(H={H}, MSE={mse:.4f})")
+    ax.set_xlabel("time step")
+    ax.set_ylabel("value (standardized)")
+    ax.legend(loc="lower left")
+    ax.grid(alpha=0.3)
+    fig.tight_layout()
+
+    os.makedirs(os.path.dirname(path) or ".", exist_ok=True)
+    fig.savefig(path, dpi=130)
+    plt.close(fig)
+    print(f"saved forecast plot to {path}")
+
+
+# ============================================================================
 # MAIN
 # ============================================================================
 
@@ -178,6 +240,11 @@ def main():
     print(f"held-out forecast MSE (first window): {final_mse:.4f}")
     print(f"forecast[:4] {jnp.round(forecast[:4], 3)}  "
           f"truth[:4] {jnp.round(truth[:4], 3)}")
+
+    # Visualize the forecast against the true continuation.
+    out_path = os.path.join(
+        os.environ.get("OUTDIR", "results"), "timeseries_forecast.png")
+    plot_forecast(x_te[0, :, 0], forecast, truth, out_path)
 
 
 if __name__ == "__main__":

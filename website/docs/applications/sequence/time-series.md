@@ -164,6 +164,10 @@ forecast[:4] [0.725 0.705 0.684 0.955]  truth[:4] [0.62  0.71  0.6   0.968]
 
 The forecast on the first held-out window tracks the true continuation closely — the predicted values sit right next to the ground truth in standardized units. Environment knobs `EPOCHS`, `BATCH`, and `SYNTHETIC` scale the run; `SYNTHETIC=0` uses a longer 2048-step series.
 
+![Multi-step LSTM forecast on a held-out window: solid black input history, then the red forecast tracking the green ground-truth continuation past the forecast origin](./timeseries_forecast.png)
+
+*The model reads the solid black lookback window, and past the forecast-origin line its 12-step forecast (red, dashed) closely follows the true continuation (green) it never saw — direct visual evidence that the LSTM has learned the series' periodic structure rather than memorizing it.*
+
 ## Common Pitfalls
 
 - ❌ Feeding a flat `(B, L)` window into `nnx.RNN` and getting a shape error.

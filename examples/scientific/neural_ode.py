@@ -121,6 +121,43 @@ def make_dataset(synthetic: bool = True, n_points: int = 80):
     return ts, true_traj
 
 
+# ==== VISUALIZATION: phase-plane overlay of true vs learned spiral ====
+def save_phase_plot(true_traj, pred_traj, path):
+    """Overlay the true spiral (solid) and the learned trajectory (dashed).
+
+    matplotlib is imported lazily (with the headless Agg backend) so that just
+    importing this module stays cheap and never needs a display.
+    """
+    import matplotlib
+    matplotlib.use("Agg")
+    import matplotlib.pyplot as plt
+
+    import numpy as np
+    true_np = np.asarray(true_traj)
+    pred_np = np.asarray(pred_traj)
+
+    fig, ax = plt.subplots(figsize=(6, 6))
+    ax.plot(true_np[:, 0], true_np[:, 1],
+            color="#1f77b4", lw=2.5, label="true spiral")
+    ax.plot(pred_np[:, 0], pred_np[:, 1],
+            color="#d62728", lw=2.0, ls="--", label="Neural ODE (learned)")
+    ax.scatter([true_np[0, 0]], [true_np[0, 1]],
+               color="black", zorder=5, s=60, label="start $y_0$")
+
+    ax.set_xlabel("$y_1$")
+    ax.set_ylabel("$y_2$")
+    ax.set_title("Neural ODE recovers the spiral in the phase plane")
+    ax.set_aspect("equal", adjustable="box")
+    ax.legend(loc="upper right", frameon=True)
+    ax.grid(True, alpha=0.3)
+    fig.tight_layout()
+
+    os.makedirs(os.path.dirname(path) or ".", exist_ok=True)
+    fig.savefig(path, dpi=130)
+    plt.close(fig)
+    print(f"saved phase-plane plot -> {path}")
+
+
 # ==== MAIN ====
 def main():
     steps = int(os.environ.get("EPOCHS", "1000"))       # optimization steps
@@ -147,6 +184,10 @@ def main():
     endpoint_err = float(jnp.linalg.norm(pred[-1] - true_traj[-1]))
     print(f"\nfinal trajectory MSE = {final_mse:.4e}")
     print(f"endpoint error |y_pred(T) - y_true(T)| = {endpoint_err:.4f}")
+
+    out_path = os.path.join(os.environ.get("OUTDIR", "results"),
+                            "neural_ode_trajectory.png")
+    save_phase_plot(true_traj, pred, out_path)
 
 
 if __name__ == "__main__":

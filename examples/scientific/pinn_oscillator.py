@@ -106,6 +106,49 @@ def make_dataset(synthetic: bool = True, n_collocation: int = 100):
     return jnp.linspace(0.0, T, n_collocation).reshape(-1, 1)
 
 
+# ==== VISUALIZATION: does the network actually solve the ODE? ====
+def plot_solution(model: PINN, t_coll, path: str):
+    """Overlay the PINN prediction on the exact analytic solution.
+
+    The two curves nearly coinciding IS the proof: the network was never shown
+    the analytic answer, yet the physics-constrained loss recovered it. matplotlib
+    is imported lazily (Agg backend) so importing this module stays cheap.
+    """
+    import matplotlib
+    matplotlib.use("Agg")
+    import matplotlib.pyplot as plt
+
+    # Dense grid for smooth curves; collocation points for the markers.
+    t_dense = jnp.linspace(0.0, T, 400).reshape(-1, 1)
+    u_pred = model(t_dense)[:, 0]
+    u_ref = analytic_solution(t_dense[:, 0])
+    t_dense = t_dense[:, 0]
+    t_marks = t_coll[:, 0]
+    u_marks = model(t_coll)[:, 0]
+    max_err = float(jnp.max(jnp.abs(u_pred - u_ref)))
+
+    fig, ax = plt.subplots(figsize=(8, 4.5))
+    ax.plot(t_dense, u_ref, color="#111827", linestyle="--", linewidth=2.5,
+            label="exact analytic solution")
+    ax.plot(t_dense, u_pred, color="#e11d48", linewidth=2.0, alpha=0.9,
+            label="PINN prediction $\\hat u_\\theta(t)$")
+    ax.scatter(t_marks, u_marks, s=14, color="#2563eb", zorder=3,
+               label=f"collocation points (N={len(t_marks)})")
+    ax.axhline(0.0, color="#9ca3af", linewidth=0.8, zorder=0)
+
+    ax.set_xlabel("t")
+    ax.set_ylabel("u(t)")
+    ax.set_title(f"PINN vs. analytic damped oscillator  (max error = {max_err:.4f})")
+    ax.legend(loc="upper right", framealpha=0.95)
+    ax.grid(True, alpha=0.25)
+    fig.tight_layout()
+
+    os.makedirs(os.path.dirname(path) or ".", exist_ok=True)
+    fig.savefig(path, dpi=120, bbox_inches="tight")
+    plt.close(fig)
+    print(f"saved solution plot -> {path}")
+
+
 # ==== MAIN ====
 def main():
     steps = int(os.environ.get("EPOCHS", "3000"))          # optimization steps
@@ -133,6 +176,10 @@ def main():
     ref = analytic_solution(t_eval[:, 0])
     max_err = float(jnp.max(jnp.abs(pred - ref)))
     print(f"\nmax |u_pred - u_analytic| over [0, {T}] = {max_err:.4f}")
+
+    # Save a plot proving the network recovered the physics.
+    out_path = os.path.join(os.environ.get("OUTDIR", "results"), "pinn_solution.png")
+    plot_solution(model, t_coll, out_path)
 
 
 if __name__ == "__main__":
