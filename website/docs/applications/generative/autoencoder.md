@@ -167,6 +167,17 @@ Done. The decoder's nnx.ConvTranspose layers upsample 7->14->28.
 
 If you want to *watch* the loss drop sharply, run more steps on a single fixed batch (as the verification below does): on 30 steps of one batch it falls from ~544 to ~468.
 
+On **real MNIST** (`SYNTHETIC=0`, `LATENT=64`, 60 epochs) the reconstructions
+come back through the bottleneck as recognizable digits — the whole point of the
+autoencoder:
+
+![Autoencoder reconstructions: original MNIST digits (top row) and their reconstructions through the bottleneck (bottom row)](./ae_reconstructions.png)
+
+*Top: real inputs. Bottom: each image squeezed through a 64-dim bottleneck and
+rebuilt by the `nnx.ConvTranspose` decoder. Blurrier than the input (the
+bottleneck discards detail) but clearly the same digit — the network learned to
+compress and reconstruct.*
+
 Run the denoising variant with `DENOISE=1 python generative/autoencoder.py`, or point it at MNIST with `SYNTHETIC=0`.
 
 ## Common Pitfalls
