@@ -308,3 +308,48 @@ def bce_loss(logits: jax.Array, targets: jax.Array) -> jax.Array:
 def kl_divergence(mu: jax.Array, logvar: jax.Array) -> jax.Array:
     """KL(N(mu, sigma^2) || N(0, I)), averaged over the batch (closed form)."""
     return (-0.5 * jnp.sum(1.0 + logvar - mu ** 2 - jnp.exp(logvar), axis=-1)).mean()
+
+
+# ============================================================================
+# IMAGE GRID (for generative-sample artifacts; matplotlib imported lazily)
+# ============================================================================
+
+def save_image_grid(images, path: str, nrow: int = 8, title: str = None):
+    """Save a grid of images (N, H, W[, 1]) to `path` as a PNG.
+
+    matplotlib is imported lazily so importing this module never requires it.
+    Values are clipped to [0, 1] (pass sigmoid/normalized images). Returns path.
+    """
+    import os
+    import math
+    import numpy as np
+    import matplotlib
+    matplotlib.use("Agg")
+    import matplotlib.pyplot as plt
+
+    imgs = np.asarray(images)
+    if imgs.ndim == 4 and imgs.shape[-1] == 1:
+        imgs = imgs[..., 0]
+    # rescale from [-1,1] to [0,1] if needed (GAN tanh output)
+    if imgs.min() < 0.0:
+        imgs = (imgs + 1.0) / 2.0
+    imgs = np.clip(imgs, 0.0, 1.0)
+
+    n = imgs.shape[0]
+    ncol = nrow
+    nr = math.ceil(n / ncol)
+    fig, axes = plt.subplots(nr, ncol, figsize=(ncol, nr))
+    axes = np.array(axes).reshape(-1)
+    for i, ax in enumerate(axes):
+        ax.axis("off")
+        if i < n:
+            ax.imshow(imgs[i], cmap="gray", vmin=0.0, vmax=1.0)
+    if title:
+        fig.suptitle(title)
+    fig.tight_layout()
+    d = os.path.dirname(path)
+    if d:
+        os.makedirs(d, exist_ok=True)
+    fig.savefig(path, dpi=100, bbox_inches="tight")
+    plt.close(fig)
+    return path

@@ -24,6 +24,10 @@ sys.path.insert(0, str(Path(__file__).parent.parent))
 from shared.models import ConvEncoder, ConvDecoder
 from shared.training_utils import bce_loss, kl_divergence
 
+# beta-VAE weight on the KL term. beta < 1 favours reconstruction quality and
+# avoids posterior collapse (the decoder ignoring z); beta = 1 is the exact ELBO.
+BETA = float(os.environ.get("BETA", "1.0"))
+
 
 # ==== ENCODER: q(z|x) = N(mu, diag(exp(logvar))) ====
 
@@ -76,7 +80,7 @@ def vae_loss(model: VAE, x):
     logits, mu, logvar = model(x)
     recon = bce_loss(logits, x)          # -E_q[log p(x|z)] (sigmoid BCE, summed)
     kl = kl_divergence(mu, logvar)        # D_KL(q(z|x) || N(0, I))
-    return recon + kl, (recon, kl)
+    return recon + BETA * kl, (recon, kl)
 
 
 # ==== TRAIN STEP ====
@@ -128,7 +132,7 @@ def main():
 
     # Two independent RNG streams: params (init) and noise (latent sampling).
     rngs = nnx.Rngs(params=0, noise=1)
-    model = VAE(latent_dim=16, rngs=rngs)
+    model = VAE(latent_dim=int(os.environ.get("LATENT", "32")), rngs=rngs)
     optimizer = nnx.Optimizer(model, optax.adam(1e-3), wrt=nnx.Param)
 
     data = make_dataset(synthetic=synthetic)
@@ -146,8 +150,25 @@ def main():
         print(f"epoch {epoch + 1}/{epochs}  ELBO loss {total / steps:.2f}  "
               f"(recon {float(recon):.2f}  kl {float(kl):.2f})")
 
-    samples = model.sample(8, seed=0)
+    samples = model.sample(64, seed=0)
     print(f"generated samples: {samples.shape}")
+
+    # Save a sample grid artifact (picked up by the Kaggle runner from results/).
+    from shared.training_utils import save_image_grid
+    out = os.path.join(os.environ.get("OUTDIR", "results"), "vae_samples.png")
+    save_image_grid(samples, out, nrow=8, title="VAE samples")
+    print(f"saved sample grid -> {out}")
+
+    # Reconstruction grid: 8 originals (top row) over their reconstructions (bottom).
+    # Decode from the posterior MEAN (mu) for a clean, deterministic reconstruction.
+    originals = data[:8]
+    mu, _ = model.encoder(originals)
+    recon = nnx.sigmoid(model.decoder(mu))
+    pair = jnp.concatenate([originals, recon], axis=0)
+    recon_out = os.path.join(os.environ.get("OUTDIR", "results"), "vae_reconstructions.png")
+    save_image_grid(pair, recon_out, nrow=8,
+                    title="VAE: originals (top) / reconstructions (bottom)")
+    print(f"saved reconstruction grid -> {recon_out}")
 
 
 if __name__ == "__main__":

@@ -161,6 +161,10 @@ for step in range(3000):
 
 On CPU this converges in a couple of seconds. The physics residual and IC penalty both fall by orders of magnitude, and the learned $\hat u(t)$ tracks the analytic damped cosine to within about **0.01** across the whole domain:
 
+![PINN prediction overlaid on the exact damped-oscillator solution, with collocation points marked](./pinn_solution.png)
+
+*The red PINN curve sits almost exactly on top of the dashed analytic solution across all collocation points (blue) — visual proof that minimizing only the ODE residual plus initial conditions, with no target data, recovered the true trajectory.*
+
 ```console
 $ python scientific/pinn_oscillator.py
 Solving u'' + 2*0.2*3.0*u' + 3.0^2*u = 0 on [0, 4.0]

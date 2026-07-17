@@ -270,9 +270,29 @@ def main():
 
     # Generate a handful of samples from pure noise.
     key, gkey = jax.random.split(key)
-    samples = generate(model, schedule, 4, gkey)
+    n_samples = int(os.environ.get("N_SAMPLES", "16"))
+    samples = generate(model, schedule, n_samples, gkey)
     print(f"\n  generated samples: {samples.shape} "
           f"range=[{float(samples.min()):.2f}, {float(samples.max()):.2f}]")
+
+    # Save a sample grid artifact (picked up by the Kaggle runner from results/).
+    from shared.training_utils import save_image_grid
+    out = os.path.join(os.environ.get("OUTDIR", "results"), "diffusion_samples.png")
+    save_image_grid(samples, out, nrow=8, title="Diffusion (DDPM) samples")
+    print(f"saved sample grid -> {out}")
+
+    # Forward diffusion: one clean digit progressively corrupted to pure noise.
+    # This process is deterministic given the schedule, so it always renders clearly.
+    steps_show = [0, schedule.T // 4, schedule.T // 2, 3 * schedule.T // 4, schedule.T - 1]
+    clean = x0[:1]
+    fwd = []
+    for t in steps_show:
+        eps = jax.random.normal(jax.random.fold_in(gkey, t + 1), clean.shape)
+        fwd.append(schedule.q_sample(clean, jnp.array([t]), eps)[0])
+    fwd_out = os.path.join(os.environ.get("OUTDIR", "results"), "diffusion_forward.png")
+    save_image_grid(jnp.stack(fwd), fwd_out, nrow=5,
+                    title=f"Forward diffusion: t=0 (clean) -> t={schedule.T - 1} (noise)")
+    print(f"saved forward-process grid -> {fwd_out}")
     print("=" * 60)
 
 

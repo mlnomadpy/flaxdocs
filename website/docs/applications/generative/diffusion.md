@@ -323,8 +323,19 @@ then draws four samples from pure noise:
   generated samples: (4, 28, 28, 1) range=[-2.13, 2.78]
 ```
 
-On real MNIST (`SYNTHETIC=0`) with more epochs the samples sharpen into
-recognizable digits; on CPU, keep `T` and the dataset small.
+The **forward process** — the part the whole method is built on — is exact and
+deterministic. Here is one MNIST digit corrupted step by step until it is
+indistinguishable from noise, which is precisely what the network learns to
+reverse:
+
+![Forward diffusion: a clean MNIST digit at t=0 progressively noised to pure noise at t=199](./diffusion_forward.png)
+
+*Left to right: `t = 0` (clean) → `t = T-1` (isotropic Gaussian noise), via the
+closed-form `q(x_t | x_0)`. Training teaches the U-Net to undo one such step at a
+time.*
+
+On real MNIST (`SYNTHETIC=0`) with more epochs the reverse-process samples sharpen
+into recognizable digits; on CPU, keep `T` and the dataset small.
 
 ## Common Pitfalls
 

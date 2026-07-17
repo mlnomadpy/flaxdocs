@@ -213,10 +213,26 @@ learns to reconstruct); as training continues the latent code starts carrying
 information and the KL grows — exactly the reconstruction-vs-regularization
 balance the ELBO trades off.
 
-Set `SYNTHETIC=0` to train on real MNIST via `tfds`, and tune `EPOCHS` / `BATCH`
-via environment variables. On MNIST the reconstruction term dominates early, then
-the KL term grows as the latent space organizes toward the prior — after which
-`model.sample(n, seed)` yields recognizable, novel digits.
+On **real MNIST** (`SYNTHETIC=0`, 80 epochs), decoding the posterior mean back to
+pixels recovers the input through the probabilistic latent:
+
+![VAE reconstructions: original MNIST digits (top row) and reconstructions decoded from the posterior mean (bottom row)](./vae_reconstructions.png)
+
+*Top: real inputs. Bottom: each digit encoded to `(mu, logvar)`, then decoded
+from `mu`. The reconstructions are soft — a VAE trades sharpness for a smooth,
+samplable latent space — but clearly the same digits.*
+
+:::tip Avoiding posterior collapse
+If reconstructions come out as identical grey blobs, the KL term has overpowered
+reconstruction and the decoder is ignoring the latent (**posterior collapse**).
+The fix is a **β-VAE**: down-weight the KL with `loss = recon + β·kl` for `β < 1`
+(this script exposes a `BETA` env knob; the image above used `BETA=0.15`).
+:::
+
+Set `SYNTHETIC=0` to train on real MNIST via `tfds`, and tune `EPOCHS` / `BATCH` /
+`BETA` via environment variables. As training continues the KL term grows as the
+latent space organizes toward the prior — after which `model.sample(n, seed)`
+yields novel digits sampled from that latent.
 
 ## Common Pitfalls
 
